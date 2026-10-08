@@ -3,10 +3,23 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { logActivity } from "@/lib/activity-log";
+import { hashPin, PIN_PATTERN } from "@/lib/attendance/pin";
 
 export type ActionState = { error: string | null };
 
 const PTKP_STATUSES = ["TK/0", "TK/1", "TK/2", "TK/3", "K/0", "K/1", "K/2", "K/3"];
+
+// PIN absen dari form: kosong = tidak diubah (undefined), centang "hapus PIN"
+// = null, selain itu harus 4–6 digit dan disimpan sebagai hash.
+async function readPinUpdate(
+  formData: FormData,
+): Promise<{ error: string } | { value: string | null | undefined }> {
+  if (formData.get("remove_attendance_pin") === "on") return { value: null };
+  const pin = ((formData.get("attendance_pin") as string) || "").trim();
+  if (!pin) return { value: undefined };
+  if (!PIN_PATTERN.test(pin)) return { error: "PIN absen harus 4–6 digit angka." };
+  return { value: await hashPin(pin) };
+}
 
 function numOrZero(v: FormDataEntryValue | null) {
   const n = Number(v);
@@ -34,8 +47,11 @@ export async function createEmployee(
   if (!PTKP_STATUSES.includes(ptkpStatus)) {
     return { error: "Status PTKP tidak valid." };
   }
+  const pinUpdate = await readPinUpdate(formData);
+  if ("error" in pinUpdate) return pinUpdate;
 
   const { error } = await supabase.from("employees").insert({
+    attendance_pin_hash: pinUpdate.value ?? null,
     business_id: businessId,
     name,
     salary_type: salaryType,
@@ -80,10 +96,13 @@ export async function updateEmployee(
   if (!PTKP_STATUSES.includes(ptkpStatus)) {
     return { error: "Status PTKP tidak valid." };
   }
+  const pinUpdate = await readPinUpdate(formData);
+  if ("error" in pinUpdate) return pinUpdate;
 
   const { error } = await supabase
     .from("employees")
     .update({
+      ...(pinUpdate.value !== undefined && { attendance_pin_hash: pinUpdate.value }),
       name,
       salary_type: salaryType,
       daily_rate: numOrZero(formData.get("daily_rate")),

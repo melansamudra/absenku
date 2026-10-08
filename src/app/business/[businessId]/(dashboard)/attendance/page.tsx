@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { signSelfieUrls } from "@/lib/attendance/selfie";
 import AttendanceRow, { type AttendanceRowData } from "./attendance-row";
 import type { AttendanceStatus } from "./actions";
 
@@ -45,6 +46,10 @@ export default async function AttendancePage({
   ]);
 
   const attendanceByEmployee = new Map((attendanceRows ?? []).map((a) => [a.employee_id, a]));
+  const selfieUrls = await signSelfieUrls(
+    supabase,
+    (attendanceRows ?? []).map((a) => a.check_in_photo_url),
+  );
 
   const rows: AttendanceRowData[] = (employees ?? []).map((e) => {
     const a = attendanceByEmployee.get(e.id);
@@ -58,7 +63,7 @@ export default async function AttendancePage({
       late: a?.late ?? false,
       checkInAt: a?.check_in_at ?? null,
       checkOutAt: a?.check_out_at ?? null,
-      checkInPhotoUrl: a?.check_in_photo_url ?? null,
+      checkInPhotoUrl: a?.check_in_photo_url ? (selfieUrls.get(a.check_in_photo_url) ?? null) : null,
       verifiedByAdmin: a?.verified_by_admin ?? false,
     };
   });

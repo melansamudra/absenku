@@ -80,6 +80,7 @@ supabase/
 13. `20260912100000_spam_protection.sql` — `public_submission_log` + cooldown 60 detik di RPC `submit_leave_request_public`
 14. `20260912100100_activity_log.sql` — `activity_log`
 15. `20260920100000_pph21.sql` — `businesses.pph21_enabled`, `employees.ptkp_status`, kolom `payslips.pph21_amount`/`ptkp_status`/`ter_category`
+16. `20261008100000_attendance_security.sql` — geofence (`businesses.office_lat`/`office_lng`/`attendance_radius_m`), PIN absen (`employees.attendance_pin_hash`, `businesses.attendance_pin_required`), bucket `attendance-selfies` jadi privat
 
 Setiap tabel dengan `business_id` diamankan RLS lewat `private.owns_business(business_id)` — akses hanya untuk businesses milik `auth.uid()` yang sedang login (owner atau staff aktif). Halaman `/absen/[slug]`, `/cuti/[slug]`, dan API `/api/attendance-checkin` sengaja tanpa login (karyawan tidak punya akun) — divalidasi manual di server lewat slug + employee id, lewat RPC security definer atau service-role client.
 
@@ -94,6 +95,14 @@ Opsional (butuh setup terpisah) — saat cuti disetujui/ditolak (baik lewat appr
 1. Daftar di resend.com, buat API key, isi `RESEND_API_KEY` di `.env.local`.
 2. Untuk produksi, verifikasi domain sendiri di Resend lalu isi `RESEND_FROM_EMAIL` (mis. `ABSENKU <noreply@bisnis-anda.com>`). Kalau dikosongkan, dipakai alamat testing bawaan Resend (`onboarding@resend.dev`) — cukup untuk uji coba, tapi terbatas untuk pemakaian nyata.
 3. Kalau `RESEND_API_KEY` kosong, atau karyawan tidak punya email (kolom opsional di form Karyawan), email cukup dilewati — tidak pernah menggagalkan approve/reject.
+
+## Keamanan absen selfie
+
+Diatur di Pengaturan → "Keamanan Absen Selfie" dan di form Karyawan:
+
+- **Batas lokasi (geofence)** — isi latitude, longitude (ada tombol "Pakai lokasi saya sekarang"), dan radius dalam meter. Kalau ketiganya terisi, API absen menolak absen tanpa lokasi atau di luar radius (jarak dihitung di server pakai haversine). Kosongkan ketiganya untuk mematikan. Lokasi dari browser tetap bisa dipalsukan oleh pengguna yang niat (aplikasi fake GPS), jadi ini menutup kasus umum, bukan jaminan mutlak.
+- **PIN absen** — PIN 4–6 digit per karyawan, disimpan sebagai hash scrypt (`src/lib/attendance/pin.ts`), tidak pernah dikirim ke browser. Karyawan yang punya PIN wajib mengisinya saat absen; kalau "Wajibkan PIN" dicentang, karyawan tanpa PIN tidak bisa absen selfie sama sekali. Setelah 5 kali salah PIN dalam 15 menit, absen karyawan itu dikunci sementara (dicatat di `public_submission_log` dengan kind `absen_pin_gagal`).
+- **Foto selfie privat** — bucket `attendance-selfies` tidak lagi publik. Kolom `attendance.check_in_photo_url`/`check_out_photo_url` menyimpan path objek, dan dashboard membuat signed URL berumur 1 jam saat halaman dibuka (`src/lib/attendance/selfie.ts`).
 
 ## Proteksi spam link publik
 

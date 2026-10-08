@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-type Employee = { id: string; name: string; note: string | null };
+type Employee = { id: string; name: string; note: string | null; hasPin: boolean };
 
 type Status = { checkedIn: boolean; checkedOut: boolean; checkInAt: string | null; checkOutAt: string | null };
 
@@ -24,7 +24,7 @@ function getLocation(): Promise<{ lat: number | null; lng: number | null }> {
     navigator.geolocation.getCurrentPosition(
       (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
       () => resolve({ lat: null, lng: null }),
-      { timeout: 8000 },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
     );
   });
 }
@@ -33,12 +33,17 @@ export default function CheckinClient({
   slug,
   businessName,
   employees,
+  geofenceEnabled,
+  pinRequired,
 }: {
   slug: string;
   businessName: string;
   employees: Employee[];
+  geofenceEnabled: boolean;
+  pinRequired: boolean;
 }) {
   const [employeeId, setEmployeeId] = useState("");
+  const [pin, setPin] = useState("");
   const [status, setStatus] = useState<Status | null>(null);
   const [pendingAction, setPendingAction] = useState<"in" | "out" | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -69,6 +74,10 @@ export default function CheckinClient({
   function startAction(action: "in" | "out") {
     setError(null);
     setMessage(null);
+    if (needsPin && !/^\d{4,6}$/.test(pin)) {
+      setError("Masukkan PIN absen kamu (4–6 digit).");
+      return;
+    }
     actionRef.current = action;
     fileInputRef.current?.click();
   }
@@ -85,12 +94,17 @@ export default function CheckinClient({
 
     try {
       const { lat, lng } = await getLocation();
+      if (geofenceEnabled && (lat === null || lng === null)) {
+        setError("Lokasi tidak terbaca. Izinkan akses lokasi (GPS) di browser lalu coba lagi.");
+        return;
+      }
 
       const formData = new FormData();
       formData.append("slug", slug);
       formData.append("employeeId", employeeId);
       formData.append("action", action);
       formData.append("photo", file);
+      if (pin) formData.append("pin", pin);
       if (lat !== null) formData.append("lat", String(lat));
       if (lng !== null) formData.append("lng", String(lng));
 
@@ -116,6 +130,8 @@ export default function CheckinClient({
   }
 
   const selectedEmployee = employees.find((e) => e.id === employeeId) ?? null;
+  const needsPin = !!selectedEmployee?.hasPin;
+  const blockedNoPin = !!selectedEmployee && pinRequired && !selectedEmployee.hasPin;
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 px-4 py-10">
@@ -133,6 +149,7 @@ export default function CheckinClient({
           value={employeeId}
           onChange={(e) => {
             setEmployeeId(e.target.value);
+            setPin("");
             setStatus(null);
             setMessage(null);
             setError(null);
@@ -147,6 +164,28 @@ export default function CheckinClient({
             </option>
           ))}
         </select>
+
+        {needsPin && (
+          <>
+            <label className="mb-1.5 block text-xs font-medium text-zinc-600">PIN Absen</label>
+            <input
+              type="password"
+              inputMode="numeric"
+              autoComplete="off"
+              maxLength={6}
+              value={pin}
+              onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+              placeholder="4–6 digit"
+              className="mb-4 w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm tracking-widest focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
+            />
+          </>
+        )}
+
+        {blockedNoPin && (
+          <p className="mb-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
+            Kamu belum punya PIN absen. Minta admin memasangkan PIN dulu.
+          </p>
+        )}
 
         <input
           ref={fileInputRef}
@@ -168,7 +207,7 @@ export default function CheckinClient({
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
-            disabled={!employeeId || !!pendingAction || status?.checkedIn}
+            disabled={!employeeId || blockedNoPin || !!pendingAction || status?.checkedIn}
             onClick={() => startAction("in")}
             className="rounded-xl bg-brand-600 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
           >
@@ -176,7 +215,7 @@ export default function CheckinClient({
           </button>
           <button
             type="button"
-            disabled={!employeeId || !!pendingAction || !status?.checkedIn || status?.checkedOut}
+            disabled={!employeeId || blockedNoPin || !!pendingAction || !status?.checkedIn || status?.checkedOut}
             onClick={() => startAction("out")}
             className="rounded-xl border border-zinc-300 py-3 text-sm font-semibold text-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
           >
@@ -198,6 +237,7 @@ export default function CheckinClient({
         {selectedEmployee && (
           <p className="mt-4 text-center text-[11px] text-zinc-400">
             Tap tombol di atas, lalu ambil foto selfie untuk konfirmasi.
+            {geofenceEnabled && " Pastikan GPS aktif — absen hanya bisa di lokasi kerja."}
           </p>
         )}
       </div>

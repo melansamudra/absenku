@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { signSelfieUrls } from "@/lib/attendance/selfie";
 import { countDaysInclusive, loadAttendanceSummary } from "@/lib/payroll/aggregate";
 
 function currentMonthRange() {
@@ -65,6 +66,10 @@ export default async function AttendanceRekapDetailPage({
   if (!employee) notFound();
 
   const rowsByDate = new Map((attendanceRows ?? []).map((r) => [r.date, r]));
+  const selfieUrls = await signSelfieUrls(
+    supabase,
+    (attendanceRows ?? []).map((r) => r.check_in_photo_url),
+  );
 
   const days: string[] = [];
   {
@@ -138,11 +143,11 @@ export default async function AttendanceRekapDetailPage({
                       🤳 {fmtTime(row.check_in_at)} → {fmtTime(row.check_out_at) ?? "—"}
                     </span>
                   )}
-                  {row?.check_in_photo_url && (
+                  {row?.check_in_photo_url && selfieUrls.has(row.check_in_photo_url) && (
                     <>
                       {" "}
                       <a
-                        href={row.check_in_photo_url}
+                        href={selfieUrls.get(row.check_in_photo_url)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-brand-600 hover:underline"
