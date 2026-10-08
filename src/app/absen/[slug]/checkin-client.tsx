@@ -240,6 +240,13 @@ export default function CheckinClient({
             {geofenceEnabled && " Pastikan GPS aktif — absen hanya bisa di lokasi kerja."}
           </p>
         )}
+
+        <a
+          href={`/karyawan/${slug}`}
+          className="mt-4 block text-center text-xs font-semibold text-brand-600 hover:underline"
+        >
+          Portal Karyawan — slip gaji, sisa cuti, lembur →
+        </a>
       </div>
     </div>
   );

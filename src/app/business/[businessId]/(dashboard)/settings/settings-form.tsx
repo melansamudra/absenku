@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { updateBusinessSettings, type ActionState } from "./actions";
+import { JKK_RATE_OPTIONS } from "@/lib/payroll/bpjs";
 
 const initialState: ActionState = { error: null };
 
@@ -21,6 +22,11 @@ export type BusinessSettings = {
   office_lng: number | null;
   attendance_radius_m: number | null;
   attendance_pin_required: boolean;
+  bpjs_enabled: boolean;
+  bpjs_jkk_rate: number;
+  bpjs_jp_wage_cap: number;
+  bpjs_kesehatan_wage_cap: number;
+  overtime_approval_required: boolean;
 };
 
 export default function SettingsForm({
@@ -275,6 +281,100 @@ export default function SettingsForm({
               />
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-zinc-100 bg-white p-5 shadow-sm">
+        <h2 className="mb-3 text-sm font-semibold text-zinc-800">Lembur</h2>
+        <label className="flex items-start gap-2 text-sm text-zinc-600">
+          <input
+            type="checkbox"
+            name="overtime_approval_required"
+            defaultChecked={settings.overtime_approval_required}
+            className="mt-0.5 rounded"
+          />
+          <span>
+            Lembur harus diajukan karyawan &amp; disetujui admin.
+            <br />
+            <span className="text-xs text-zinc-400">
+              Kalau dicentang, jam lembur TIDAK lagi dihitung otomatis dari jam absen pulang.
+              Karyawan mengajukan lembur lewat Portal Karyawan, dan jam lembur baru masuk ke payroll
+              setelah disetujui di menu Lembur. Kalau tidak dicentang, lembur dihitung otomatis
+              seperti biasa.
+            </span>
+          </span>
+        </label>
+      </div>
+
+      <div className="rounded-xl border border-zinc-100 bg-white p-5 shadow-sm">
+        <h2 className="mb-3 text-sm font-semibold text-zinc-800">BPJS</h2>
+        <label className="mb-3 flex items-start gap-2 text-sm text-zinc-600">
+          <input
+            type="checkbox"
+            name="bpjs_enabled"
+            defaultChecked={settings.bpjs_enabled}
+            className="mt-0.5 rounded"
+          />
+          <span>
+            Hitung iuran BPJS otomatis di setiap slip gaji baru.
+            <br />
+            <span className="text-xs text-zinc-400">
+              Bagian karyawan (Kesehatan 1%, JHT 2%, JP 1%) memotong gaji; bagian perusahaan
+              (Kesehatan 4%, JHT 3,7%, JP 2%, JKK, JKM 0,3%) dicatat di slip sebagai informasi.
+              Kepesertaan & upah dasar per karyawan diatur di halaman Karyawan.
+            </span>
+          </span>
+        </label>
+        <div className="space-y-3">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-zinc-600">
+              Tarif JKK (tingkat risiko lingkungan kerja)
+            </label>
+            <select
+              name="bpjs_jkk_rate"
+              defaultValue={String(settings.bpjs_jkk_rate)}
+              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
+            >
+              {JKK_RATE_OPTIONS.map((o) => (
+                <option key={o.value} value={String(o.value)}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1 block text-xs font-medium text-zinc-600">
+                Batas Upah JP (Rp)
+              </label>
+              <input
+                name="bpjs_jp_wage_cap"
+                type="number"
+                min={1}
+                step={1}
+                defaultValue={settings.bpjs_jp_wage_cap}
+                className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-zinc-600">
+                Batas Upah BPJS Kesehatan (Rp)
+              </label>
+              <input
+                name="bpjs_kesehatan_wage_cap"
+                type="number"
+                min={1}
+                step={1}
+                defaultValue={settings.bpjs_kesehatan_wage_cap}
+                className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
+              />
+            </div>
+          </div>
+          <p className="text-xs text-amber-600">
+            Batas upah JP naik tiap Maret sesuai pengumuman BPJS Ketenagakerjaan — perbarui angka di
+            atas setiap tahun. Batas bawah (UMK) tidak diterapkan otomatis. Verifikasi ke BPJS /
+            konsultan sebelum dipakai untuk pembayaran iuran sungguhan.
+          </p>
         </div>
       </div>
 

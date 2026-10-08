@@ -18,6 +18,9 @@ export type EmployeeFormValues = {
   daily_attendance_allowance: number;
   lembur_rate_per_hour: number | null;
   ptkp_status: string;
+  bpjs_kesehatan?: boolean;
+  bpjs_ketenagakerjaan?: boolean;
+  bpjs_wage_base?: number | null;
   has_pin?: boolean;
 };
 
@@ -260,6 +263,43 @@ export default function EmployeeForm({
           Dipakai untuk hitung PPh 21 kalau fitur pajak diaktifkan di Pengaturan.
         </p>
       </div>
+
+      <fieldset>
+        <legend className="mb-1.5 block text-xs font-medium text-zinc-600">BPJS</legend>
+        <div className="flex flex-wrap gap-x-4 gap-y-1">
+          <label className="flex items-center gap-2 text-sm text-zinc-600">
+            <input
+              type="checkbox"
+              name="bpjs_kesehatan"
+              defaultChecked={initial?.bpjs_kesehatan ?? true}
+              className="rounded"
+            />
+            BPJS Kesehatan
+          </label>
+          <label className="flex items-center gap-2 text-sm text-zinc-600">
+            <input
+              type="checkbox"
+              name="bpjs_ketenagakerjaan"
+              defaultChecked={initial?.bpjs_ketenagakerjaan ?? true}
+              className="rounded"
+            />
+            BPJS Ketenagakerjaan (JHT, JP, JKK, JKM)
+          </label>
+        </div>
+        <input
+          name="bpjs_wage_base"
+          type="number"
+          min={0}
+          step={1000}
+          defaultValue={initial?.bpjs_wage_base ?? ""}
+          placeholder="Upah dasar BPJS (opsional)"
+          className="mt-2 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
+        />
+        <p className="mt-1 text-[11px] text-zinc-400">
+          Kosongkan untuk pakai gaji pokok slip + tunjangan tetap. Isi kalau upah yang didaftarkan
+          ke BPJS berbeda (mis. sesuai UMK). Hanya berlaku kalau BPJS diaktifkan di Pengaturan.
+        </p>
+      </fieldset>
 
       <div>
         <label htmlFor="attendance_pin" className="mb-1 block text-xs font-medium text-zinc-600">

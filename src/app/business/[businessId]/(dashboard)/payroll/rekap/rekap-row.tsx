@@ -22,6 +22,7 @@ export default function RekapRow({
   recurringAllowanceCount,
   recurringAllowanceTotal,
   pph21Estimate,
+  bpjsEstimate,
 }: {
   businessId: string;
   employeeId: string;
@@ -34,6 +35,7 @@ export default function RekapRow({
   recurringAllowanceCount: number;
   recurringAllowanceTotal: number;
   pph21Estimate: number;
+  bpjsEstimate: number;
 }) {
   const [open, setOpen] = useState(false);
   const boundAction = (prevState: CreatePayslipState, formData: FormData) =>
@@ -58,6 +60,11 @@ export default function RekapRow({
           {pph21Estimate > 0 && (
             <p className="mt-0.5 text-xs text-red-500">
               - Estimasi PPh 21: {fmtRupiah(pph21Estimate)} (sudah termasuk di total di samping)
+            </p>
+          )}
+          {bpjsEstimate > 0 && (
+            <p className="mt-0.5 text-xs text-red-500">
+              - Estimasi BPJS bagian karyawan: {fmtRupiah(bpjsEstimate)} (sudah termasuk di total di samping)
             </p>
           )}
         </div>

@@ -81,6 +81,7 @@ supabase/
 14. `20260912100100_activity_log.sql` — `activity_log`
 15. `20260920100000_pph21.sql` — `businesses.pph21_enabled`, `employees.ptkp_status`, kolom `payslips.pph21_amount`/`ptkp_status`/`ter_category`
 16. `20261008100000_attendance_security.sql` — geofence (`businesses.office_lat`/`office_lng`/`attendance_radius_m`), PIN absen (`employees.attendance_pin_hash`, `businesses.attendance_pin_required`), bucket `attendance-selfies` jadi privat
+17. `20261009100000_bpjs_portal_overtime.sql` — BPJS (`businesses.bpjs_*`, `employees.bpjs_*`, `payslips.bpjs_*`), `businesses.overtime_approval_required`, tabel `overtime_requests`
 
 Setiap tabel dengan `business_id` diamankan RLS lewat `private.owns_business(business_id)` — akses hanya untuk businesses milik `auth.uid()` yang sedang login (owner atau staff aktif). Halaman `/absen/[slug]`, `/cuti/[slug]`, dan API `/api/attendance-checkin` sengaja tanpa login (karyawan tidak punya akun) — divalidasi manual di server lewat slug + employee id, lewat RPC security definer atau service-role client.
 
@@ -103,6 +104,33 @@ Diatur di Pengaturan → "Keamanan Absen Selfie" dan di form Karyawan:
 - **Batas lokasi (geofence)** — isi latitude, longitude (ada tombol "Pakai lokasi saya sekarang"), dan radius dalam meter. Kalau ketiganya terisi, API absen menolak absen tanpa lokasi atau di luar radius (jarak dihitung di server pakai haversine). Kosongkan ketiganya untuk mematikan. Lokasi dari browser tetap bisa dipalsukan oleh pengguna yang niat (aplikasi fake GPS), jadi ini menutup kasus umum, bukan jaminan mutlak.
 - **PIN absen** — PIN 4–6 digit per karyawan, disimpan sebagai hash scrypt (`src/lib/attendance/pin.ts`), tidak pernah dikirim ke browser. Karyawan yang punya PIN wajib mengisinya saat absen; kalau "Wajibkan PIN" dicentang, karyawan tanpa PIN tidak bisa absen selfie sama sekali. Setelah 5 kali salah PIN dalam 15 menit, absen karyawan itu dikunci sementara (dicatat di `public_submission_log` dengan kind `absen_pin_gagal`).
 - **Foto selfie privat** — bucket `attendance-selfies` tidak lagi publik. Kolom `attendance.check_in_photo_url`/`check_out_photo_url` menyimpan path objek, dan dashboard membuat signed URL berumur 1 jam saat halaman dibuka (`src/lib/attendance/selfie.ts`).
+
+## BPJS — opsional, ⚠️ verifikasi sebelum dipakai sungguhan
+
+Mati secara default per bisnis (Pengaturan → BPJS). Kalau dinyalakan, setiap slip baru menghitung iuran (`src/lib/payroll/bpjs.ts`):
+
+| Program | Perusahaan | Karyawan (memotong gaji) | Batas upah |
+|---|---|---|---|
+| BPJS Kesehatan | 4% | 1% | default Rp12 jt (bisa diubah) |
+| JHT | 3,7% | 2% | — |
+| JP | 2% | 1% | default Rp10.547.400 — **perbarui tiap Maret** sesuai pengumuman BPJS |
+| JKK | 0,24–1,74% (pilih sesuai risiko) | — | — |
+| JKM | 0,3% | — | — |
+
+- Kepesertaan per karyawan (Kesehatan / Ketenagakerjaan) dan **Upah Dasar BPJS** opsional diatur di form Karyawan. Kalau upah dasar kosong, dipakai gaji pokok slip + tunjangan tetap.
+- Bagian perusahaan disimpan di slip sebagai informasi biaya, tidak memotong gaji. Premi Kesehatan, JKK, dan JKM bagian perusahaan ikut dihitung ke penghasilan bruto PPh 21.
+- **Penyederhanaan:** batas bawah upah (UMK) tidak diterapkan otomatis (isi Upah Dasar BPJS kalau perlu), anggota keluarga tambahan BPJS Kesehatan tidak dihitung, dan iuran tidak bisa dikoreksi per slip (pakai penyesuaian tunjangan/potongan).
+
+## Portal Karyawan
+
+`/karyawan/[slug]` (slug sama dengan link absen, linknya ada di Pengaturan). Karyawan masuk dengan **nama + PIN absen** (karyawan tanpa PIN tidak bisa masuk), lalu bisa melihat rekap absensi bulan ini, sisa cuti, slip gaji (12 terakhir, termasuk rincian dan iuran BPJS perusahaan), dan mengajukan lembur.
+
+- Sesi berupa cookie httpOnly bertanda tangan HMAC, berlaku 7 hari (`src/lib/portal/session.ts`). Kunci tanda tangan diturunkan dari `SUPABASE_SERVICE_ROLE_KEY`, atau dari `PORTAL_SESSION_SECRET` kalau diisi. Mengganti/menghapus PIN karyawan otomatis membatalkan sesinya.
+- Data dibaca lewat service-role client dan selalu di-scope ke business + karyawan dari sesi. Salah PIN di portal dihitung ke kunci sementara yang sama dengan absen selfie.
+
+## Pengajuan lembur
+
+Kalau Pengaturan → Lembur → "harus diajukan & disetujui" dicentang, absen pulang selfie **tidak** lagi mengisi jam lembur otomatis. Karyawan mengajukan lembur lewat Portal Karyawan (maks. 31 hari ke belakang, 0,5–12 jam), admin menyetujui/menolak di menu **Lembur** (jam bisa dikoreksi saat menyetujui). Saat disetujui, jam ditulis ke `attendance.overtime_hours` tanggal itu dan ikut ke rekap payroll lewat jalur yang sudah ada. Butuh absensi berstatus "hadir" di tanggal tersebut.
 
 ## Proteksi spam link publik
 
@@ -130,6 +158,6 @@ Mati secara default per bisnis (`businesses.pph21_enabled`, toggle di Pengaturan
 - THR/bonus digabung dengan gaji bulan berjalan dan dikenai TER yang sama, bukan dihitung terpisah dengan metode annualisasi seperti aturan resmi.
 - **Ini bukan pengganti konsultasi akuntan/konsultan pajak.** Verifikasi ke ahli pajak sebelum memakai angka dari fitur ini untuk SPT/pembayaran pajak sungguhan — kesalahan hitung PPh 21 adalah tanggung jawab pengguna aplikasi, bukan sesuatu yang bisa dijamin akurat oleh kode ini.
 
-## v5 (belum digarap)
+## Belum digarap
 
 Integrasi akuntansi/jurnal (sengaja tidak dibangun — di luar scope ABSENKU, lihat komentar di `supabase/migrations/20260910100200_personal_loans.sql`), notifikasi WhatsApp sebagai alternatif email, billing/subscription, undang admin/staff lewat UI (tabel `business_staff` sudah ada sejak v1, belum ada halamannya), landing page marketing, halaman legal (Syarat & Ketentuan/Privasi).

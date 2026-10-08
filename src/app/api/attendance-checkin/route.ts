@@ -1,5 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service";
-import { verifyPin } from "@/lib/attendance/pin";
+import { checkEmployeePin } from "@/lib/attendance/pin-check";
 import { distanceMeters } from "@/lib/attendance/geofence";
 
 // Karyawan tidak login (buka link publik pakai slug), jadi tidak ada session
@@ -11,10 +11,6 @@ import { distanceMeters } from "@/lib/attendance/geofence";
 const MAX_SIZE = 3 * 1024 * 1024; // 3 MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const REPORT_TIMEZONE = "Asia/Jakarta";
-// Kunci sementara setelah PIN salah berturut-turut — PIN cuma 4–6 digit, jadi
-// tanpa ini bisa ditebak lewat brute force.
-const PIN_MAX_FAILURES = 5;
-const PIN_LOCK_WINDOW_MS = 15 * 60 * 1000;
 
 function todayWib() {
   return new Date().toLocaleDateString("en-CA", { timeZone: REPORT_TIMEZONE });
@@ -197,7 +193,7 @@ export async function POST(request: Request) {
   const { data: business } = await supabase
     .from("businesses")
     .select(
-      "id, work_start_time, work_end_time, office_lat, office_lng, attendance_radius_m, attendance_pin_required",
+      "id, work_start_time, work_end_time, office_lat, office_lng, attendance_radius_m, attendance_pin_required, overtime_approval_required",
     )
     .eq("attendance_qr_slug", slug)
     .maybeSingle();
@@ -243,30 +239,18 @@ export async function POST(request: Request) {
     .insert({ business_id: business.id, kind: "absen", employee_id: employeeId });
 
   // PIN absen — dicek SETELAH cooldown di atas, supaya tiap tebakan PIN juga
-  // kena jeda 5 detik, dan ditambah kunci sementara setelah beberapa kali salah.
+  // kena jeda 5 detik, dan ditambah kunci sementara setelah beberapa kali salah
+  // (lib/attendance/pin-check.ts).
   if (employee.attendance_pin_hash) {
-    const { count: recentFailures } = await supabase
-      .from("public_submission_log")
-      .select("id", { count: "exact", head: true })
-      .eq("business_id", business.id)
-      .eq("kind", "absen_pin_gagal")
-      .eq("employee_id", employeeId)
-      .gte("created_at", new Date(Date.now() - PIN_LOCK_WINDOW_MS).toISOString());
-
-    if ((recentFailures ?? 0) >= PIN_MAX_FAILURES) {
-      return Response.json(
-        { ok: false, error: "PIN salah terlalu sering. Coba lagi 15 menit lagi atau hubungi admin." },
-        { status: 429 },
-      );
-    }
-    if (!pin) {
-      return Response.json({ ok: false, error: "Masukkan PIN absen kamu." }, { status: 400 });
-    }
-    if (!(await verifyPin(pin, employee.attendance_pin_hash))) {
-      await supabase
-        .from("public_submission_log")
-        .insert({ business_id: business.id, kind: "absen_pin_gagal", employee_id: employeeId });
-      return Response.json({ ok: false, error: "PIN salah." }, { status: 403 });
+    const pinCheck = await checkEmployeePin(
+      supabase,
+      business.id,
+      employeeId,
+      employee.attendance_pin_hash,
+      pin,
+    );
+    if (!pinCheck.ok) {
+      return Response.json({ ok: false, error: pinCheck.error }, { status: pinCheck.status });
     }
   } else if (business.attendance_pin_required) {
     return Response.json(
@@ -403,10 +387,13 @@ export async function POST(request: Request) {
   // pulang (mis. 23:00) tidak salah jadi negatif/0.
   const crossedMidnight = existing?.date === previousDate;
   const nowMinutes = nowWibMinutesOfDay() + (crossedMidnight ? 24 * 60 : 0);
-  const overtimeHours = Math.max(
+  const computedOvertimeHours = Math.max(
     0,
     Math.round(((nowMinutes - timeStrToMinutes(shiftEnd)) / 60) * 100) / 100,
   );
+  // Mode approval lembur: jam lembur baru masuk lewat pengajuan yang disetujui
+  // admin (lihat overtime_requests), jadi absen pulang tidak mengisinya.
+  const overtimeHours = business.overtime_approval_required ? 0 : computedOvertimeHours;
 
   const { error } = await supabase
     .from("attendance")
@@ -424,7 +411,9 @@ export async function POST(request: Request) {
   const message =
     overtimeHours > 0
       ? `Absen pulang jam ${nowWibTimeLabel()} — lembur ${overtimeHours} jam dari jadwal ${shiftEnd.slice(0, 5)}.`
-      : `Absen pulang jam ${nowWibTimeLabel()}.`;
+      : business.overtime_approval_required && computedOvertimeHours > 0
+        ? `Absen pulang jam ${nowWibTimeLabel()}. Ada lembur? Ajukan lewat Portal Karyawan supaya disetujui admin.`
+        : `Absen pulang jam ${nowWibTimeLabel()}.`;
 
   return Response.json({ ok: true, message, overtimeHours });
 }

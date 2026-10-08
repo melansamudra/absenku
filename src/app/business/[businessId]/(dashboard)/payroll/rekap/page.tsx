@@ -1,7 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
 import { loadAttendanceSummary, loadPayrollSettings } from "@/lib/payroll/aggregate";
 import { calcPayslip, type EmployeePayrollInput } from "@/lib/payroll/calc";
-import { calculatePph21, type PtkpStatus } from "@/lib/payroll/pph21";
+import {
+  BUSINESS_STATUTORY_COLUMNS,
+  EMPLOYEE_STATUTORY_COLUMNS,
+  calcStatutory,
+  statutoryConfig,
+} from "@/lib/payroll/statutory";
 import RekapRow from "./rekap-row";
 
 function currentMonthRange() {
@@ -33,7 +38,7 @@ export default async function PayrollRekapPage({
       supabase
         .from("employees")
         .select(
-          "id, name, salary_type, daily_rate, monthly_rate, daily_meal_allowance, daily_attendance_allowance, lembur_rate_per_hour, ptkp_status",
+          `id, name, salary_type, daily_rate, monthly_rate, daily_meal_allowance, daily_attendance_allowance, lembur_rate_per_hour, ${EMPLOYEE_STATUTORY_COLUMNS}`,
         )
         .eq("business_id", businessId)
         .eq("active", true)
@@ -41,7 +46,7 @@ export default async function PayrollRekapPage({
         .order("created_at", { ascending: true }),
       supabase
         .from("businesses")
-        .select("lembur_rate_per_hour, pph21_enabled")
+        .select(`lembur_rate_per_hour, ${BUSINESS_STATUTORY_COLUMNS}`)
         .eq("id", businessId)
         .single(),
       loadPayrollSettings(supabase, businessId),
@@ -89,20 +94,13 @@ export default async function PayrollRekapPage({
       const result = calcPayslip(empInput, summary, settings, overtimeHoursTotal, 0);
       const recurring = recurringByEmployee.get(e.id) ?? { count: 0, total: 0 };
 
-      let pph21Estimate = 0;
-      if (business?.pph21_enabled) {
-        const grossForTax = Math.max(
-          0,
-          result.basePay +
-            result.mealAllowance +
-            result.attendanceAllowance +
-            result.lemburAmount +
-            recurring.total -
-            result.izinDeduction -
-            result.lateDeduction,
-        );
-        pph21Estimate = calculatePph21(grossForTax, e.ptkp_status as PtkpStatus).amount;
-      }
+      const statutory = calcStatutory({
+        result,
+        recurringAllowanceTotal: recurring.total,
+        ...statutoryConfig(business, e),
+      });
+      const pph21Estimate = statutory.pph21?.amount ?? 0;
+      const bpjsEstimate = statutory.bpjs.employee.total;
 
       return {
         employeeId: e.id,
@@ -112,13 +110,14 @@ export default async function PayrollRekapPage({
         recurringAllowanceCount: recurring.count,
         recurringAllowanceTotal: recurring.total,
         pph21Estimate,
+        bpjsEstimate,
         preview: {
           hadir: summary.hadir,
           izin: summary.izinNoted + summary.izinUnnotedWeekday + summary.izinUnnotedWeekend,
           sakit: summary.sakit,
           alpa: summary.alpa,
           off: summary.off,
-          subtotal: result.subtotal - pph21Estimate,
+          subtotal: result.subtotal - pph21Estimate - bpjsEstimate,
         },
       };
     }),
@@ -181,6 +180,7 @@ export default async function PayrollRekapPage({
                 recurringAllowanceCount={row.recurringAllowanceCount}
                 recurringAllowanceTotal={row.recurringAllowanceTotal}
                 pph21Estimate={row.pph21Estimate}
+                bpjsEstimate={row.bpjsEstimate}
               />
             ))}
           </div>

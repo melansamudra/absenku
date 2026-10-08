@@ -26,6 +26,9 @@ export type EmployeeRow = {
   daily_attendance_allowance: number;
   lembur_rate_per_hour: number | null;
   ptkp_status: string;
+  bpjs_kesehatan: boolean;
+  bpjs_ketenagakerjaan: boolean;
+  bpjs_wage_base: number | null;
   has_pin: boolean;
 };
 
