@@ -66,6 +66,106 @@ function StatTile({ icon: Icon, label, value, tone }: { icon: LucideIcon; label:
   );
 }
 
+const ATTENDANCE_STATUS: Record<string, { label: string; tone: "green" | "amber" | "red" | "zinc" }> = {
+  hadir: { label: "Hadir", tone: "green" },
+  izin: { label: "Izin", tone: "zinc" },
+  sakit: { label: "Sakit", tone: "zinc" },
+  alpa: { label: "Alpa", tone: "red" },
+  off: { label: "Off", tone: "zinc" },
+};
+
+function fmtClock(iso: string | null) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit" });
+}
+
+type AttendanceHistoryRow = {
+  date: string;
+  status: string;
+  note: string | null;
+  late: boolean;
+  late_minutes: number;
+  overtime_hours: number;
+  check_in_at: string | null;
+  check_out_at: string | null;
+  verified_by_admin: boolean;
+};
+
+const HISTORY_VISIBLE_DAYS = 7;
+
+function AttendanceHistory({ rows }: { rows: AttendanceHistoryRow[] }) {
+  if (rows.length === 0) return <EmptyState icon={CalendarCheck} text="Belum ada absen bulan ini." />;
+  const visible = rows.slice(0, HISTORY_VISIBLE_DAYS);
+  const rest = rows.slice(HISTORY_VISIBLE_DAYS);
+  return (
+    <>
+      <AttendanceHistoryList rows={visible} />
+      {rest.length > 0 && (
+        <details className="group">
+          <summary className="flex cursor-pointer list-none items-center justify-center gap-1 border-t border-zinc-100 pt-3 text-xs font-semibold text-brand-600 group-open:hidden">
+            Tampilkan semua ({rows.length} hari)
+            <ChevronDown className="h-4 w-4" aria-hidden="true" />
+          </summary>
+          <div className="border-t border-zinc-100">
+            <AttendanceHistoryList rows={rest} />
+          </div>
+        </details>
+      )}
+    </>
+  );
+}
+
+function AttendanceHistoryList({ rows }: { rows: AttendanceHistoryRow[] }) {
+  return (
+    <ul className="divide-y divide-zinc-100">
+      {rows.map((r) => {
+        const status = ATTENDANCE_STATUS[r.status] ?? ATTENDANCE_STATUS.hadir;
+        // Absen selfie (punya jam masuk) yang belum dicek admin. Absen yang
+        // diinput admin sendiri tidak perlu verifikasi.
+        const awaitingVerification = !!r.check_in_at && !r.verified_by_admin;
+        const overtime = Number(r.overtime_hours);
+        return (
+          <li key={r.date} className="flex items-start justify-between gap-3 py-3">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-zinc-900">
+                {fmtDate(r.date, { weekday: "short", day: "numeric", month: "short" })}
+              </p>
+              {r.check_in_at ? (
+                <p className="text-xs tabular-nums text-zinc-500">
+                  Masuk {fmtClock(r.check_in_at)} · Pulang {fmtClock(r.check_out_at)}
+                </p>
+              ) : (
+                r.note && <p className="truncate text-xs text-zinc-500">{r.note}</p>
+              )}
+              {(r.late || overtime > 0) && (
+                <p className="mt-0.5 text-xs">
+                  {r.late && (
+                    <span className="font-semibold text-amber-600">
+                      Telat{r.late_minutes > 0 ? ` ${r.late_minutes} mnt` : ""}
+                    </span>
+                  )}
+                  {r.late && overtime > 0 && <span className="text-zinc-300"> · </span>}
+                  {overtime > 0 && (
+                    <span className="font-semibold text-brand-600">Lembur {overtime.toLocaleString("id-ID")} jam</span>
+                  )}
+                </p>
+              )}
+            </div>
+            <div className="flex shrink-0 flex-col items-end gap-1">
+              <Badge tone={status.tone}>{status.label}</Badge>
+              {awaitingVerification ? (
+                <span className="text-[10px] font-medium text-amber-600">Menunggu verifikasi</span>
+              ) : r.check_in_at ? (
+                <span className="text-[10px] font-medium text-emerald-600">✓ Terverifikasi</span>
+              ) : null}
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 function LedgerCard({ title, icon, ledger }: { title: string; icon: LucideIcon; ledger: LedgerSummary }) {
   const totalGiven = ledger.entries.filter((e) => e.kind === "pemberian").reduce((s, e) => s + e.amount, 0);
   const paidPercent = totalGiven > 0 ? Math.min(100, Math.round(((totalGiven - ledger.outstanding) / totalGiven) * 100)) : 100;
@@ -194,6 +294,7 @@ export default async function PortalPage({
     { data: payslips },
     { data: overtimeRequests },
     ledgers,
+    { data: attendanceRows },
   ] = await Promise.all([
     loadAttendanceSummary(supabase, business.id, employee.id, month.start, month.end),
     supabase
@@ -229,6 +330,14 @@ export default async function PortalPage({
           .limit(10)
       : Promise.resolve({ data: [] as { id: string; date: string; hours: number; reason: string | null; status: string; reviewed_note: string | null }[] }),
     loadEmployeeLedgers(supabase, business.id, employee.id),
+    supabase
+      .from("attendance")
+      .select("date, status, note, late, late_minutes, overtime_hours, check_in_at, check_out_at, verified_by_admin")
+      .eq("business_id", business.id)
+      .eq("employee_id", employee.id)
+      .gte("date", month.start)
+      .lte("date", month.end)
+      .order("date", { ascending: false }),
   ]);
 
   const payslipIds = (payslips ?? []).map((p) => p.id);
@@ -252,6 +361,10 @@ export default async function PortalPage({
     usedByType.set(l.leave_type_id, (usedByType.get(l.leave_type_id) ?? 0) + l.days_count);
   }
 
+  const awaitingVerificationCount = (attendanceRows ?? []).filter(
+    (r) => r.check_in_at && !r.verified_by_admin,
+  ).length;
+  const lateMinutesTotal = summary.lateMinutesList.reduce((s, m) => s + m, 0);
   const izinTotal = summary.izinNoted + summary.izinUnnotedWeekday + summary.izinUnnotedWeekend;
   const firstName = employee.name.split(" ")[0];
   const tabHref = (key: Tab) => (key === "beranda" ? `/karyawan/${slug}` : `/karyawan/${slug}?tab=${key}`);
@@ -309,12 +422,27 @@ export default async function PortalPage({
             <Card title={`Absensi ${fmtDate(month.start, { month: "long" })}`} icon={CalendarCheck}>
               <div className="grid grid-cols-3 gap-2">
                 <StatTile icon={CalendarCheck} label="Hadir" value={summary.hadir} tone="bg-emerald-50 text-emerald-600" />
-                <StatTile icon={Clock} label="Telat" value={summary.lateMinutesList.length} tone="bg-amber-50 text-amber-600" />
+                <StatTile
+                  icon={Clock}
+                  label={lateMinutesTotal > 0 ? `Telat (${lateMinutesTotal} mnt)` : "Telat"}
+                  value={summary.lateMinutesList.length}
+                  tone="bg-amber-50 text-amber-600"
+                />
                 <StatTile icon={Palmtree} label="Izin / cuti" value={izinTotal} tone="bg-sky-50 text-sky-600" />
                 <StatTile icon={CircleAlert} label="Sakit" value={summary.sakit} tone="bg-violet-50 text-violet-600" />
                 <StatTile icon={CircleAlert} label="Alpa" value={summary.alpa} tone="bg-red-50 text-red-500" />
                 <StatTile icon={Clock} label="Jam lembur" value={overtimeHoursTotal.toLocaleString("id-ID")} tone="bg-brand-50 text-brand-600" />
               </div>
+            {awaitingVerificationCount > 0 && (
+                <p className="mt-3 flex items-center gap-1.5 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                  <CircleAlert className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  {awaitingVerificationCount} absen menunggu verifikasi admin
+                </p>
+              )}
+            </Card>
+
+            <Card title="Riwayat absen" icon={CalendarCheck}>
+              <AttendanceHistory rows={attendanceRows ?? []} />
             </Card>
 
             <Card title={`Sisa cuti ${year}`} icon={Palmtree}>

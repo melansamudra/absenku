@@ -24,6 +24,8 @@ export type AttendanceRowData = {
   status: AttendanceStatus | null;
   note: string | null;
   late: boolean;
+  lateMinutes: number;
+  overtimeHours: number;
   checkInAt: string | null;
   checkOutAt: string | null;
   checkInPhotoUrl: string | null;
@@ -78,6 +80,15 @@ export default function AttendanceRow({
         {(row.checkInAt || row.checkOutAt) && (
           <p className="mt-0.5 text-[11px] text-zinc-400">
             🤳 {fmtTime(row.checkInAt) ?? "—"} → {fmtTime(row.checkOutAt) ?? "—"}
+            {row.late && row.lateMinutes > 0 && (
+              <span className="font-semibold text-orange-600"> · telat {row.lateMinutes} mnt</span>
+            )}
+            {row.overtimeHours > 0 && (
+              <span className="font-semibold text-brand-600">
+                {" "}
+                · lembur {row.overtimeHours.toLocaleString("id-ID")} jam
+              </span>
+            )}
             {row.checkInPhotoUrl && (
               <>
                 {" · "}
