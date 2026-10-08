@@ -1,4 +1,21 @@
 import Link from "next/link";
+import {
+  Camera,
+  CalendarCheck,
+  ChevronDown,
+  ChevronRight,
+  CircleAlert,
+  Clock,
+  HandCoins,
+  House,
+  Landmark,
+  LogOut,
+  Palmtree,
+  Receipt,
+  UserRound,
+  Wallet,
+  type LucideIcon,
+} from "lucide-react";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getPortalEmployee, loadPortalBusiness } from "@/lib/portal/session";
 import { monthRange, todayWib } from "@/lib/portal/dates";
@@ -7,92 +24,119 @@ import { payslipTotal } from "@/lib/payroll/payslip-total";
 import { loadEmployeeLedgers, type LedgerSummary } from "@/lib/portal/ledgers";
 import { logoutPortal } from "./actions";
 import { OvertimeRequestForm, PortalLoginForm } from "./portal-forms";
+import {
+  Badge,
+  BottomNav,
+  Card,
+  EmptyState,
+  Hero,
+  QuickAction,
+  fmtDate,
+  fmtPeriod,
+  fmtRupiah,
+} from "./ui";
 
-function fmtRupiah(v: number) {
-  return `Rp ${Math.round(v).toLocaleString("id-ID")}`;
-}
+type Tab = "beranda" | "gaji" | "lembur";
 
-const OVERTIME_STATUS: Record<string, { label: string; className: string }> = {
-  pending: { label: "Menunggu", className: "bg-amber-50 text-amber-700" },
-  approved: { label: "Disetujui", className: "bg-emerald-50 text-emerald-700" },
-  rejected: { label: "Ditolak", className: "bg-red-50 text-red-600" },
+const OVERTIME_STATUS: Record<string, { label: string; tone: "green" | "amber" | "red" }> = {
+  pending: { label: "Menunggu", tone: "amber" },
+  approved: { label: "Disetujui", tone: "green" },
+  rejected: { label: "Ditolak", tone: "red" },
 };
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm">
-      <h2 className="mb-3 text-sm font-semibold text-zinc-800">{title}</h2>
-      {children}
-    </section>
+function greeting() {
+  const hour = Number(
+    new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Jakarta", hour: "2-digit", hour12: false }).format(new Date()),
   );
+  if (hour < 11) return "Selamat pagi";
+  if (hour < 15) return "Selamat siang";
+  if (hour < 18) return "Selamat sore";
+  return "Selamat malam";
 }
 
-function LedgerCard({ title, ledger }: { title: string; ledger: LedgerSummary }) {
+function StatTile({ icon: Icon, label, value, tone }: { icon: LucideIcon; label: string; value: string | number; tone: string }) {
   return (
-    <Card title={title}>
-      <div className="grid grid-cols-2 gap-2">
-        <div className="rounded-xl bg-zinc-50 px-3 py-2.5 text-center">
-          <p className="text-base font-bold text-zinc-900">{fmtRupiah(ledger.outstanding)}</p>
-          <p className="text-[11px] text-zinc-500">Sisa belum lunas</p>
-        </div>
-        <div className="rounded-xl bg-zinc-50 px-3 py-2.5 text-center">
-          <p className="text-base font-bold text-amber-600">{fmtRupiah(ledger.pendingDeduction)}</p>
-          <p className="text-[11px] text-zinc-500">Akan dipotong di slip berikut</p>
-        </div>
-      </div>
-      <div className="mt-3 divide-y divide-zinc-100">
-        {ledger.entries.slice(0, 10).map((e, i) => (
-          <div key={`${e.date}-${i}`} className="flex items-start justify-between gap-3 py-2 text-sm">
-            <div className="min-w-0">
-              <p className="text-zinc-700">{e.label}</p>
-              <p className="text-[11px] text-zinc-400">
-                {e.date}
-                {e.kind === "akan_dipotong" && " · slip belum dibayar"}
-              </p>
-            </div>
-            <span
-              className={`shrink-0 font-medium ${
-                e.kind === "pemberian" ? "text-zinc-900" : e.kind === "potongan" ? "text-emerald-600" : "text-amber-600"
-              }`}
-            >
-              {e.kind === "pemberian" ? "+" : "−"}
-              {fmtRupiah(e.amount)}
-            </span>
-          </div>
-        ))}
-      </div>
-    </Card>
-  );
-}
-
-function Shell({ businessName, children }: { businessName: string; children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen bg-zinc-50 px-4 py-8">
-      <div className="mx-auto w-full max-w-md space-y-4">
-        <div className="text-center">
-          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-600 text-lg font-bold text-white">
-            A
-          </div>
-          <h1 className="text-lg font-bold text-zinc-900">{businessName}</h1>
-          <p className="mt-0.5 text-xs text-zinc-500">Portal Karyawan</p>
-        </div>
-        {children}
-      </div>
+    <div className="rounded-2xl bg-zinc-50 p-3">
+      <span className={`flex h-8 w-8 items-center justify-center rounded-xl ${tone}`}>
+        <Icon className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
+      </span>
+      <p className="mt-2 text-xl font-bold tabular-nums text-zinc-900">{value}</p>
+      <p className="text-[11px] text-zinc-500">{label}</p>
     </div>
   );
 }
 
-export default async function PortalPage({ params }: { params: Promise<{ slug: string }> }) {
+function LedgerCard({ title, icon, ledger }: { title: string; icon: LucideIcon; ledger: LedgerSummary }) {
+  const totalGiven = ledger.entries.filter((e) => e.kind === "pemberian").reduce((s, e) => s + e.amount, 0);
+  const paidPercent = totalGiven > 0 ? Math.min(100, Math.round(((totalGiven - ledger.outstanding) / totalGiven) * 100)) : 100;
+
+  return (
+    <Card title={title} icon={icon}>
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">Sisa belum lunas</p>
+          <p className="text-2xl font-bold tabular-nums text-zinc-900">{fmtRupiah(ledger.outstanding)}</p>
+        </div>
+        {ledger.outstanding === 0 ? <Badge tone="green">Lunas</Badge> : <Badge tone="zinc">{paidPercent}% terbayar</Badge>}
+      </div>
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-100">
+        <div className="h-full rounded-full bg-emerald-500" style={{ width: `${paidPercent}%` }} />
+      </div>
+      {ledger.pendingDeduction > 0 && (
+        <p className="mt-3 flex items-center gap-1.5 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-700">
+          <CircleAlert className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          {fmtRupiah(ledger.pendingDeduction)} akan dipotong di slip yang belum dibayar
+        </p>
+      )}
+      <details className="group mt-3">
+        <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-semibold text-brand-600">
+          Riwayat
+          <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
+        </summary>
+        <ul className="mt-2 divide-y divide-zinc-100">
+          {ledger.entries.slice(0, 10).map((e, i) => (
+            <li key={`${e.date}-${i}`} className="flex items-start justify-between gap-3 py-2.5 text-sm">
+              <div className="min-w-0">
+                <p className="truncate text-zinc-700">
+                  {e.period ? `${e.label} ${fmtPeriod(e.period.start, e.period.end)}` : e.label}
+                </p>
+                <p className="text-[11px] text-zinc-400">
+                  {fmtDate(e.date)}
+                  {e.kind === "akan_dipotong" && " · slip belum dibayar"}
+                </p>
+              </div>
+              <span
+                className={`shrink-0 font-semibold tabular-nums ${
+                  e.kind === "pemberian" ? "text-zinc-900" : e.kind === "potongan" ? "text-emerald-600" : "text-amber-600"
+                }`}
+              >
+                {e.kind === "pemberian" ? "+" : "−"}
+                {fmtRupiah(e.amount)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </details>
+    </Card>
+  );
+}
+
+export default async function PortalPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ tab?: string }>;
+}) {
   const { slug } = await params;
+  const { tab: tabParam } = await searchParams;
   const business = await loadPortalBusiness(slug);
 
   if (!business) {
     return (
-      <Shell businessName="Link Tidak Valid">
-        <Card title="Portal tidak ditemukan">
-          <p className="text-sm text-zinc-500">Hubungi admin bisnis kamu untuk link yang benar.</p>
-        </Card>
-      </Shell>
+      <div className="min-h-screen bg-zinc-50">
+        <Hero businessName="ABSENKU" title="Link tidak ditemukan" subtitle="Hubungi admin bisnis kamu untuk link portal yang benar." />
+      </div>
     );
   }
 
@@ -110,22 +154,34 @@ export default async function PortalPage({ params }: { params: Promise<{ slug: s
       .order("created_at", { ascending: true });
 
     return (
-      <Shell businessName={business.name}>
-        <Card title="Masuk">
-          {(employees ?? []).length === 0 ? (
-            <p className="text-sm text-zinc-500">
-              Belum ada karyawan yang punya PIN absen. Minta admin memasangkan PIN dulu.
+      <div className="min-h-screen bg-zinc-50">
+        <Hero
+          businessName={business.name}
+          title="Portal Karyawan"
+          subtitle="Lihat slip gaji, sisa cuti, kasbon, dan ajukan lembur dari HP kamu."
+        />
+        <main className="relative z-10 mx-auto -mt-4 max-w-md px-4 pb-10">
+          <Card title="Masuk" icon={UserRound}>
+            {(employees ?? []).length === 0 ? (
+              <EmptyState icon={CircleAlert} text="Belum ada karyawan yang punya PIN absen. Minta admin memasangkan PIN dulu." />
+            ) : (
+              <PortalLoginForm slug={slug} employees={employees ?? []} />
+            )}
+            <p className="mt-4 text-center text-[11px] text-zinc-400">
+              Pakai PIN yang sama dengan PIN absen selfie. Lupa PIN? Minta admin menggantinya.
             </p>
-          ) : (
-            <PortalLoginForm slug={slug} employees={employees ?? []} />
-          )}
-          <p className="mt-4 text-center text-[11px] text-zinc-400">
-            Pakai PIN yang sama dengan PIN absen selfie. Lupa PIN? Minta admin menggantinya.
-          </p>
-        </Card>
-      </Shell>
+          </Card>
+        </main>
+      </div>
     );
   }
+
+  const tabs: { key: Tab; label: string; icon: LucideIcon }[] = [
+    { key: "beranda", label: "Beranda", icon: House },
+    { key: "gaji", label: "Gaji", icon: Wallet },
+    ...(business.overtime_approval_required ? [{ key: "lembur" as const, label: "Lembur", icon: Clock }] : []),
+  ];
+  const tab: Tab = tabs.some((t) => t.key === tabParam) ? (tabParam as Tab) : "beranda";
 
   const today = todayWib();
   const month = monthRange(today);
@@ -177,11 +233,19 @@ export default async function PortalPage({ params }: { params: Promise<{ slug: s
 
   const payslipIds = (payslips ?? []).map((p) => p.id);
   const { data: adjustments } = payslipIds.length
-    ? await supabase
-        .from("payslip_adjustments")
-        .select("payslip_id, type, amount")
-        .in("payslip_id", payslipIds)
+    ? await supabase.from("payslip_adjustments").select("payslip_id, type, amount").in("payslip_id", payslipIds)
     : { data: [] as { payslip_id: string; type: string; amount: number }[] };
+
+  const slips = (payslips ?? []).map((p) => ({
+    ...p,
+    total: payslipTotal(
+      p,
+      (adjustments ?? [])
+        .filter((a) => a.payslip_id === p.id)
+        .map((a) => ({ type: a.type as "tunjangan" | "potongan", amount: a.amount })),
+    ),
+  }));
+  const latestSlip = slips[0] ?? null;
 
   const usedByType = new Map<string, number>();
   for (const l of approvedLeaves ?? []) {
@@ -189,146 +253,180 @@ export default async function PortalPage({ params }: { params: Promise<{ slug: s
   }
 
   const izinTotal = summary.izinNoted + summary.izinUnnotedWeekday + summary.izinUnnotedWeekend;
-  const stats = [
-    { label: "Hadir", value: summary.hadir },
-    { label: "Telat", value: summary.lateMinutesList.length },
-    { label: "Izin", value: izinTotal },
-    { label: "Sakit", value: summary.sakit },
-    { label: "Alpa", value: summary.alpa },
-    {
-      label: business.overtime_approval_required ? "Lembur disetujui" : "Lembur",
-      value: `${overtimeHoursTotal} j`,
-    },
-  ];
+  const firstName = employee.name.split(" ")[0];
+  const tabHref = (key: Tab) => (key === "beranda" ? `/karyawan/${slug}` : `/karyawan/${slug}?tab=${key}`);
+  const pendingOvertime = (overtimeRequests ?? []).filter((o) => o.status === "pending").length;
 
   return (
-    <Shell businessName={business.name}>
-      <div className="flex items-center justify-between rounded-2xl bg-white px-5 py-3 shadow-sm">
-        <div>
-          <p className="text-sm font-semibold text-zinc-900">{employee.name}</p>
-          {employee.note && <p className="text-xs text-zinc-400">{employee.note}</p>}
-        </div>
-        <form action={logoutPortal.bind(null, slug)}>
-          <button type="submit" className="text-xs font-semibold text-zinc-500 hover:text-zinc-800">
-            Keluar
-          </button>
-        </form>
-      </div>
-
-      <Card title={`Absensi bulan ini (${month.start.slice(0, 7)})`}>
-        <div className="grid grid-cols-3 gap-2">
-          {stats.map((s) => (
-            <div key={s.label} className="rounded-xl bg-zinc-50 px-2 py-2.5 text-center">
-              <p className="text-lg font-bold text-zinc-900">{s.value}</p>
-              <p className="text-[11px] text-zinc-500">{s.label}</p>
-            </div>
-          ))}
-        </div>
-        <Link
-          href={`/absen/${slug}`}
-          className="mt-3 block text-center text-xs font-semibold text-brand-600 hover:underline"
-        >
-          Buka halaman absen selfie →
-        </Link>
-      </Card>
-
-      <Card title={`Sisa cuti ${year}`}>
-        {(leaveTypes ?? []).length === 0 ? (
-          <p className="text-sm text-zinc-500">Belum ada jenis cuti.</p>
-        ) : (
-          <div className="divide-y divide-zinc-100">
-            {(leaveTypes ?? []).map((lt) => {
-              const used = usedByType.get(lt.id) ?? 0;
-              const remaining = Math.max(0, lt.default_days_per_year - used);
-              return (
-                <div key={lt.id} className="flex items-center justify-between py-2 text-sm">
-                  <span className="text-zinc-600">{lt.name}</span>
-                  <span className="font-semibold text-zinc-900">
-                    {remaining} <span className="font-normal text-zinc-400">/ {lt.default_days_per_year} hari</span>
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-        {business.leave_request_slug && (
-          <Link
-            href={`/cuti/${business.leave_request_slug}`}
-            className="mt-3 block text-center text-xs font-semibold text-brand-600 hover:underline"
-          >
-            Ajukan cuti →
-          </Link>
-        )}
-      </Card>
-
-      <Card title="Slip gaji">
-        {(payslips ?? []).length === 0 ? (
-          <p className="text-sm text-zinc-500">Belum ada slip gaji.</p>
-        ) : (
-          <div className="divide-y divide-zinc-100">
-            {(payslips ?? []).map((p) => {
-              const total = payslipTotal(
-                p,
-                (adjustments ?? [])
-                  .filter((a) => a.payslip_id === p.id)
-                  .map((a) => ({ type: a.type as "tunjangan" | "potongan", amount: a.amount })),
-              );
-              return (
-                <Link
-                  key={p.id}
-                  href={`/karyawan/${slug}/slip/${p.id}`}
-                  prefetch={false}
-                  className="flex items-center justify-between py-2.5 text-sm hover:bg-zinc-50"
-                >
-                  <div>
-                    <p className="text-zinc-800">
-                      {p.period_start} — {p.period_end}
-                    </p>
-                    <p className={`text-[11px] ${p.paid_at ? "text-emerald-600" : "text-amber-600"}`}>
-                      {p.paid_at ? "Sudah dibayar" : "Belum dibayar (masih bisa berubah)"}
-                    </p>
-                  </div>
-                  <span className="font-semibold text-zinc-900">{fmtRupiah(total)}</span>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-      </Card>
-
-      {ledgers.kasbon.entries.length > 0 && <LedgerCard title="Kasbon" ledger={ledgers.kasbon} />}
-      {ledgers.personalLoan.entries.length > 0 && (
-        <LedgerCard title="Pinjaman Pribadi" ledger={ledgers.personalLoan} />
-      )}
-
-      {business.overtime_approval_required && (
-        <Card title="Lembur">
-          <OvertimeRequestForm slug={slug} today={today} />
-          {(overtimeRequests ?? []).length > 0 && (
-            <div className="mt-4 divide-y divide-zinc-100 border-t border-zinc-100">
-              {(overtimeRequests ?? []).map((o) => {
-                const status = OVERTIME_STATUS[o.status] ?? OVERTIME_STATUS.pending;
-                return (
-                  <div key={o.id} className="flex items-start justify-between gap-3 py-2.5 text-sm">
-                    <div>
-                      <p className="text-zinc-800">
-                        {o.date} · {Number(o.hours)} jam
-                      </p>
-                      {o.reason && <p className="text-xs text-zinc-400">{o.reason}</p>}
-                      {o.status === "rejected" && o.reviewed_note && (
-                        <p className="text-xs text-red-500">Alasan: {o.reviewed_note}</p>
-                      )}
-                    </div>
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${status.className}`}>
-                      {status.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+    <div className="min-h-screen bg-zinc-50 pb-24">
+      <Hero
+        businessName={business.name}
+        title={`${greeting()}, ${firstName} 👋`}
+        subtitle={`${fmtDate(today, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}${employee.note ? ` · ${employee.note}` : ""}`}
+        right={
+          <form action={logoutPortal.bind(null, slug)}>
+            <button
+              type="submit"
+              className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium ring-1 ring-white/20 hover:bg-white/20"
+            >
+              <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+              Keluar
+            </button>
+          </form>
+        }
+      >
+        <div className={`mt-5 grid gap-2 ${business.leave_request_slug && business.overtime_approval_required ? "grid-cols-3" : "grid-cols-2"}`}>
+          <QuickAction href={`/absen/${slug}`} icon={Camera} label="Absen selfie" />
+          {business.leave_request_slug && (
+            <QuickAction href={`/cuti/${business.leave_request_slug}`} icon={Palmtree} label="Ajukan cuti" />
           )}
-        </Card>
-      )}
-    </Shell>
+          {business.overtime_approval_required && (
+            <QuickAction href={tabHref("lembur")} icon={Clock} label="Ajukan lembur" />
+          )}
+        </div>
+      </Hero>
+
+      <main className="relative z-10 mx-auto -mt-4 max-w-md space-y-4 px-4">
+        {tab === "beranda" && (
+          <>
+            {latestSlip && (
+              <Link
+                href={`/karyawan/${slug}/slip/${latestSlip.id}`}
+                prefetch={false}
+                className="block rounded-3xl bg-white p-5 shadow-[0_1px_3px_rgba(15,23,42,0.06),0_8px_24px_-12px_rgba(15,23,42,0.12)]"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs font-medium text-zinc-500">Gaji {fmtPeriod(latestSlip.period_start, latestSlip.period_end)}</p>
+                  {latestSlip.paid_at ? <Badge tone="green">Sudah dibayar</Badge> : <Badge tone="amber">Belum dibayar</Badge>}
+                </div>
+                <p className="mt-1 text-3xl font-bold tabular-nums tracking-tight text-zinc-900">{fmtRupiah(latestSlip.total)}</p>
+                <p className="mt-2 flex items-center gap-1 text-xs font-semibold text-brand-600">
+                  Lihat rincian slip <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                </p>
+              </Link>
+            )}
+
+            <Card title={`Absensi ${fmtDate(month.start, { month: "long" })}`} icon={CalendarCheck}>
+              <div className="grid grid-cols-3 gap-2">
+                <StatTile icon={CalendarCheck} label="Hadir" value={summary.hadir} tone="bg-emerald-50 text-emerald-600" />
+                <StatTile icon={Clock} label="Telat" value={summary.lateMinutesList.length} tone="bg-amber-50 text-amber-600" />
+                <StatTile icon={Palmtree} label="Izin / cuti" value={izinTotal} tone="bg-sky-50 text-sky-600" />
+                <StatTile icon={CircleAlert} label="Sakit" value={summary.sakit} tone="bg-violet-50 text-violet-600" />
+                <StatTile icon={CircleAlert} label="Alpa" value={summary.alpa} tone="bg-red-50 text-red-500" />
+                <StatTile icon={Clock} label="Jam lembur" value={overtimeHoursTotal.toLocaleString("id-ID")} tone="bg-brand-50 text-brand-600" />
+              </div>
+            </Card>
+
+            <Card title={`Sisa cuti ${year}`} icon={Palmtree}>
+              {(leaveTypes ?? []).length === 0 ? (
+                <EmptyState icon={Palmtree} text="Belum ada jenis cuti." />
+              ) : (
+                <ul className="space-y-3.5">
+                  {(leaveTypes ?? []).map((lt) => {
+                    const quota = Number(lt.default_days_per_year);
+                    const used = usedByType.get(lt.id) ?? 0;
+                    const remaining = Math.max(0, quota - used);
+                    const pct = quota > 0 ? Math.round((remaining / quota) * 100) : 0;
+                    return (
+                      <li key={lt.id}>
+                        <div className="flex items-baseline justify-between text-sm">
+                          <span className="text-zinc-700">{lt.name}</span>
+                          <span className="tabular-nums">
+                            <span className="font-bold text-zinc-900">{remaining}</span>
+                            <span className="text-zinc-400"> / {quota} hari</span>
+                          </span>
+                        </div>
+                        <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-zinc-100">
+                          <div className="h-full rounded-full bg-brand-500" style={{ width: `${pct}%` }} />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </Card>
+          </>
+        )}
+
+        {tab === "gaji" && (
+          <>
+            <Card title="Slip gaji" icon={Receipt}>
+              {slips.length === 0 ? (
+                <EmptyState icon={Receipt} text="Belum ada slip gaji." />
+              ) : (
+                <ul className="-mx-2">
+                  {slips.map((p) => (
+                    <li key={p.id}>
+                      <Link
+                        href={`/karyawan/${slug}/slip/${p.id}`}
+                        prefetch={false}
+                        className="flex items-center gap-3 rounded-2xl px-2 py-3 transition-colors hover:bg-zinc-50"
+                      >
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                          <Receipt className="h-5 w-5" aria-hidden="true" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-zinc-900">{fmtPeriod(p.period_start, p.period_end)}</p>
+                          <p className={`text-[11px] ${p.paid_at ? "text-emerald-600" : "text-amber-600"}`}>
+                            {p.paid_at ? "Sudah dibayar" : "Belum dibayar"}
+                          </p>
+                        </div>
+                        <span className="text-sm font-bold tabular-nums text-zinc-900">{fmtRupiah(p.total)}</span>
+                        <ChevronRight className="h-4 w-4 shrink-0 text-zinc-300" aria-hidden="true" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+
+            {ledgers.kasbon.entries.length > 0 && <LedgerCard title="Kasbon" icon={HandCoins} ledger={ledgers.kasbon} />}
+            {ledgers.personalLoan.entries.length > 0 && (
+              <LedgerCard title="Pinjaman Pribadi" icon={Landmark} ledger={ledgers.personalLoan} />
+            )}
+          </>
+        )}
+
+        {tab === "lembur" && (
+          <>
+            <Card title="Ajukan lembur" icon={Clock}>
+              <OvertimeRequestForm slug={slug} today={today} />
+            </Card>
+            <Card
+              title="Riwayat lembur"
+              icon={CalendarCheck}
+              action={pendingOvertime > 0 ? <Badge tone="amber">{pendingOvertime} menunggu</Badge> : undefined}
+            >
+              {(overtimeRequests ?? []).length === 0 ? (
+                <EmptyState icon={Clock} text="Belum ada pengajuan lembur." />
+              ) : (
+                <ul className="divide-y divide-zinc-100">
+                  {(overtimeRequests ?? []).map((o) => {
+                    const status = OVERTIME_STATUS[o.status] ?? OVERTIME_STATUS.pending;
+                    return (
+                      <li key={o.id} className="flex items-start justify-between gap-3 py-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-zinc-900">
+                            {fmtDate(o.date, { weekday: "short", day: "numeric", month: "short" })} ·{" "}
+                            {Number(o.hours).toLocaleString("id-ID")} jam
+                          </p>
+                          {o.reason && <p className="truncate text-xs text-zinc-500">{o.reason}</p>}
+                          {o.status === "rejected" && o.reviewed_note && (
+                            <p className="text-xs text-red-500">Alasan: {o.reviewed_note}</p>
+                          )}
+                        </div>
+                        <Badge tone={status.tone}>{status.label}</Badge>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </Card>
+          </>
+        )}
+      </main>
+
+      <BottomNav items={tabs.map((t) => ({ ...t, href: tabHref(t.key) }))} active={tab} />
+    </div>
   );
 }

@@ -13,6 +13,8 @@ export type LedgerEntry = {
   label: string;
   amount: number;
   kind: "pemberian" | "potongan" | "akan_dipotong";
+  /** Untuk potongan: periode slip-nya (label diformat di UI). */
+  period?: { start: string; end: string };
 };
 
 export type LedgerSummary = {
@@ -37,7 +39,8 @@ function summarize(
       .filter((s) => Number(s.deduction) > 0)
       .map((s) => ({
         date: s.period_end,
-        label: `Potong gaji ${s.period_start} — ${s.period_end}`,
+        label: "Potong gaji",
+        period: { start: s.period_start, end: s.period_end },
         amount: Number(s.deduction),
         kind: s.paid_at ? ("potongan" as const) : ("akan_dipotong" as const),
       })),
