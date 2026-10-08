@@ -57,6 +57,21 @@ export async function updateBusinessSettings(
     return { error: "Batas upah BPJS harus lebih dari 0." };
   }
 
+  const overtimeMinMinutes = Number(formData.get("overtime_min_minutes") ?? 30);
+  const overtimeRoundingMinutes = Number(formData.get("overtime_rounding_minutes") ?? 30);
+  const overtimeMaxHours = Number(formData.get("overtime_max_hours") ?? 4);
+  const overtimeRateMode = formData.get("overtime_rate_mode") === "pp35" ? "pp35" : "flat";
+  const workDaysPerWeek = Number(formData.get("work_days_per_week")) === 5 ? 5 : 6;
+  if (!(Number.isInteger(overtimeMinMinutes) && overtimeMinMinutes >= 0 && overtimeMinMinutes <= 240)) {
+    return { error: "Minimum lembur harus 0–240 menit." };
+  }
+  if (![1, 15, 30, 60].includes(overtimeRoundingMinutes)) {
+    return { error: "Pembulatan lembur tidak valid." };
+  }
+  if (!(overtimeMaxHours > 0 && overtimeMaxHours <= 12)) {
+    return { error: "Maksimal lembur per hari harus 0–12 jam." };
+  }
+
   const { error } = await supabase
     .from("businesses")
     .update({
@@ -80,6 +95,11 @@ export async function updateBusinessSettings(
       bpjs_jp_wage_cap: bpjsJpWageCap,
       bpjs_kesehatan_wage_cap: bpjsKesehatanWageCap,
       overtime_approval_required: formData.get("overtime_approval_required") === "on",
+      overtime_min_minutes: overtimeMinMinutes,
+      overtime_rounding_minutes: overtimeRoundingMinutes,
+      overtime_max_hours: overtimeMaxHours,
+      overtime_rate_mode: overtimeRateMode,
+      work_days_per_week: workDaysPerWeek,
     })
     .eq("id", businessId);
 

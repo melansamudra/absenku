@@ -69,6 +69,8 @@ export function calcPayslip(
   settings: PayrollSettings,
   lemburHours: number,
   thrAmount: number,
+  /** Upah lembur yang sudah dihitung (mis. mode PP 35); kosong = jam × tarif flat. */
+  lemburAmountOverride?: number,
 ): PayslipCalcResult {
   const hariKerjaEfektif = Math.max(1, att.periodTotalDays - att.off);
 
@@ -95,7 +97,8 @@ export function calcPayslip(
     att.lateMinutesList.reduce((sum, mins) => sum + lateDeductionForDay(mins, settings), 0),
   );
 
-  const lemburAmount = Math.round(lemburHours * emp.lemburRatePerHour);
+  const lemburAmount =
+    lemburAmountOverride ?? Math.round(lemburHours * emp.lemburRatePerHour);
 
   const subtotal =
     basePay +

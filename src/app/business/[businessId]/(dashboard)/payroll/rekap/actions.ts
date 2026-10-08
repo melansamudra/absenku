@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { loadAttendanceSummary, loadPayrollSettings } from "@/lib/payroll/aggregate";
 import { calcPayslip, type EmployeePayrollInput } from "@/lib/payroll/calc";
+import { BUSINESS_OVERTIME_COLUMNS, overtimePayForPayslip } from "@/lib/payroll/overtime";
 import {
   BUSINESS_STATUTORY_COLUMNS,
   EMPLOYEE_STATUTORY_COLUMNS,
@@ -34,7 +35,7 @@ export async function createPayslip(
     { data: employee },
     { data: business },
     settings,
-    { summary, overtimeHoursTotal },
+    { summary, overtimeHoursTotal, overtimeHoursPerDay },
     { data: recurringAllowances },
   ] = await Promise.all([
     supabase
@@ -47,7 +48,7 @@ export async function createPayslip(
       .single(),
     supabase
       .from("businesses")
-      .select(`lembur_rate_per_hour, ${BUSINESS_STATUTORY_COLUMNS}`)
+      .select(`lembur_rate_per_hour, ${BUSINESS_STATUTORY_COLUMNS}, ${BUSINESS_OVERTIME_COLUMNS}`)
       .eq("id", businessId)
       .single(),
     loadPayrollSettings(supabase, businessId),
@@ -75,12 +76,26 @@ export async function createPayslip(
     lemburRatePerHour: employee.lembur_rate_per_hour ?? business?.lembur_rate_per_hour ?? 0,
   };
 
-  const result = calcPayslip(empInput, summary, settings, lemburHours, thrAmount);
-
   const recurringAllowanceTotal = (recurringAllowances ?? []).reduce(
     (sum, r) => sum + r.amount,
     0,
   );
+  // Flat (jam × tarif) atau PP 35/2021 (per hari, 1,5×/2×) — lib/payroll/overtime.ts.
+  const lemburPay = overtimePayForPayslip({
+    business,
+    employee: {
+      salaryType: empInput.salaryType,
+      dailyRate: empInput.dailyRate,
+      monthlyRate: empInput.monthlyRate,
+      flatRatePerHour: empInput.lemburRatePerHour,
+    },
+    recurringAllowanceTotal,
+    hoursPerDay: overtimeHoursPerDay,
+    totalHours: lemburHours,
+  });
+
+  const result = calcPayslip(empInput, summary, settings, lemburHours, thrAmount, lemburPay.amount);
+
   // BPJS & PPh 21 (keduanya opsional per bisnis) — lihat lib/payroll/statutory.ts.
   const statutory = calcStatutory({
     result,
@@ -114,7 +129,7 @@ export async function createPayslip(
       meal_allowance: result.mealAllowance,
       attendance_allowance: result.attendanceAllowance,
       lembur_hours: lemburHours,
-      lembur_rate: empInput.lemburRatePerHour,
+      lembur_rate: lemburPay.ratePerHour,
       lembur_amount: result.lemburAmount,
       thr_amount: result.thrAmount,
       izin_deduction: result.izinDeduction,

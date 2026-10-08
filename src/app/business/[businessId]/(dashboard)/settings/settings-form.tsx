@@ -27,6 +27,11 @@ export type BusinessSettings = {
   bpjs_jp_wage_cap: number;
   bpjs_kesehatan_wage_cap: number;
   overtime_approval_required: boolean;
+  overtime_min_minutes: number;
+  overtime_rounding_minutes: number;
+  overtime_max_hours: number;
+  overtime_rate_mode: "flat" | "pp35";
+  work_days_per_week: 5 | 6;
 };
 
 export default function SettingsForm({
@@ -285,7 +290,85 @@ export default function SettingsForm({
       </div>
 
       <div className="rounded-xl border border-zinc-100 bg-white p-5 shadow-sm">
-        <h2 className="mb-3 text-sm font-semibold text-zinc-800">Lembur</h2>
+        <h2 className="mb-1 text-sm font-semibold text-zinc-800">Lembur</h2>
+        <p className="mb-3 text-xs text-zinc-400">
+          Lembur otomatis = waktu setelah jam pulang jadwal, tapi hanya kalau total jam kerja sudah
+          melebihi durasi shift (karyawan yang telat harus menutup telatnya dulu).
+        </p>
+        <div className="mb-4 grid grid-cols-3 gap-3">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-zinc-600">Minimum (menit)</label>
+            <input
+              name="overtime_min_minutes"
+              type="number"
+              min={0}
+              max={240}
+              step={1}
+              defaultValue={settings.overtime_min_minutes}
+              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-zinc-600">Dibulatkan per</label>
+            <select
+              name="overtime_rounding_minutes"
+              defaultValue={String(settings.overtime_rounding_minutes)}
+              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
+            >
+              <option value="1">1 menit</option>
+              <option value="15">15 menit</option>
+              <option value="30">30 menit</option>
+              <option value="60">1 jam</option>
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-zinc-600">Maks. / hari (jam)</label>
+            <input
+              name="overtime_max_hours"
+              type="number"
+              min={0.5}
+              max={12}
+              step={0.5}
+              defaultValue={settings.overtime_max_hours}
+              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
+            />
+          </div>
+        </div>
+        <p className="-mt-2 mb-4 text-[11px] text-zinc-400">
+          Contoh default: lembur di bawah 30 menit tidak dihitung, 1 jam 40 menit dihitung 1,5 jam,
+          maksimal 4 jam/hari (PP 35/2021). Berlaku untuk absen pulang berikutnya.
+        </p>
+
+        <div className="mb-4 grid grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-zinc-600">Cara hitung upah lembur</label>
+            <select
+              name="overtime_rate_mode"
+              defaultValue={settings.overtime_rate_mode}
+              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
+            >
+              <option value="flat">Flat — jam × tarif lembur/jam</option>
+              <option value="pp35">PP 35/2021 — 1/173 upah, 1,5× lalu 2×</option>
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-zinc-600">Hari kerja / minggu</label>
+            <select
+              name="work_days_per_week"
+              defaultValue={String(settings.work_days_per_week)}
+              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
+            >
+              <option value="6">6 hari</option>
+              <option value="5">5 hari</option>
+            </select>
+          </div>
+        </div>
+        <p className="-mt-2 mb-4 text-[11px] text-zinc-400">
+          PP 35/2021: upah sejam = (gaji bulanan + tunjangan tetap) ÷ 173; karyawan harian pakai gaji
+          harian × 25 (6 hari kerja) atau × 21 (5 hari kerja). Jam pertama tiap hari 1,5×, jam
+          berikutnya 2×. Lembur di hari libur tetap dihitung seperti hari kerja (penyederhanaan).
+        </p>
+
         <label className="flex items-start gap-2 text-sm text-zinc-600">
           <input
             type="checkbox"

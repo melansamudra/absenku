@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { loadAttendanceSummary, loadPayrollSettings } from "@/lib/payroll/aggregate";
 import { calcPayslip, type EmployeePayrollInput } from "@/lib/payroll/calc";
+import { BUSINESS_OVERTIME_COLUMNS, overtimePayForPayslip } from "@/lib/payroll/overtime";
 import {
   BUSINESS_STATUTORY_COLUMNS,
   EMPLOYEE_STATUTORY_COLUMNS,
@@ -46,7 +47,7 @@ export default async function PayrollRekapPage({
         .order("created_at", { ascending: true }),
       supabase
         .from("businesses")
-        .select(`lembur_rate_per_hour, ${BUSINESS_STATUTORY_COLUMNS}`)
+        .select(`lembur_rate_per_hour, ${BUSINESS_STATUTORY_COLUMNS}, ${BUSINESS_OVERTIME_COLUMNS}`)
         .eq("id", businessId)
         .single(),
       loadPayrollSettings(supabase, businessId),
@@ -76,7 +77,7 @@ export default async function PayrollRekapPage({
 
   const rows = await Promise.all(
     (employees ?? []).map(async (e) => {
-      const { summary, overtimeHoursTotal } = await loadAttendanceSummary(
+      const { summary, overtimeHoursTotal, overtimeHoursPerDay } = await loadAttendanceSummary(
         supabase,
         businessId,
         e.id,
@@ -91,8 +92,20 @@ export default async function PayrollRekapPage({
         dailyAttendanceAllowance: e.daily_attendance_allowance,
         lemburRatePerHour: e.lembur_rate_per_hour ?? business?.lembur_rate_per_hour ?? 0,
       };
-      const result = calcPayslip(empInput, summary, settings, overtimeHoursTotal, 0);
       const recurring = recurringByEmployee.get(e.id) ?? { count: 0, total: 0 };
+      const lemburPay = overtimePayForPayslip({
+        business,
+        employee: {
+          salaryType: empInput.salaryType,
+          dailyRate: empInput.dailyRate,
+          monthlyRate: empInput.monthlyRate,
+          flatRatePerHour: empInput.lemburRatePerHour,
+        },
+        recurringAllowanceTotal: recurring.total,
+        hoursPerDay: overtimeHoursPerDay,
+        totalHours: overtimeHoursTotal,
+      });
+      const result = calcPayslip(empInput, summary, settings, overtimeHoursTotal, 0, lemburPay.amount);
 
       const statutory = calcStatutory({
         result,

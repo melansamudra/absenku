@@ -1,6 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { checkEmployeePin } from "@/lib/attendance/pin-check";
 import { distanceMeters } from "@/lib/attendance/geofence";
+import { computeOvertimeHours } from "@/lib/payroll/overtime";
 
 // Karyawan tidak login (buka link publik pakai slug), jadi tidak ada session
 // buat di-scope lewat RLS biasa — service-role client dipakai di sini karena
@@ -193,7 +194,7 @@ export async function POST(request: Request) {
   const { data: business } = await supabase
     .from("businesses")
     .select(
-      "id, work_start_time, work_end_time, office_lat, office_lng, attendance_radius_m, attendance_pin_required, overtime_approval_required",
+      "id, work_start_time, work_end_time, office_lat, office_lng, attendance_radius_m, attendance_pin_required, overtime_approval_required, overtime_min_minutes, overtime_rounding_minutes, overtime_max_hours",
     )
     .eq("attendance_qr_slug", slug)
     .maybeSingle();
@@ -387,10 +388,20 @@ export async function POST(request: Request) {
   // pulang (mis. 23:00) tidak salah jadi negatif/0.
   const crossedMidnight = existing?.date === previousDate;
   const nowMinutes = nowWibMinutesOfDay() + (crossedMidnight ? 24 * 60 : 0);
-  const computedOvertimeHours = Math.max(
-    0,
-    Math.round(((nowMinutes - timeStrToMinutes(shiftEnd)) / 60) * 100) / 100,
-  );
+  // Lembur = min(waktu setelah jam pulang, total kerja − durasi shift), lalu
+  // aturan minimum/pembulatan/batas harian bisnis — lib/payroll/overtime.ts.
+  const { hours: computedOvertimeHours } = computeOvertimeHours({
+    checkInAt: new Date(existing!.check_in_at!),
+    checkOutAt: new Date(),
+    checkOutMinutesFromShiftDay: nowMinutes,
+    shiftStart,
+    shiftEnd,
+    rules: {
+      minMinutes: business.overtime_min_minutes,
+      roundingMinutes: business.overtime_rounding_minutes,
+      maxHoursPerDay: Number(business.overtime_max_hours),
+    },
+  });
   // Mode approval lembur: jam lembur baru masuk lewat pengajuan yang disetujui
   // admin (lihat overtime_requests), jadi absen pulang tidak mengisinya.
   const overtimeHours = business.overtime_approval_required ? 0 : computedOvertimeHours;

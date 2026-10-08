@@ -196,6 +196,11 @@ export type Database = {
       }
       businesses: {
         Row: {
+          overtime_max_hours: number
+          overtime_min_minutes: number
+          overtime_rate_mode: string
+          overtime_rounding_minutes: number
+          work_days_per_week: number
           bpjs_enabled: boolean
           bpjs_jkk_rate: number
           bpjs_jp_wage_cap: number
@@ -223,6 +228,11 @@ export type Database = {
           work_start_time: string
         }
         Insert: {
+          overtime_max_hours?: number
+          overtime_min_minutes?: number
+          overtime_rate_mode?: string
+          overtime_rounding_minutes?: number
+          work_days_per_week?: number
           bpjs_enabled?: boolean
           bpjs_jkk_rate?: number
           bpjs_jp_wage_cap?: number
@@ -250,6 +260,11 @@ export type Database = {
           work_start_time?: string
         }
         Update: {
+          overtime_max_hours?: number
+          overtime_min_minutes?: number
+          overtime_rate_mode?: string
+          overtime_rounding_minutes?: number
+          work_days_per_week?: number
           bpjs_enabled?: boolean
           bpjs_jkk_rate?: number
           bpjs_jp_wage_cap?: number

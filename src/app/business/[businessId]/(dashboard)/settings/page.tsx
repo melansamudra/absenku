@@ -16,7 +16,7 @@ export default async function SettingsPage({
   const { data: business } = await supabase
     .from("businesses")
     .select(
-      "name, address, phone, work_start_time, work_end_time, izin_deduction_mode, izin_deduction_weekday, izin_deduction_weekend, late_deduction_per_occurrence, lembur_rate_per_hour, pph21_enabled, office_lat, office_lng, attendance_radius_m, attendance_pin_required, bpjs_enabled, bpjs_jkk_rate, bpjs_jp_wage_cap, bpjs_kesehatan_wage_cap, overtime_approval_required, attendance_qr_slug, leave_request_slug",
+      "name, address, phone, work_start_time, work_end_time, izin_deduction_mode, izin_deduction_weekday, izin_deduction_weekend, late_deduction_per_occurrence, lembur_rate_per_hour, pph21_enabled, office_lat, office_lng, attendance_radius_m, attendance_pin_required, bpjs_enabled, bpjs_jkk_rate, bpjs_jp_wage_cap, bpjs_kesehatan_wage_cap, overtime_approval_required, overtime_min_minutes, overtime_rounding_minutes, overtime_max_hours, overtime_rate_mode, work_days_per_week, attendance_qr_slug, leave_request_slug",
     )
     .eq("id", businessId)
     .single();
@@ -50,6 +50,11 @@ export default async function SettingsPage({
     bpjs_jp_wage_cap: Number(business.bpjs_jp_wage_cap),
     bpjs_kesehatan_wage_cap: Number(business.bpjs_kesehatan_wage_cap),
     overtime_approval_required: business.overtime_approval_required,
+    overtime_min_minutes: business.overtime_min_minutes,
+    overtime_rounding_minutes: business.overtime_rounding_minutes,
+    overtime_max_hours: Number(business.overtime_max_hours),
+    overtime_rate_mode: business.overtime_rate_mode === "pp35" ? "pp35" : "flat",
+    work_days_per_week: business.work_days_per_week === 5 ? 5 : 6,
   };
 
   return (
