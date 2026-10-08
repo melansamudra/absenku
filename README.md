@@ -82,6 +82,7 @@ supabase/
 15. `20260920100000_pph21.sql` — `businesses.pph21_enabled`, `employees.ptkp_status`, kolom `payslips.pph21_amount`/`ptkp_status`/`ter_category`
 16. `20261008100000_attendance_security.sql` — geofence (`businesses.office_lat`/`office_lng`/`attendance_radius_m`), PIN absen (`employees.attendance_pin_hash`, `businesses.attendance_pin_required`), bucket `attendance-selfies` jadi privat
 17. `20261009100000_bpjs_portal_overtime.sql` — BPJS (`businesses.bpjs_*`, `employees.bpjs_*`, `payslips.bpjs_*`), `businesses.overtime_approval_required`, tabel `overtime_requests`
+18. `20261010100000_overtime_rules.sql` — aturan lembur per bisnis: minimum, pembulatan, maks. per hari, mode tarif flat/PP 35, hari kerja per minggu
 
 Setiap tabel dengan `business_id` diamankan RLS lewat `private.owns_business(business_id)` — akses hanya untuk businesses milik `auth.uid()` yang sedang login (owner atau staff aktif). Halaman `/absen/[slug]`, `/cuti/[slug]`, dan API `/api/attendance-checkin` sengaja tanpa login (karyawan tidak punya akun) — divalidasi manual di server lewat slug + employee id, lewat RPC security definer atau service-role client.
 
@@ -127,6 +128,15 @@ Mati secara default per bisnis (Pengaturan → BPJS). Kalau dinyalakan, setiap s
 
 - Sesi berupa cookie httpOnly bertanda tangan HMAC, berlaku 7 hari (`src/lib/portal/session.ts`). Kunci tanda tangan diturunkan dari `SUPABASE_SERVICE_ROLE_KEY`, atau dari `PORTAL_SESSION_SECRET` kalau diisi. Mengganti/menghapus PIN karyawan otomatis membatalkan sesinya.
 - Data dibaca lewat service-role client dan selalu di-scope ke business + karyawan dari sesi. Salah PIN di portal dihitung ke kunci sementara yang sama dengan absen selfie.
+
+## Hitungan lembur
+
+Diatur di Pengaturan → Lembur (`src/lib/payroll/overtime.ts`):
+
+- **Jam lembur per hari** (absen pulang selfie) = min(waktu setelah jam pulang jadwal, total jam kerja − durasi shift). Karyawan yang telat harus menutup telatnya dulu: masuk 10.00 pulang 19.00 di shift 08.00–17.00 = 0 jam lembur. Shift lewat tengah malam ditangani.
+- Lalu: di bawah **minimum** (default 30 menit) = 0, **dibulatkan ke bawah** per 1/15/30/60 menit (default 30), dan dibatasi **maks. per hari** (default 4 jam, PP 35/2021).
+- **Upah lembur**: *Flat* = jam × tarif lembur/jam (karyawan atau default bisnis), atau *PP 35/2021* = (gaji bulanan + tunjangan tetap) ÷ 173 per jam — karyawan harian pakai gaji harian × 25 (6 hari kerja) / × 21 (5 hari kerja) — dengan jam pertama tiap hari 1,5× dan jam berikutnya 2×. Kalau total jam dikoreksi manual saat membuat slip, mode PP 35 memakai rata-rata kelipatan dari data absensi.
+- **Penyederhanaan PP 35:** lembur di hari istirahat/libur resmi dihitung seperti hari kerja (aturan resminya 2×/3×/4×), dan aturan "upah pokok minimal 75%" tidak diterapkan. Jam dari pengajuan lembur yang disetujui admin tidak dibatasi aturan minimum/pembulatan/maks. (admin yang menentukan).
 
 ## Pengajuan lembur
 

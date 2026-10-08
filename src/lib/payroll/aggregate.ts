@@ -55,7 +55,7 @@ export async function loadAttendanceSummary(
   employeeId: string,
   periodStart: string,
   periodEnd: string,
-): Promise<{ summary: AttendanceSummary; overtimeHoursTotal: number }> {
+): Promise<{ summary: AttendanceSummary; overtimeHoursTotal: number; overtimeHoursPerDay: number[] }> {
   const [{ data: rows }, { data: holidayRows }] = await Promise.all([
     supabase
       .from("attendance")
@@ -86,6 +86,7 @@ export async function loadAttendanceSummary(
     lateMinutesList: [],
   };
   let overtimeHoursTotal = 0;
+  const overtimeHoursPerDay: number[] = [];
 
   for (const row of rows ?? []) {
     switch (row.status) {
@@ -93,6 +94,7 @@ export async function loadAttendanceSummary(
         summary.hadir += 1;
         if (row.late) summary.lateMinutesList.push(row.late_minutes ?? 0);
         overtimeHoursTotal += Number(row.overtime_hours ?? 0);
+        if (Number(row.overtime_hours ?? 0) > 0) overtimeHoursPerDay.push(Number(row.overtime_hours));
         break;
       case "izin":
         if (row.note && row.note.trim()) {
@@ -115,5 +117,9 @@ export async function loadAttendanceSummary(
     }
   }
 
-  return { summary, overtimeHoursTotal: Math.round(overtimeHoursTotal * 100) / 100 };
+  return {
+    summary,
+    overtimeHoursTotal: Math.round(overtimeHoursTotal * 100) / 100,
+    overtimeHoursPerDay,
+  };
 }
