@@ -39,7 +39,7 @@ export default async function AttendancePage({
     supabase
       .from("attendance")
       .select(
-        "id, employee_id, status, note, late, check_in_at, check_out_at, check_in_photo_url, verified_by_admin",
+        "id, employee_id, status, note, late, late_minutes, overtime_hours, check_in_at, check_out_at, check_in_photo_url, verified_by_admin",
       )
       .eq("business_id", businessId)
       .eq("date", date),
@@ -61,6 +61,8 @@ export default async function AttendancePage({
       status: (a?.status as AttendanceStatus | undefined) ?? null,
       note: a?.note ?? null,
       late: a?.late ?? false,
+      lateMinutes: a?.late_minutes ?? 0,
+      overtimeHours: Number(a?.overtime_hours ?? 0),
       checkInAt: a?.check_in_at ?? null,
       checkOutAt: a?.check_out_at ?? null,
       checkInPhotoUrl: a?.check_in_photo_url ? (selfieUrls.get(a.check_in_photo_url) ?? null) : null,
