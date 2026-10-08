@@ -18,6 +18,7 @@ export type EmployeeFormValues = {
   daily_attendance_allowance: number;
   lembur_rate_per_hour: number | null;
   ptkp_status: string;
+  has_pin?: boolean;
 };
 
 const PTKP_OPTIONS = ["TK/0", "TK/1", "TK/2", "TK/3", "K/0", "K/1", "K/2", "K/3"];
@@ -258,6 +259,33 @@ export default function EmployeeForm({
         <p className="mt-1 text-[11px] text-zinc-400">
           Dipakai untuk hitung PPh 21 kalau fitur pajak diaktifkan di Pengaturan.
         </p>
+      </div>
+
+      <div>
+        <label htmlFor="attendance_pin" className="mb-1 block text-xs font-medium text-zinc-600">
+          PIN Absen {initial?.has_pin ? "(sudah terpasang — isi untuk mengganti)" : "(opsional)"}
+        </label>
+        <input
+          id="attendance_pin"
+          name="attendance_pin"
+          type="password"
+          inputMode="numeric"
+          autoComplete="new-password"
+          pattern="\d{4,6}"
+          maxLength={6}
+          placeholder="4–6 digit"
+          className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
+        />
+        <p className="mt-1 text-[11px] text-zinc-400">
+          Diminta saat karyawan absen selfie, supaya tidak bisa dititipkan ke orang lain. Beri tahu
+          PIN ini ke karyawan yang bersangkutan saja.
+        </p>
+        {initial?.has_pin && (
+          <label className="mt-1.5 flex items-center gap-2 text-xs text-zinc-600">
+            <input type="checkbox" name="remove_attendance_pin" className="rounded" />
+            Hapus PIN absen
+          </label>
+        )}
       </div>
 
       {state.error && (

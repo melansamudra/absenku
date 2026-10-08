@@ -197,7 +197,9 @@ export type Database = {
       businesses: {
         Row: {
           address: string | null
+          attendance_pin_required: boolean
           attendance_qr_slug: string
+          attendance_radius_m: number | null
           created_at: string
           id: string
           izin_deduction_mode: string
@@ -207,6 +209,8 @@ export type Database = {
           leave_request_slug: string
           lembur_rate_per_hour: number
           name: string
+          office_lat: number | null
+          office_lng: number | null
           owner_id: string
           phone: string | null
           pph21_enabled: boolean
@@ -215,7 +219,9 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          attendance_pin_required?: boolean
           attendance_qr_slug?: string
+          attendance_radius_m?: number | null
           created_at?: string
           id?: string
           izin_deduction_mode?: string
@@ -225,6 +231,8 @@ export type Database = {
           leave_request_slug?: string
           lembur_rate_per_hour?: number
           name: string
+          office_lat?: number | null
+          office_lng?: number | null
           owner_id: string
           phone?: string | null
           pph21_enabled?: boolean
@@ -233,7 +241,9 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          attendance_pin_required?: boolean
           attendance_qr_slug?: string
+          attendance_radius_m?: number | null
           created_at?: string
           id?: string
           izin_deduction_mode?: string
@@ -243,6 +253,8 @@ export type Database = {
           leave_request_slug?: string
           lembur_rate_per_hour?: number
           name?: string
+          office_lat?: number | null
+          office_lng?: number | null
           owner_id?: string
           phone?: string | null
           pph21_enabled?: boolean
@@ -438,6 +450,7 @@ export type Database = {
       employees: {
         Row: {
           active: boolean
+          attendance_pin_hash: string | null
           business_id: string
           contract_end: string | null
           created_at: string
@@ -456,6 +469,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          attendance_pin_hash?: string | null
           business_id: string
           contract_end?: string | null
           created_at?: string
@@ -474,6 +488,7 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          attendance_pin_hash?: string | null
           business_id?: string
           contract_end?: string | null
           created_at?: string
@@ -908,9 +923,12 @@ export type Database = {
         Returns: {
           business_id: string
           business_name: string
+          employee_has_pin: boolean
           employee_id: string
           employee_name: string
           employee_note: string
+          geofence_enabled: boolean
+          pin_required: boolean
           work_end_time: string
           work_start_time: string
         }[]

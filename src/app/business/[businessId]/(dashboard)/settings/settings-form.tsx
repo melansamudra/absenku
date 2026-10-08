@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { updateBusinessSettings, type ActionState } from "./actions";
 
 const initialState: ActionState = { error: null };
@@ -17,6 +17,10 @@ export type BusinessSettings = {
   late_deduction_per_occurrence: number;
   lembur_rate_per_hour: number;
   pph21_enabled: boolean;
+  office_lat: number | null;
+  office_lng: number | null;
+  attendance_radius_m: number | null;
+  attendance_pin_required: boolean;
 };
 
 export default function SettingsForm({
@@ -29,6 +33,33 @@ export default function SettingsForm({
   const boundAction = (prevState: ActionState, formData: FormData) =>
     updateBusinessSettings(businessId, prevState, formData);
   const [state, formAction, pending] = useActionState(boundAction, initialState);
+  const [officeLat, setOfficeLat] = useState(settings.office_lat?.toString() ?? "");
+  const [officeLng, setOfficeLng] = useState(settings.office_lng?.toString() ?? "");
+  const [radius, setRadius] = useState(settings.attendance_radius_m?.toString() ?? "");
+  const [locating, setLocating] = useState(false);
+  const [locateError, setLocateError] = useState<string | null>(null);
+
+  function fillCurrentLocation() {
+    setLocateError(null);
+    if (!navigator.geolocation) {
+      setLocateError("Browser ini tidak mendukung lokasi.");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setOfficeLat(pos.coords.latitude.toFixed(6));
+        setOfficeLng(pos.coords.longitude.toFixed(6));
+        if (!radius) setRadius("100");
+        setLocating(false);
+      },
+      () => {
+        setLocateError("Gagal membaca lokasi — izinkan akses lokasi di browser.");
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+    );
+  }
 
   return (
     <form action={formAction} className="space-y-6">
@@ -89,6 +120,86 @@ export default function SettingsForm({
               className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
             />
           </div>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-zinc-100 bg-white p-5 shadow-sm">
+        <h2 className="mb-1 text-sm font-semibold text-zinc-800">Keamanan Absen Selfie</h2>
+        <p className="mb-3 text-xs text-zinc-400">
+          Batasi absen hanya dari sekitar lokasi kerja. Kosongkan ketiga kolom lokasi untuk
+          mematikan pembatasan.
+        </p>
+        <div className="space-y-3">
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="mb-1 block text-xs font-medium text-zinc-600">Latitude</label>
+              <input
+                name="office_lat"
+                inputMode="decimal"
+                value={officeLat}
+                onChange={(e) => setOfficeLat(e.target.value)}
+                placeholder="-6.200000"
+                className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-zinc-600">Longitude</label>
+              <input
+                name="office_lng"
+                inputMode="decimal"
+                value={officeLng}
+                onChange={(e) => setOfficeLng(e.target.value)}
+                placeholder="106.816666"
+                className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-zinc-600">Radius (meter)</label>
+              <input
+                name="attendance_radius_m"
+                type="number"
+                min={10}
+                max={10000}
+                step={1}
+                value={radius}
+                onChange={(e) => setRadius(e.target.value)}
+                placeholder="100"
+                className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
+              />
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={fillCurrentLocation}
+              disabled={locating}
+              className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 disabled:opacity-60"
+            >
+              {locating ? "Membaca lokasi…" : "Pakai lokasi saya sekarang"}
+            </button>
+            <span className="text-[11px] text-zinc-400">
+              Tekan saat berada di lokasi kerja. Radius 100–200 m disarankan karena akurasi GPS
+              di dalam gedung bisa meleset puluhan meter.
+            </span>
+          </div>
+          {locateError && <p className="text-xs text-red-600">{locateError}</p>}
+          <label className="flex items-start gap-2 text-sm text-zinc-600">
+            <input
+              type="checkbox"
+              name="attendance_pin_required"
+              defaultChecked={settings.attendance_pin_required}
+              className="mt-0.5 rounded"
+            />
+            <span>
+              Wajibkan PIN absen untuk semua karyawan.
+              <br />
+              <span className="text-xs text-zinc-400">
+                PIN dipasang per karyawan di halaman Karyawan. Kalau dicentang, karyawan yang belum
+                punya PIN tidak bisa absen selfie. Kalau tidak dicentang, PIN hanya diminta dari
+                karyawan yang sudah punya PIN.
+              </span>
+            </span>
+          </label>
         </div>
       </div>
 

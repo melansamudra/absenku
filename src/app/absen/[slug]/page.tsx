@@ -26,7 +26,16 @@ export default async function AbsenPage({ params }: { params: Promise<{ slug: st
     id: r.employee_id,
     name: r.employee_name,
     note: r.employee_note,
+    hasPin: r.employee_has_pin,
   }));
 
-  return <CheckinClient slug={slug} businessName={businessName} employees={employees} />;
+  return (
+    <CheckinClient
+      slug={slug}
+      businessName={businessName}
+      employees={employees}
+      geofenceEnabled={rows[0].geofence_enabled}
+      pinRequired={rows[0].pin_required}
+    />
+  );
 }

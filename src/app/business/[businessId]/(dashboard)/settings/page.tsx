@@ -16,7 +16,7 @@ export default async function SettingsPage({
   const { data: business } = await supabase
     .from("businesses")
     .select(
-      "name, address, phone, work_start_time, work_end_time, izin_deduction_mode, izin_deduction_weekday, izin_deduction_weekend, late_deduction_per_occurrence, lembur_rate_per_hour, pph21_enabled, attendance_qr_slug, leave_request_slug",
+      "name, address, phone, work_start_time, work_end_time, izin_deduction_mode, izin_deduction_weekday, izin_deduction_weekend, late_deduction_per_occurrence, lembur_rate_per_hour, pph21_enabled, office_lat, office_lng, attendance_radius_m, attendance_pin_required, attendance_qr_slug, leave_request_slug",
     )
     .eq("id", businessId)
     .single();
@@ -40,6 +40,10 @@ export default async function SettingsPage({
     late_deduction_per_occurrence: business.late_deduction_per_occurrence,
     lembur_rate_per_hour: business.lembur_rate_per_hour,
     pph21_enabled: business.pph21_enabled,
+    office_lat: business.office_lat,
+    office_lng: business.office_lng,
+    attendance_radius_m: business.attendance_radius_m,
+    attendance_pin_required: business.attendance_pin_required,
   };
 
   return (
@@ -52,8 +56,9 @@ export default async function SettingsPage({
       <div className="mb-5 rounded-xl border border-zinc-100 bg-white p-5 shadow-sm">
         <h2 className="mb-1 text-sm font-semibold text-zinc-800">Link Absen Selfie</h2>
         <p className="mb-3 text-xs text-zinc-400">
-          Bagikan link ini ke karyawan (cetak sebagai poster QR di lokasi kerja). Siapa pun yang
-          buka link ini bisa memilih namanya sendiri dan absen — jangan sebar ke luar bisnis.
+          Bagikan link ini ke karyawan (cetak sebagai poster QR di lokasi kerja). Pasang PIN absen
+          per karyawan dan batasi lokasi absen di bagian &ldquo;Keamanan Absen&rdquo; di bawah supaya
+          tidak bisa dititipkan atau dilakukan dari luar lokasi kerja.
         </p>
         <div className="flex items-center gap-2 rounded-lg bg-zinc-50 px-3 py-2">
           <code className="flex-1 truncate text-xs text-zinc-600">{attendanceLink}</code>

@@ -26,6 +26,7 @@ export type EmployeeRow = {
   daily_attendance_allowance: number;
   lembur_rate_per_hour: number | null;
   ptkp_status: string;
+  has_pin: boolean;
 };
 
 function fmtRupiah(v: number) {
@@ -94,6 +95,11 @@ export default function EmployeesClient({
                     {!e.active && (
                       <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-500">
                         Nonaktif
+                      </span>
+                    )}
+                    {e.has_pin && (
+                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+                        PIN
                       </span>
                     )}
                   </div>

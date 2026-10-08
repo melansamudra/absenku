@@ -1,4 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service";
+import { verifyPin } from "@/lib/attendance/pin";
+import { distanceMeters } from "@/lib/attendance/geofence";
 
 // Karyawan tidak login (buka link publik pakai slug), jadi tidak ada session
 // buat di-scope lewat RLS biasa — service-role client dipakai di sini karena
@@ -9,6 +11,10 @@ import { createServiceClient } from "@/lib/supabase/service";
 const MAX_SIZE = 3 * 1024 * 1024; // 3 MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const REPORT_TIMEZONE = "Asia/Jakarta";
+// Kunci sementara setelah PIN salah berturut-turut — PIN cuma 4–6 digit, jadi
+// tanpa ini bisa ditebak lewat brute force.
+const PIN_MAX_FAILURES = 5;
+const PIN_LOCK_WINDOW_MS = 15 * 60 * 1000;
 
 function todayWib() {
   return new Date().toLocaleDateString("en-CA", { timeZone: REPORT_TIMEZONE });
@@ -166,8 +172,12 @@ export async function POST(request: Request) {
   const file = formData.get("photo") as File | null;
   const latRaw = formData.get("lat") as string | null;
   const lngRaw = formData.get("lng") as string | null;
-  const lat = latRaw ? Number(latRaw) : null;
-  const lng = lngRaw ? Number(lngRaw) : null;
+  const pin = ((formData.get("pin") as string | null) ?? "").trim();
+  const latNum = latRaw ? Number(latRaw) : NaN;
+  const lngNum = lngRaw ? Number(lngRaw) : NaN;
+  const hasLocation = Number.isFinite(latNum) && Number.isFinite(lngNum);
+  const lat = hasLocation ? latNum : null;
+  const lng = hasLocation ? lngNum : null;
 
   if (!slug || !employeeId || (action !== "in" && action !== "out")) {
     return Response.json({ ok: false, error: "Data tidak lengkap." }, { status: 400 });
@@ -186,7 +196,9 @@ export async function POST(request: Request) {
 
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, work_start_time, work_end_time")
+    .select(
+      "id, work_start_time, work_end_time, office_lat, office_lng, attendance_radius_m, attendance_pin_required",
+    )
     .eq("attendance_qr_slug", slug)
     .maybeSingle();
   if (!business) {
@@ -196,7 +208,7 @@ export async function POST(request: Request) {
   const [{ data: employee }, { date, previousDate, todayRow, openRow }] = await Promise.all([
     supabase
       .from("employees")
-      .select("id, name")
+      .select("id, name, attendance_pin_hash")
       .eq("id", employeeId)
       .eq("business_id", business.id)
       .eq("active", true)
@@ -229,6 +241,68 @@ export async function POST(request: Request) {
   await supabase
     .from("public_submission_log")
     .insert({ business_id: business.id, kind: "absen", employee_id: employeeId });
+
+  // PIN absen — dicek SETELAH cooldown di atas, supaya tiap tebakan PIN juga
+  // kena jeda 5 detik, dan ditambah kunci sementara setelah beberapa kali salah.
+  if (employee.attendance_pin_hash) {
+    const { count: recentFailures } = await supabase
+      .from("public_submission_log")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", business.id)
+      .eq("kind", "absen_pin_gagal")
+      .eq("employee_id", employeeId)
+      .gte("created_at", new Date(Date.now() - PIN_LOCK_WINDOW_MS).toISOString());
+
+    if ((recentFailures ?? 0) >= PIN_MAX_FAILURES) {
+      return Response.json(
+        { ok: false, error: "PIN salah terlalu sering. Coba lagi 15 menit lagi atau hubungi admin." },
+        { status: 429 },
+      );
+    }
+    if (!pin) {
+      return Response.json({ ok: false, error: "Masukkan PIN absen kamu." }, { status: 400 });
+    }
+    if (!(await verifyPin(pin, employee.attendance_pin_hash))) {
+      await supabase
+        .from("public_submission_log")
+        .insert({ business_id: business.id, kind: "absen_pin_gagal", employee_id: employeeId });
+      return Response.json({ ok: false, error: "PIN salah." }, { status: 403 });
+    }
+  } else if (business.attendance_pin_required) {
+    return Response.json(
+      { ok: false, error: "Kamu belum punya PIN absen. Minta admin memasangkan PIN dulu." },
+      { status: 403 },
+    );
+  }
+
+  // Geofence — aktif hanya kalau titik kantor & radius sudah diisi di
+  // Pengaturan. Lokasi dari browser tetap bisa dipalsukan oleh pengguna yang
+  // niat (GPS spoofing), tapi ini menutup kasus umum absen dari rumah.
+  if (
+    business.office_lat !== null &&
+    business.office_lng !== null &&
+    business.attendance_radius_m !== null
+  ) {
+    if (lat === null || lng === null) {
+      return Response.json(
+        { ok: false, error: "Lokasi wajib aktif untuk absen. Izinkan akses lokasi di browser lalu coba lagi." },
+        { status: 400 },
+      );
+    }
+    const distance = distanceMeters(
+      { lat, lng },
+      { lat: Number(business.office_lat), lng: Number(business.office_lng) },
+    );
+    if (distance > business.attendance_radius_m) {
+      return Response.json(
+        {
+          ok: false,
+          error: `Kamu berada sekitar ${Math.round(distance)} m dari lokasi kerja (batas ${business.attendance_radius_m} m). Absen hanya bisa dilakukan di lokasi kerja.`,
+        },
+        { status: 403 },
+      );
+    }
+  }
 
   // "Sudah absen masuk hari ini?" HARUS murni lihat baris hari ini (todayRow)
   // — tapi absen pulang harus dipasangkan ke baris yang MASIH TERBUKA
@@ -292,10 +366,6 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, error: uploadError.message }, { status: 500 });
   }
 
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("attendance-selfies").getPublicUrl(path);
-
   if (action === "in") {
     const nowMinutes = nowWibMinutesOfDay();
     const lateMinutes = Math.max(0, nowMinutes - timeStrToMinutes(shiftStart));
@@ -309,7 +379,7 @@ export async function POST(request: Request) {
         late: lateMinutes > 0,
         late_minutes: lateMinutes,
         check_in_at: new Date().toISOString(),
-        check_in_photo_url: publicUrl,
+        check_in_photo_url: path,
         check_in_lat: lat,
         check_in_lng: lng,
         shift_template_id: shiftTemplateId,
@@ -342,7 +412,7 @@ export async function POST(request: Request) {
     .from("attendance")
     .update({
       check_out_at: new Date().toISOString(),
-      check_out_photo_url: publicUrl,
+      check_out_photo_url: path,
       check_out_lat: lat,
       check_out_lng: lng,
       overtime_hours: overtimeHours,
