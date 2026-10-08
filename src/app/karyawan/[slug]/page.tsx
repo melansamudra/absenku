@@ -4,6 +4,7 @@ import { getPortalEmployee, loadPortalBusiness } from "@/lib/portal/session";
 import { monthRange, todayWib } from "@/lib/portal/dates";
 import { loadAttendanceSummary } from "@/lib/payroll/aggregate";
 import { payslipTotal } from "@/lib/payroll/payslip-total";
+import { loadEmployeeLedgers, type LedgerSummary } from "@/lib/portal/ledgers";
 import { logoutPortal } from "./actions";
 import { OvertimeRequestForm, PortalLoginForm } from "./portal-forms";
 
@@ -23,6 +24,44 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
       <h2 className="mb-3 text-sm font-semibold text-zinc-800">{title}</h2>
       {children}
     </section>
+  );
+}
+
+function LedgerCard({ title, ledger }: { title: string; ledger: LedgerSummary }) {
+  return (
+    <Card title={title}>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="rounded-xl bg-zinc-50 px-3 py-2.5 text-center">
+          <p className="text-base font-bold text-zinc-900">{fmtRupiah(ledger.outstanding)}</p>
+          <p className="text-[11px] text-zinc-500">Sisa belum lunas</p>
+        </div>
+        <div className="rounded-xl bg-zinc-50 px-3 py-2.5 text-center">
+          <p className="text-base font-bold text-amber-600">{fmtRupiah(ledger.pendingDeduction)}</p>
+          <p className="text-[11px] text-zinc-500">Akan dipotong di slip berikut</p>
+        </div>
+      </div>
+      <div className="mt-3 divide-y divide-zinc-100">
+        {ledger.entries.slice(0, 10).map((e, i) => (
+          <div key={`${e.date}-${i}`} className="flex items-start justify-between gap-3 py-2 text-sm">
+            <div className="min-w-0">
+              <p className="text-zinc-700">{e.label}</p>
+              <p className="text-[11px] text-zinc-400">
+                {e.date}
+                {e.kind === "akan_dipotong" && " · slip belum dibayar"}
+              </p>
+            </div>
+            <span
+              className={`shrink-0 font-medium ${
+                e.kind === "pemberian" ? "text-zinc-900" : e.kind === "potongan" ? "text-emerald-600" : "text-amber-600"
+              }`}
+            >
+              {e.kind === "pemberian" ? "+" : "−"}
+              {fmtRupiah(e.amount)}
+            </span>
+          </div>
+        ))}
+      </div>
+    </Card>
   );
 }
 
@@ -98,6 +137,7 @@ export default async function PortalPage({ params }: { params: Promise<{ slug: s
     { data: approvedLeaves },
     { data: payslips },
     { data: overtimeRequests },
+    ledgers,
   ] = await Promise.all([
     loadAttendanceSummary(supabase, business.id, employee.id, month.start, month.end),
     supabase
@@ -132,6 +172,7 @@ export default async function PortalPage({ params }: { params: Promise<{ slug: s
           .order("date", { ascending: false })
           .limit(10)
       : Promise.resolve({ data: [] as { id: string; date: string; hours: number; reason: string | null; status: string; reviewed_note: string | null }[] }),
+    loadEmployeeLedgers(supabase, business.id, employee.id),
   ]);
 
   const payslipIds = (payslips ?? []).map((p) => p.id);
@@ -254,6 +295,11 @@ export default async function PortalPage({ params }: { params: Promise<{ slug: s
           </div>
         )}
       </Card>
+
+      {ledgers.kasbon.entries.length > 0 && <LedgerCard title="Kasbon" ledger={ledgers.kasbon} />}
+      {ledgers.personalLoan.entries.length > 0 && (
+        <LedgerCard title="Pinjaman Pribadi" ledger={ledgers.personalLoan} />
+      )}
 
       {business.overtime_approval_required && (
         <Card title="Lembur">

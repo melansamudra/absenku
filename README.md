@@ -123,7 +123,7 @@ Mati secara default per bisnis (Pengaturan → BPJS). Kalau dinyalakan, setiap s
 
 ## Portal Karyawan
 
-`/karyawan/[slug]` (slug sama dengan link absen, linknya ada di Pengaturan). Karyawan masuk dengan **nama + PIN absen** (karyawan tanpa PIN tidak bisa masuk), lalu bisa melihat rekap absensi bulan ini, sisa cuti, slip gaji (12 terakhir, termasuk rincian dan iuran BPJS perusahaan), dan mengajukan lembur.
+`/karyawan/[slug]` (slug sama dengan link absen, linknya ada di Pengaturan). Karyawan masuk dengan **nama + PIN absen** (karyawan tanpa PIN tidak bisa masuk), lalu bisa melihat rekap absensi bulan ini, sisa cuti, slip gaji (12 terakhir, termasuk rincian dan iuran BPJS perusahaan), kasbon & pinjaman pribadi (sisa, potongan yang akan datang, riwayat), dan mengajukan lembur.
 
 - Sesi berupa cookie httpOnly bertanda tangan HMAC, berlaku 7 hari (`src/lib/portal/session.ts`). Kunci tanda tangan diturunkan dari `SUPABASE_SERVICE_ROLE_KEY`, atau dari `PORTAL_SESSION_SECRET` kalau diisi. Mengganti/menghapus PIN karyawan otomatis membatalkan sesinya.
 - Data dibaca lewat service-role client dan selalu di-scope ke business + karyawan dari sesi. Salah PIN di portal dihitung ke kunci sementara yang sama dengan absen selfie.
