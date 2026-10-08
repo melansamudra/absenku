@@ -49,6 +49,14 @@ export async function updateBusinessSettings(
     return { error: "Radius absen harus bilangan bulat 10–10.000 meter." };
   }
 
+  const bpjsJkkRate = Number(formData.get("bpjs_jkk_rate") ?? 0.24);
+  const bpjsJpWageCap = Number(formData.get("bpjs_jp_wage_cap") ?? 0);
+  const bpjsKesehatanWageCap = Number(formData.get("bpjs_kesehatan_wage_cap") ?? 0);
+  if (!(bpjsJkkRate >= 0 && bpjsJkkRate <= 10)) return { error: "Tarif JKK tidak valid." };
+  if (!(bpjsJpWageCap > 0) || !(bpjsKesehatanWageCap > 0)) {
+    return { error: "Batas upah BPJS harus lebih dari 0." };
+  }
+
   const { error } = await supabase
     .from("businesses")
     .update({
@@ -67,6 +75,11 @@ export async function updateBusinessSettings(
       office_lng: officeLng,
       attendance_radius_m: radius,
       attendance_pin_required: formData.get("attendance_pin_required") === "on",
+      bpjs_enabled: formData.get("bpjs_enabled") === "on",
+      bpjs_jkk_rate: bpjsJkkRate,
+      bpjs_jp_wage_cap: bpjsJpWageCap,
+      bpjs_kesehatan_wage_cap: bpjsKesehatanWageCap,
+      overtime_approval_required: formData.get("overtime_approval_required") === "on",
     })
     .eq("id", businessId);
 

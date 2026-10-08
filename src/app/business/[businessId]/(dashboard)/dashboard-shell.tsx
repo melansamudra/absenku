@@ -10,6 +10,7 @@ const NAV = [
   { key: "attendance", label: "Absensi", icon: "🤳" },
   { key: "shifts", label: "Jadwal Shift", icon: "🗓️" },
   { key: "leave-requests", label: "Cuti", icon: "🌴" },
+  { key: "overtime", label: "Lembur", icon: "⏱️" },
   { key: "payroll", label: "Payroll", icon: "💰" },
   { key: "settings", label: "Pengaturan", icon: "⚙️" },
 ] as const;

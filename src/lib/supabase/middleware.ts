@@ -54,6 +54,8 @@ export async function updateSession(request: NextRequest) {
   // /cuti/* adalah halaman pengajuan cuti publik — sama alasannya, karyawan
   // submit lewat RPC security definer, bukan API route, jadi tidak perlu
   // whitelist /api/* juga.
+  // /karyawan/* adalah Portal Karyawan — login pakai PIN absen (cookie sesi
+  // sendiri, lihat lib/portal/session.ts), bukan akun Supabase Auth.
   // /auth/callback menukar kode dari link email jadi sesi, sebelum user ada.
   // /reset-password: link reset dari email membawa token di URL fragment
   // (#access_token=...), yang cuma bisa dibaca & diproses oleh supabase-js di
@@ -64,6 +66,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname === "/" ||
     request.nextUrl.pathname.startsWith("/absen") ||
     request.nextUrl.pathname.startsWith("/cuti") ||
+    request.nextUrl.pathname.startsWith("/karyawan") ||
     request.nextUrl.pathname.startsWith("/api/attendance-checkin") ||
     request.nextUrl.pathname.startsWith("/auth/callback") ||
     request.nextUrl.pathname.startsWith("/reset-password") ||

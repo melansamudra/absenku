@@ -12,7 +12,7 @@ export default async function EmployeesPage({
   const { data: employees } = await supabase
     .from("employees")
     .select(
-      "id, name, salary_type, daily_rate, monthly_rate, active, note, email, contract_end, daily_meal_allowance, daily_attendance_allowance, lembur_rate_per_hour, ptkp_status, attendance_pin_hash",
+      "id, name, salary_type, daily_rate, monthly_rate, active, note, email, contract_end, daily_meal_allowance, daily_attendance_allowance, lembur_rate_per_hour, ptkp_status, bpjs_kesehatan, bpjs_ketenagakerjaan, bpjs_wage_base, attendance_pin_hash",
     )
     .eq("business_id", businessId)
     .is("deleted_at", null)

@@ -21,6 +21,16 @@ async function readPinUpdate(
   return { value: await hashPin(pin) };
 }
 
+function bpjsFields(formData: FormData) {
+  const raw = ((formData.get("bpjs_wage_base") as string) || "").trim();
+  const wageBase = raw ? Number(raw) : null;
+  return {
+    bpjs_kesehatan: formData.get("bpjs_kesehatan") === "on",
+    bpjs_ketenagakerjaan: formData.get("bpjs_ketenagakerjaan") === "on",
+    bpjs_wage_base: wageBase !== null && Number.isFinite(wageBase) && wageBase > 0 ? wageBase : null,
+  };
+}
+
 function numOrZero(v: FormDataEntryValue | null) {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
@@ -61,6 +71,7 @@ export async function createEmployee(
     email,
     contract_end: contractEnd,
     ptkp_status: ptkpStatus,
+    ...bpjsFields(formData),
     daily_meal_allowance: numOrZero(formData.get("daily_meal_allowance")),
     daily_attendance_allowance: numOrZero(formData.get("daily_attendance_allowance")),
     lembur_rate_per_hour: formData.get("lembur_rate_per_hour")
@@ -111,6 +122,7 @@ export async function updateEmployee(
       email,
       contract_end: contractEnd,
       ptkp_status: ptkpStatus,
+      ...bpjsFields(formData),
       daily_meal_allowance: numOrZero(formData.get("daily_meal_allowance")),
       daily_attendance_allowance: numOrZero(formData.get("daily_attendance_allowance")),
       lembur_rate_per_hour: formData.get("lembur_rate_per_hour")

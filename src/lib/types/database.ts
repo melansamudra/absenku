@@ -196,6 +196,11 @@ export type Database = {
       }
       businesses: {
         Row: {
+          bpjs_enabled: boolean
+          bpjs_jkk_rate: number
+          bpjs_jp_wage_cap: number
+          bpjs_kesehatan_wage_cap: number
+          overtime_approval_required: boolean
           address: string | null
           attendance_pin_required: boolean
           attendance_qr_slug: string
@@ -218,6 +223,11 @@ export type Database = {
           work_start_time: string
         }
         Insert: {
+          bpjs_enabled?: boolean
+          bpjs_jkk_rate?: number
+          bpjs_jp_wage_cap?: number
+          bpjs_kesehatan_wage_cap?: number
+          overtime_approval_required?: boolean
           address?: string | null
           attendance_pin_required?: boolean
           attendance_qr_slug?: string
@@ -240,6 +250,11 @@ export type Database = {
           work_start_time?: string
         }
         Update: {
+          bpjs_enabled?: boolean
+          bpjs_jkk_rate?: number
+          bpjs_jp_wage_cap?: number
+          bpjs_kesehatan_wage_cap?: number
+          overtime_approval_required?: boolean
           address?: string | null
           attendance_pin_required?: boolean
           attendance_qr_slug?: string
@@ -449,6 +464,9 @@ export type Database = {
       }
       employees: {
         Row: {
+          bpjs_kesehatan: boolean
+          bpjs_ketenagakerjaan: boolean
+          bpjs_wage_base: number | null
           active: boolean
           attendance_pin_hash: string | null
           business_id: string
@@ -468,6 +486,9 @@ export type Database = {
           salary_type: string
         }
         Insert: {
+          bpjs_kesehatan?: boolean
+          bpjs_ketenagakerjaan?: boolean
+          bpjs_wage_base?: number | null
           active?: boolean
           attendance_pin_hash?: string | null
           business_id: string
@@ -487,6 +508,9 @@ export type Database = {
           salary_type?: string
         }
         Update: {
+          bpjs_kesehatan?: boolean
+          bpjs_ketenagakerjaan?: boolean
+          bpjs_wage_base?: number | null
           active?: boolean
           attendance_pin_hash?: string | null
           business_id?: string
@@ -652,6 +676,45 @@ export type Database = {
           },
         ]
       }
+      overtime_requests: {
+        Row: {
+          business_id: string
+          created_at: string
+          date: string
+          employee_id: string
+          hours: number
+          id: string
+          reason: string | null
+          reviewed_at: string | null
+          reviewed_note: string | null
+          status: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          date: string
+          employee_id: string
+          hours: number
+          id?: string
+          reason?: string | null
+          reviewed_at?: string | null
+          reviewed_note?: string | null
+          status?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          date?: string
+          employee_id?: string
+          hours?: number
+          id?: string
+          reason?: string | null
+          reviewed_at?: string | null
+          reviewed_note?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       payroll_holidays: {
         Row: {
           business_id: string
@@ -721,6 +784,9 @@ export type Database = {
       }
       payslips: {
         Row: {
+          bpjs_detail: Json | null
+          bpjs_employee_amount: number
+          bpjs_employer_amount: number
           alpa_count: number
           attendance_allowance: number
           base_pay: number
@@ -755,6 +821,9 @@ export type Database = {
           thr_amount: number
         }
         Insert: {
+          bpjs_detail?: Json | null
+          bpjs_employee_amount?: number
+          bpjs_employer_amount?: number
           alpa_count?: number
           attendance_allowance?: number
           base_pay?: number
@@ -789,6 +858,9 @@ export type Database = {
           thr_amount?: number
         }
         Update: {
+          bpjs_detail?: Json | null
+          bpjs_employee_amount?: number
+          bpjs_employer_amount?: number
           alpa_count?: number
           attendance_allowance?: number
           base_pay?: number

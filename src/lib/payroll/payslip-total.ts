@@ -16,6 +16,7 @@ export type PayslipTotalInput = {
   kasbon_deduction: number;
   personal_loan_deduction: number;
   pph21_amount: number;
+  bpjs_employee_amount: number;
 };
 
 export type PayslipAdjustment = {
@@ -40,6 +41,7 @@ export function payslipTotal(payslip: PayslipTotalInput, adjustments: PayslipAdj
     payslip.late_deduction -
     payslip.kasbon_deduction -
     payslip.personal_loan_deduction -
-    payslip.pph21_amount
+    payslip.pph21_amount -
+    payslip.bpjs_employee_amount
   );
 }

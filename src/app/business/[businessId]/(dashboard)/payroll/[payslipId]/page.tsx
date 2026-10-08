@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getOutstandingKasbon } from "@/lib/payroll/kasbon";
 import { getOutstandingPersonalLoan } from "@/lib/payroll/personal-loan";
 import { payslipTotal } from "@/lib/payroll/payslip-total";
+import { bpjsEmployerRows, payslipRows } from "@/lib/payroll/payslip-rows";
 import PayslipDetailClient from "./payslip-detail-client";
 import PrintButton from "./print-button";
 import PayslipPrintView from "./payslip-print-view";
@@ -52,28 +53,8 @@ export default async function PayslipDetailPage({
   const employeeName = (payslip.employees as unknown as { name: string } | null)?.name ?? "—";
   const isPaid = !!payslip.paid_at;
 
-  const rows: { label: string; value: number; muted?: boolean }[] = [
-    {
-      label: `Gaji Pokok (${payslip.hadir_count} hadir, ${payslip.sakit_count} sakit)`,
-      value: payslip.base_pay,
-    },
-    { label: "Uang Makan", value: payslip.meal_allowance },
-    { label: "Tunjangan Hadir", value: payslip.attendance_allowance },
-    { label: `Lembur (${payslip.lembur_hours} jam)`, value: payslip.lembur_amount },
-    { label: "THR", value: payslip.thr_amount },
-    { label: `Potongan Izin (${payslip.izin_unnoted_count}x tanpa keterangan)`, value: -payslip.izin_deduction },
-    { label: `Potongan Telat (${payslip.late_count}x)`, value: -payslip.late_deduction },
-    { label: "Potongan Kasbon", value: -payslip.kasbon_deduction },
-    { label: "Potongan Pinjaman Pribadi", value: -payslip.personal_loan_deduction },
-    ...(payslip.pph21_amount > 0
-      ? [
-          {
-            label: `Potongan PPh 21${payslip.ter_category ? ` (TER ${payslip.ter_category})` : ""}`,
-            value: -payslip.pph21_amount,
-          },
-        ]
-      : []),
-  ];
+  const rows = payslipRows(payslip);
+  const employerBpjsRows = bpjsEmployerRows(payslip.bpjs_detail);
 
   return (
     <div>
@@ -105,6 +86,23 @@ export default async function PayslipDetailPage({
               </div>
             ))}
           </div>
+          {employerBpjsRows.length > 0 && (
+            <div className="mt-4 rounded-lg bg-zinc-50 p-3">
+              <p className="mb-1.5 text-xs font-semibold text-zinc-600">
+                Iuran BPJS ditanggung perusahaan (tidak memotong gaji)
+              </p>
+              {employerBpjsRows.map((r) => (
+                <div key={r.label} className="flex justify-between py-0.5 text-xs text-zinc-500">
+                  <span>{r.label}</span>
+                  <span>{fmtRupiah(r.value)}</span>
+                </div>
+              ))}
+              <div className="mt-1 flex justify-between border-t border-zinc-200 pt-1 text-xs font-semibold text-zinc-700">
+                <span>Total</span>
+                <span>{fmtRupiah(payslip.bpjs_employer_amount)}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         <PayslipDetailClient

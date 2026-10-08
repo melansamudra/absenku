@@ -4,7 +4,12 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { loadAttendanceSummary, loadPayrollSettings } from "@/lib/payroll/aggregate";
 import { calcPayslip, type EmployeePayrollInput } from "@/lib/payroll/calc";
-import { calculatePph21, type PtkpStatus } from "@/lib/payroll/pph21";
+import {
+  BUSINESS_STATUTORY_COLUMNS,
+  EMPLOYEE_STATUTORY_COLUMNS,
+  calcStatutory,
+  statutoryConfig,
+} from "@/lib/payroll/statutory";
 
 export type CreatePayslipState = { error: string | null };
 
@@ -35,14 +40,14 @@ export async function createPayslip(
     supabase
       .from("employees")
       .select(
-        "salary_type, daily_rate, monthly_rate, daily_meal_allowance, daily_attendance_allowance, lembur_rate_per_hour, ptkp_status",
+        `salary_type, daily_rate, monthly_rate, daily_meal_allowance, daily_attendance_allowance, lembur_rate_per_hour, ${EMPLOYEE_STATUTORY_COLUMNS}`,
       )
       .eq("id", employeeId)
       .eq("business_id", businessId)
       .single(),
     supabase
       .from("businesses")
-      .select("lembur_rate_per_hour, pph21_enabled")
+      .select(`lembur_rate_per_hour, ${BUSINESS_STATUTORY_COLUMNS}`)
       .eq("id", businessId)
       .single(),
     loadPayrollSettings(supabase, businessId),
@@ -72,36 +77,20 @@ export async function createPayslip(
 
   const result = calcPayslip(empInput, summary, settings, lemburHours, thrAmount);
 
-  // PPh 21 (opsional, mati default per bisnis) — dihitung dari penghasilan
-  // bruto bulan ini: komponen gaji + tunjangan tetap aktif, dikurangi
-  // potongan izin/telat (kasbon & pinjaman pribadi TIDAK mengurangi, karena
-  // itu bukan pengurang penghasilan, cuma pelunasan utang). Lihat
-  // src/lib/payroll/pph21.ts untuk detail metode & disclaimer akurasinya.
   const recurringAllowanceTotal = (recurringAllowances ?? []).reduce(
     (sum, r) => sum + r.amount,
     0,
   );
-  let pph21Amount = 0;
-  let ptkpStatusSnapshot: string | null = null;
-  let terCategorySnapshot: string | null = null;
-
-  if (business?.pph21_enabled) {
-    const grossForTax = Math.max(
-      0,
-      result.basePay +
-        result.mealAllowance +
-        result.attendanceAllowance +
-        result.lemburAmount +
-        result.thrAmount +
-        recurringAllowanceTotal -
-        result.izinDeduction -
-        result.lateDeduction,
-    );
-    const pph21 = calculatePph21(grossForTax, employee.ptkp_status as PtkpStatus);
-    pph21Amount = pph21.amount;
-    ptkpStatusSnapshot = employee.ptkp_status;
-    terCategorySnapshot = pph21.category;
-  }
+  // BPJS & PPh 21 (keduanya opsional per bisnis) — lihat lib/payroll/statutory.ts.
+  const statutory = calcStatutory({
+    result,
+    recurringAllowanceTotal,
+    ...statutoryConfig(business, employee),
+  });
+  const pph21Amount = statutory.pph21?.amount ?? 0;
+  const ptkpStatusSnapshot = statutory.pph21 ? employee.ptkp_status : null;
+  const terCategorySnapshot = statutory.pph21?.category ?? null;
+  const bpjsEnabled = business?.bpjs_enabled ?? false;
 
   const { data: payslip, error } = await supabase
     .from("payslips")
@@ -135,6 +124,9 @@ export async function createPayslip(
       pph21_amount: pph21Amount,
       ptkp_status: ptkpStatusSnapshot,
       ter_category: terCategorySnapshot,
+      bpjs_employee_amount: statutory.bpjs.employee.total,
+      bpjs_employer_amount: statutory.bpjs.employer.total,
+      bpjs_detail: bpjsEnabled ? statutory.bpjs : null,
     })
     .select("id")
     .single();
