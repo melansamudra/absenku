@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { loadAttendanceSummary, loadPayrollSettings } from "@/lib/payroll/aggregate";
+import { reimbursementCategoryLabel } from "@/lib/reimbursement/categories";
 import { calcPayslip, type EmployeePayrollInput } from "@/lib/payroll/calc";
 import { BUSINESS_OVERTIME_COLUMNS, overtimePayForPayslip } from "@/lib/payroll/overtime";
 import {
@@ -163,6 +164,37 @@ export async function createPayslip(
         amount: r.amount,
       })),
     );
+  }
+
+  // Reimbursement yang sudah disetujui dan belum pernah masuk slip ikut
+  // disalin sebagai tunjangan (ditambahkan setelah hitung PPh21/BPJS di atas,
+  // jadi tidak kena pajak/iuran). payslip_id diisi supaya tidak dibayar dobel.
+  const { data: approvedClaims } = await supabase
+    .from("reimbursements")
+    .select("id, category, amount, description")
+    .eq("business_id", businessId)
+    .eq("employee_id", employeeId)
+    .eq("status", "approved")
+    .is("payslip_id", null)
+    .lte("date", periodEnd);
+  if (approvedClaims && approvedClaims.length > 0) {
+    const { error: claimError } = await supabase.from("payslip_adjustments").insert(
+      approvedClaims.map((c) => ({
+        payslip_id: payslip.id,
+        type: "tunjangan" as const,
+        label: `Reimbursement ${reimbursementCategoryLabel(c.category)}${c.description ? ` – ${c.description}` : ""}`.slice(0, 120),
+        amount: Number(c.amount),
+      })),
+    );
+    if (!claimError) {
+      await supabase
+        .from("reimbursements")
+        .update({ payslip_id: payslip.id })
+        .in(
+          "id",
+          approvedClaims.map((c) => c.id),
+        );
+    }
   }
 
   redirect(`/business/${businessId}/payroll/${payslip.id}`);

@@ -120,6 +120,20 @@ export default async function SettingsPage({
         </div>
 
         <div className="rounded-xl border border-zinc-100 bg-white p-5 shadow-sm">
+          <h2 className="mb-1 text-sm font-semibold text-zinc-800">Lokasi Kantor Tambahan</h2>
+          <p className="mb-3 text-xs text-zinc-400">
+            Tambah cabang/lokasi kerja lain. Absen selfie valid di titik utama atau salah satu
+            lokasi tambahan.
+          </p>
+          <Link
+            href={`/business/${businessId}/settings/locations`}
+            className="inline-block rounded-lg border border-zinc-300 px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
+          >
+            Kelola Lokasi Kantor
+          </Link>
+        </div>
+
+        <div className="rounded-xl border border-zinc-100 bg-white p-5 shadow-sm">
           <h2 className="mb-1 text-sm font-semibold text-zinc-800">Tanggal Merah Tambahan</h2>
           <p className="mb-3 text-xs text-zinc-400">
             Tanggal di luar Sabtu/Minggu yang ikut dihitung &ldquo;akhir pekan&rdquo; untuk aturan potongan

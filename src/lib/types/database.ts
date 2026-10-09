@@ -691,6 +691,183 @@ export type Database = {
           },
         ]
       }
+      employee_activities: {
+        Row: {
+          business_id: string
+          created_at: string
+          date: string
+          description: string | null
+          employee_id: string
+          id: string
+          title: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          date: string
+          description?: string | null
+          employee_id: string
+          id?: string
+          title: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          date?: string
+          description?: string | null
+          employee_id?: string
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      employee_letters: {
+        Row: {
+          body: string
+          business_id: string
+          created_at: string
+          employee_id: string
+          id: string
+          issued_date: string
+          kind: string
+          letter_number: string | null
+          subject: string
+        }
+        Insert: {
+          body: string
+          business_id: string
+          created_at?: string
+          employee_id: string
+          id?: string
+          issued_date: string
+          kind: string
+          letter_number?: string | null
+          subject: string
+        }
+        Update: {
+          body?: string
+          business_id?: string
+          created_at?: string
+          employee_id?: string
+          id?: string
+          issued_date?: string
+          kind?: string
+          letter_number?: string | null
+          subject?: string
+        }
+        Relationships: []
+      }
+      employee_tasks: {
+        Row: {
+          business_id: string
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          employee_id: string
+          id: string
+          status: string
+          title: string
+        }
+        Insert: {
+          business_id: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          employee_id: string
+          id?: string
+          status?: string
+          title: string
+        }
+        Update: {
+          business_id?: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          employee_id?: string
+          id?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      office_locations: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          lat: number
+          lng: number
+          name: string
+          radius_m: number
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          lat: number
+          lng: number
+          name: string
+          radius_m: number
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          lat?: number
+          lng?: number
+          name?: string
+          radius_m?: number
+        }
+        Relationships: []
+      }
+      reimbursements: {
+        Row: {
+          amount: number
+          business_id: string
+          category: string
+          created_at: string
+          date: string
+          description: string | null
+          employee_id: string
+          id: string
+          payslip_id: string | null
+          reviewed_at: string | null
+          reviewed_note: string | null
+          status: string
+        }
+        Insert: {
+          amount: number
+          business_id: string
+          category?: string
+          created_at?: string
+          date: string
+          description?: string | null
+          employee_id: string
+          id?: string
+          payslip_id?: string | null
+          reviewed_at?: string | null
+          reviewed_note?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          business_id?: string
+          category?: string
+          created_at?: string
+          date?: string
+          description?: string | null
+          employee_id?: string
+          id?: string
+          payslip_id?: string | null
+          reviewed_at?: string | null
+          reviewed_note?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       overtime_requests: {
         Row: {
           business_id: string
