@@ -137,7 +137,7 @@ export default function CheckinClient({
     <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 px-4 py-10">
       <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-sm">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-600 text-lg font-bold text-white">
+          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-portal-600 text-lg font-bold text-white">
             A
           </div>
           <h1 className="text-lg font-bold text-zinc-900">{businessName}</h1>
@@ -154,7 +154,7 @@ export default function CheckinClient({
             setMessage(null);
             setError(null);
           }}
-          className="mb-4 w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
+          className="mb-4 w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm focus:border-portal-600 focus:outline-none focus:ring-2 focus:ring-portal-100"
         >
           <option value="">— Pilih nama —</option>
           {employees.map((e) => (
@@ -176,7 +176,7 @@ export default function CheckinClient({
               value={pin}
               onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
               placeholder="4–6 digit"
-              className="mb-4 w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm tracking-widest focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
+              className="mb-4 w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm tracking-widest focus:border-portal-600 focus:outline-none focus:ring-2 focus:ring-portal-100"
             />
           </>
         )}
@@ -209,7 +209,7 @@ export default function CheckinClient({
             type="button"
             disabled={!employeeId || blockedNoPin || !!pendingAction || status?.checkedIn}
             onClick={() => startAction("in")}
-            className="rounded-xl bg-brand-600 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-xl bg-portal-600 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
           >
             {pendingAction === "in" ? "Memproses…" : "Absen Masuk"}
           </button>
@@ -243,7 +243,7 @@ export default function CheckinClient({
 
         <a
           href={`/karyawan/${slug}`}
-          className="mt-4 block text-center text-xs font-semibold text-brand-600 hover:underline"
+          className="mt-4 block text-center text-xs font-semibold text-portal-600 hover:underline"
         >
           Portal Karyawan — slip gaji, sisa cuti, lembur →
         </a>

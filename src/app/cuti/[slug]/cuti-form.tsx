@@ -24,7 +24,7 @@ export default function CutiForm({
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4">
         <div className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-sm">
-          <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-600 text-lg font-bold text-white">
+          <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-portal-600 text-lg font-bold text-white">
             A
           </div>
           <h1 className="text-lg font-bold text-zinc-900">Pengajuan Terkirim</h1>
@@ -40,7 +40,7 @@ export default function CutiForm({
     <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 px-4 py-10">
       <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-sm">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-600 text-lg font-bold text-white">
+          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-portal-600 text-lg font-bold text-white">
             A
           </div>
           <h1 className="text-lg font-bold text-zinc-900">{businessName}</h1>
@@ -53,7 +53,7 @@ export default function CutiForm({
             <select
               name="employee_id"
               defaultValue=""
-              className="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
+              className="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm focus:border-portal-600 focus:outline-none focus:ring-2 focus:ring-portal-100"
             >
               <option value="" disabled>
                 — Pilih nama —
@@ -71,7 +71,7 @@ export default function CutiForm({
             <select
               name="leave_type_id"
               defaultValue=""
-              className="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
+              className="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm focus:border-portal-600 focus:outline-none focus:ring-2 focus:ring-portal-100"
             >
               <option value="" disabled>
                 — Pilih jenis cuti —
@@ -90,7 +90,7 @@ export default function CutiForm({
               <input
                 name="start_date"
                 type="date"
-                className="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
+                className="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-sm focus:border-portal-600 focus:outline-none focus:ring-2 focus:ring-portal-100"
               />
             </div>
             <div>
@@ -98,7 +98,7 @@ export default function CutiForm({
               <input
                 name="end_date"
                 type="date"
-                className="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
+                className="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-sm focus:border-portal-600 focus:outline-none focus:ring-2 focus:ring-portal-100"
               />
             </div>
           </div>
@@ -108,7 +108,7 @@ export default function CutiForm({
             <textarea
               name="reason"
               rows={2}
-              className="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
+              className="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm focus:border-portal-600 focus:outline-none focus:ring-2 focus:ring-portal-100"
             />
           </div>
 
@@ -119,7 +119,7 @@ export default function CutiForm({
           <button
             type="submit"
             disabled={pending}
-            className="w-full rounded-xl bg-brand-600 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-xl bg-portal-600 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pending ? "Mengirim…" : "Ajukan Cuti"}
           </button>

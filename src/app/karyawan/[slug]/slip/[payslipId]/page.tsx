@@ -114,9 +114,9 @@ export default async function PortalPayslipPage({
             </>
           )}
 
-          <div className="mt-4 flex items-center justify-between rounded-2xl bg-brand-50 px-4 py-3">
-            <span className="text-sm font-semibold text-brand-700">Gaji bersih diterima</span>
-            <span className="text-lg font-bold tabular-nums text-brand-700">{fmtRupiah(total)}</span>
+          <div className="mt-4 flex items-center justify-between rounded-2xl bg-portal-50 px-4 py-3">
+            <span className="text-sm font-semibold text-portal-700">Gaji bersih diterima</span>
+            <span className="text-lg font-bold tabular-nums text-portal-700">{fmtRupiah(total)}</span>
           </div>
         </Card>
 
