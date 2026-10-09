@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ChevronLeft, Plus, type LucideIcon } from "lucide-react";
+import { Plus, type LucideIcon } from "lucide-react";
+import BackButton from "./back-button";
 
 // Komponen tampilan Portal Karyawan gaya aplikasi mobile: header gradasi biru,
 // tombol kembali, kartu menu. Server component murni.
@@ -18,14 +19,7 @@ export function PortalHeader({
   return (
     <header className="bg-gradient-to-b from-portal-300 to-portal-800 text-white">
       <div className="mx-auto flex h-[72px] max-w-md items-center justify-between px-4">
-        <Link
-          href={backHref}
-          prefetch={false}
-          aria-label="Kembali"
-          className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/10"
-        >
-          <ChevronLeft className="h-7 w-7" strokeWidth={2.25} aria-hidden="true" />
-        </Link>
+        <BackButton href={backHref} />
         <h1 className="min-w-0 flex-1 truncate px-2 text-center text-base font-bold">{title}</h1>
         {plusHref ? (
           <Link
@@ -168,7 +162,6 @@ export function MenuCard({
   return (
     <Link
       href={href}
-      prefetch={false}
       className="flex items-center gap-3 rounded-2xl bg-white px-4 py-4 shadow-[0_1px_3px_rgba(15,23,42,0.06)] active:bg-portal-50"
     >
       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-portal-100">
@@ -192,7 +185,7 @@ export function MenuTile({
   label: string;
 }) {
   return (
-    <Link href={href} prefetch={false} className="flex flex-col items-center gap-2 text-center">
+    <Link href={href} className="flex flex-col items-center gap-2 text-center">
       <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-[0_1px_3px_rgba(15,23,42,0.08)]">
         <DuoIcon icon={icon} accent={accent} size="lg" />
       </span>
