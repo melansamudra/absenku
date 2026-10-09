@@ -14,6 +14,17 @@
   --color-brand-700: #4338ca;
   --color-brand-800: #3730a3;
   --color-brand-900: #312e81;
+
+  /* Palet biru khusus Portal Karyawan (header gradasi, kartu menu). */
+  --color-portal-50: #eef4fc;
+  --color-portal-100: #e3effc;
+  --color-portal-200: #c4d8ee;
+  --color-portal-300: #8db9e3;
+  --color-portal-500: #4f80ad;
+  --color-portal-600: #3b6a97;
+  --color-portal-700: #2b5a85;
+  --color-portal-800: #1f5683;
+  --color-portal-900: #17436a;
 }
 
 @theme inline {
@@ -29,6 +40,15 @@
   --color-brand-700: var(--color-brand-700);
   --color-brand-800: var(--color-brand-800);
   --color-brand-900: var(--color-brand-900);
+  --color-portal-50: var(--color-portal-50);
+  --color-portal-100: var(--color-portal-100);
+  --color-portal-200: var(--color-portal-200);
+  --color-portal-300: var(--color-portal-300);
+  --color-portal-500: var(--color-portal-500);
+  --color-portal-600: var(--color-portal-600);
+  --color-portal-700: var(--color-portal-700);
+  --color-portal-800: var(--color-portal-800);
+  --color-portal-900: var(--color-portal-900);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
