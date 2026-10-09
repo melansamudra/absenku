@@ -90,3 +90,15 @@ export function tenureLabel(joinDate: string, today = new Date()): string {
   const rest = months % 12;
   return [years > 0 ? `${years} tahun` : "", rest > 0 ? `${rest} bulan` : ""].filter(Boolean).join(" ");
 }
+
+/** "3173••••••••8901" — hanya 4 digit awal & akhir yang terlihat. */
+export function maskNik(nik: string): string {
+  if (nik.length < 9) return "••••";
+  return `${nik.slice(0, 4)}${"•".repeat(nik.length - 8)}${nik.slice(-4)}`;
+}
+
+/** "••••••7890" — hanya 4 digit terakhir yang terlihat. */
+export function maskAccountNumber(num: string): string {
+  if (num.length <= 4) return "••••";
+  return `${"•".repeat(num.length - 4)}${num.slice(-4)}`;
+}
