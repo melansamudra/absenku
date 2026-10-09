@@ -53,6 +53,7 @@ import {
 } from "./portal-forms";
 import { reimbursementCategoryLabel } from "@/lib/reimbursement/categories";
 import { LETTER_KINDS, isLetterKind } from "@/lib/letters/templates";
+import { maskAccountNumber, maskNik, tenureLabel } from "@/lib/employees/identity";
 import {
   Badge,
   Card,
@@ -74,9 +75,10 @@ type Page =
   | "surat"
   | "kegiatan"
   | "tugas"
-  | "reimburse";
+  | "reimburse"
+  | "profil";
 
-const PAGES: Page[] = ["lainnya", "jadwal", "kehadiran", "cuti", "lembur", "gaji", "surat", "kegiatan", "tugas", "reimburse"];
+const PAGES: Page[] = ["lainnya", "jadwal", "kehadiran", "cuti", "lembur", "gaji", "surat", "kegiatan", "tugas", "reimburse", "profil"];
 
 const OVERTIME_STATUS: Record<string, { label: string; tone: "green" | "amber" | "red" }> = {
   pending: { label: "Menunggu", tone: "amber" },
@@ -449,7 +451,7 @@ export default async function PortalPage({
 
         <main className="relative z-10 mx-auto -mt-20 max-w-md space-y-4 px-4">
           <PortalCard className="!rounded-3xl !p-5 shadow-lg">
-            <div className="flex items-start justify-between gap-3">
+            <Link href={to("profil")} prefetch={false} className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <span className="inline-block max-w-full truncate rounded-xl bg-portal-700 px-4 py-2 text-white">
                   {business.name}
@@ -460,7 +462,7 @@ export default async function PortalPage({
               <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-2 border-portal-700 bg-zinc-200 text-xl font-bold text-zinc-500">
                 {employee.name.charAt(0).toUpperCase()}
               </span>
-            </div>
+            </Link>
             <p className="mt-3 text-zinc-700">
               {fmtDate(today, { weekday: "long", day: "2-digit", month: "short", year: "numeric" })}
             </p>
@@ -550,6 +552,7 @@ export default async function PortalPage({
       { page: "tugas", icon: ClipboardList, accent: Check, label: "Penugasan" },
       { page: "reimburse", icon: Receipt, accent: Coins, label: "Reimburse" },
       { page: "jadwal", icon: CalendarDays, accent: Clock, label: "Jadwal Kerja" },
+      { page: "profil", icon: UserRound, accent: IdCard, label: "Profil Saya" },
     ];
     return (
       <div className={shell}>
@@ -573,6 +576,62 @@ export default async function PortalPage({
         <PortalHeader title="Jadwal Kerja" backHref={base} />
         <main className="mx-auto max-w-md px-4 pt-5">
           <ScheduleTimeline days={schedule} today={today} />
+        </main>
+      </div>
+    );
+  }
+
+  // ───────────────────────── Profil ─────────────────────────
+  if (page === "profil") {
+    const { data: profile } = await supabase
+      .from("employees")
+      .select("nik, join_date, bank_name, bank_account_number, bank_account_name")
+      .eq("id", employee.id)
+      .eq("business_id", business.id)
+      .maybeSingle();
+    const rows: { label: string; value: string | null }[] = [
+      {
+        label: "Tanggal masuk kerja",
+        value: profile?.join_date ? fmtDate(profile.join_date, { day: "numeric", month: "long", year: "numeric" }) : null,
+      },
+      { label: "Masa kerja", value: profile?.join_date ? tenureLabel(profile.join_date) : null },
+      { label: "NIK", value: profile?.nik ? maskNik(profile.nik) : null },
+      { label: "Bank / e-wallet", value: profile?.bank_name ?? null },
+      {
+        label: "No. rekening",
+        value: profile?.bank_account_number ? maskAccountNumber(profile.bank_account_number) : null,
+      },
+      { label: "Atas nama rekening", value: profile?.bank_account_name ?? null },
+    ];
+    return (
+      <div className={shell}>
+        <PortalHeader title="Profil Saya" backHref={base} />
+        <main className="mx-auto max-w-md space-y-4 px-4 pt-4">
+          <PortalCard className="flex items-center gap-4 !p-5">
+            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-portal-700 bg-zinc-200 text-2xl font-bold text-zinc-500">
+              {employee.name.charAt(0).toUpperCase()}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate font-bold text-zinc-700">{employee.name}</p>
+              {employee.note && <p className="truncate text-sm italic text-zinc-600">{employee.note}</p>}
+              <p className="truncate text-xs text-zinc-500">{business.name}</p>
+            </div>
+          </PortalCard>
+          <PortalCard>
+            <dl className="divide-y divide-zinc-100">
+              {rows.map((r) => (
+                <div key={r.label} className="flex items-start justify-between gap-4 py-3 text-sm">
+                  <dt className="text-zinc-500">{r.label}</dt>
+                  <dd className={`text-right font-medium ${r.value ? "text-zinc-800" : "text-zinc-400"}`}>
+                    {r.value ?? "Belum diisi"}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </PortalCard>
+          <p className="px-2 text-center text-xs text-zinc-500">
+            NIK dan nomor rekening disamarkan demi keamanan. Data salah atau berubah? Hubungi admin.
+          </p>
         </main>
       </div>
     );

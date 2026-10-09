@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { loadPendingCounts } from "@/lib/dashboard/pending";
 import DashboardShell from "./dashboard-shell";
 
 export async function generateMetadata({
@@ -54,11 +55,18 @@ export default async function BusinessDashboardLayout({
     }
   }
 
+  const pending = await loadPendingCounts(supabase, businessId);
+
   return (
     <DashboardShell
       businessId={businessId}
       businessName={business.name}
       userEmail={userData.user.email ?? ""}
+      badges={{
+        "leave-requests": pending.cuti,
+        overtime: pending.lembur,
+        reimbursements: pending.reimbursements,
+      }}
     >
       {children}
     </DashboardShell>

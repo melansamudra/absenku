@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { todayWib } from "@/lib/portal/dates";
 import TaskForm from "./task-form";
@@ -5,8 +6,22 @@ import TaskRow, { type TaskItem } from "./task-row";
 
 const employeeName = (e: unknown) => (e as { name: string } | null)?.name ?? "—";
 
-export default async function TasksPage({ params }: { params: Promise<{ businessId: string }> }) {
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export default async function TasksPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ businessId: string }>;
+  searchParams: Promise<{ emp?: string; from?: string; to?: string }>;
+}) {
   const { businessId } = await params;
+  const sp = await searchParams;
+  const empFilter = sp.emp && UUID_RE.test(sp.emp) ? sp.emp : "";
+  const fromFilter = sp.from && DATE_RE.test(sp.from) ? sp.from : "";
+  const toFilter = sp.to && DATE_RE.test(sp.to) ? sp.to : "";
+  const filtered = !!(empFilter || fromFilter || toFilter);
   const supabase = await createClient();
   const today = todayWib();
 
@@ -24,13 +39,19 @@ export default async function TasksPage({ params }: { params: Promise<{ business
       .eq("business_id", businessId)
       .order("created_at", { ascending: false })
       .limit(100),
-    supabase
-      .from("employee_activities")
-      .select("id, date, title, description, employees(name)")
-      .eq("business_id", businessId)
-      .order("date", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(50),
+    (() => {
+      let q = supabase
+        .from("employee_activities")
+        .select("id, date, title, description, employees(name)")
+        .eq("business_id", businessId);
+      if (empFilter) q = q.eq("employee_id", empFilter);
+      if (fromFilter) q = q.gte("date", fromFilter);
+      if (toFilter) q = q.lte("date", toFilter);
+      return q
+        .order("date", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(filtered ? 300 : 50);
+    })(),
   ]);
 
   const tasks: TaskItem[] = (taskRows ?? []).map((t) => {
@@ -91,10 +112,43 @@ export default async function TasksPage({ params }: { params: Promise<{ business
         </>
       )}
 
-      <h2 className="mb-2 text-sm font-semibold text-zinc-800">Kegiatan karyawan (50 terbaru)</h2>
+      <h2 className="mb-2 text-sm font-semibold text-zinc-800">
+        Kegiatan karyawan ({filtered ? `${(activityRows ?? []).length} hasil filter` : "50 terbaru"})
+      </h2>
+      <form method="get" className="mb-3 flex flex-wrap items-end gap-2 rounded-xl border border-zinc-100 bg-white p-3 shadow-sm">
+        <div>
+          <label htmlFor="f-emp" className="mb-1 block text-[11px] font-medium text-zinc-500">Karyawan</label>
+          <select id="f-emp" name="emp" defaultValue={empFilter} className="rounded-lg border border-zinc-200 px-2 py-1.5 text-xs">
+            <option value="">Semua karyawan</option>
+            {(employees ?? []).map((e) => (
+              <option key={e.id} value={e.id}>
+                {e.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="f-from" className="mb-1 block text-[11px] font-medium text-zinc-500">Dari</label>
+          <input id="f-from" name="from" type="date" defaultValue={fromFilter} className="rounded-lg border border-zinc-200 px-2 py-1.5 text-xs" />
+        </div>
+        <div>
+          <label htmlFor="f-to" className="mb-1 block text-[11px] font-medium text-zinc-500">Sampai</label>
+          <input id="f-to" name="to" type="date" defaultValue={toFilter} className="rounded-lg border border-zinc-200 px-2 py-1.5 text-xs" />
+        </div>
+        <button type="submit" className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700">
+          Terapkan
+        </button>
+        {filtered && (
+          <Link href={`/business/${businessId}/tasks`} className="px-1 py-1.5 text-xs text-zinc-500 hover:text-zinc-800">
+            Reset
+          </Link>
+        )}
+      </form>
       {(activityRows ?? []).length === 0 ? (
         <div className="rounded-xl border border-dashed border-zinc-300 bg-white py-8 text-center">
-          <p className="text-sm text-zinc-500">Belum ada laporan kegiatan dari karyawan.</p>
+          <p className="text-sm text-zinc-500">
+            {filtered ? "Tidak ada kegiatan yang cocok dengan filter." : "Belum ada laporan kegiatan dari karyawan."}
+          </p>
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-zinc-100 bg-white shadow-sm">
