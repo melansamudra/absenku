@@ -502,6 +502,7 @@ export type Database = {
           bank_account_number: string | null
           bank_account_name: string | null
           note: string | null
+          photo_path: string | null
           ptkp_status: string
           salary_type: string
         }
@@ -529,6 +530,7 @@ export type Database = {
           bank_account_number?: string | null
           bank_account_name?: string | null
           note?: string | null
+          photo_path?: string | null
           ptkp_status?: string
           salary_type?: string
         }
@@ -556,6 +558,7 @@ export type Database = {
           bank_account_number?: string | null
           bank_account_name?: string | null
           note?: string | null
+          photo_path?: string | null
           ptkp_status?: string
           salary_type?: string
         }

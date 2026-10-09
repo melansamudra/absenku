@@ -36,9 +36,11 @@ import { payslipTotal } from "@/lib/payroll/payslip-total";
 import { loadEmployeeLedgers, type LedgerSummary } from "@/lib/portal/ledgers";
 import { logoutPortal } from "./actions";
 import MonthSelect from "./month-select";
+import PhotoUploader from "./photo-uploader";
 import {
   MenuCard,
   MenuTile,
+  Avatar,
   PortalCard,
   PortalEmpty,
   PortalHeader,
@@ -402,6 +404,9 @@ export default async function PortalPage({
   const isNew = sp.new === "1";
   const today = todayWib();
   const base = `/karyawan/${slug}`;
+  const photoSrc = employee.photoPath
+    ? `${base}/foto?v=${encodeURIComponent(employee.photoPath.split("/").pop() ?? "")}`
+    : null;
   const to = (p: Page, extra = "") => `${base}?p=${p}${extra}`;
   const shell = "min-h-screen bg-[#f6f6f6] pb-10";
 
@@ -459,9 +464,11 @@ export default async function PortalPage({
                 <p className="mt-3 truncate text-base font-bold text-zinc-700">{employee.name}</p>
                 {employee.note && <p className="truncate italic text-zinc-600">{employee.note}</p>}
               </div>
-              <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-2 border-portal-700 bg-zinc-200 text-xl font-bold text-zinc-500">
-                {employee.name.charAt(0).toUpperCase()}
-              </span>
+              <Avatar
+                name={employee.name}
+                src={photoSrc}
+                className="h-20 w-20 border-2 border-portal-700 text-3xl"
+              />
             </Link>
             <p className="mt-3 text-zinc-700">
               {fmtDate(today, { weekday: "long", day: "2-digit", month: "short", year: "numeric" })}
@@ -608,13 +615,16 @@ export default async function PortalPage({
         <PortalHeader title="Profil Saya" backHref={base} />
         <main className="mx-auto max-w-md space-y-4 px-4 pt-4">
           <PortalCard className="flex items-center gap-4 !p-5">
-            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-portal-700 bg-zinc-200 text-2xl font-bold text-zinc-500">
-              {employee.name.charAt(0).toUpperCase()}
-            </span>
+            <Avatar
+              name={employee.name}
+              src={photoSrc}
+              className="h-20 w-20 border-2 border-portal-700 text-3xl"
+            />
             <div className="min-w-0">
               <p className="truncate font-bold text-zinc-700">{employee.name}</p>
               {employee.note && <p className="truncate text-sm italic text-zinc-600">{employee.note}</p>}
               <p className="truncate text-xs text-zinc-500">{business.name}</p>
+              <PhotoUploader slug={slug} hasPhoto={!!employee.photoPath} />
             </div>
           </PortalCard>
           <PortalCard>

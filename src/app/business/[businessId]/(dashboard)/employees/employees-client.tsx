@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import {
   createEmployee,
+  removeEmployeePhoto,
   setEmployeeActive,
   softDeleteEmployee,
   updateEmployee,
@@ -36,6 +37,7 @@ export type EmployeeRow = {
   bank_account_number: string | null;
   bank_account_name: string | null;
   has_pin: boolean;
+  photo_url: string | null;
 };
 
 function fmtRupiah(v: number) {
@@ -98,6 +100,15 @@ export default function EmployeesClient({
                 key={e.id}
                 className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
               >
+                <div className="flex min-w-0 items-center gap-3">
+                  {e.photo_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- signed URL sementara dari bucket privat
+                    <img src={e.photo_url} alt={`Foto ${e.name}`} className="h-11 w-11 shrink-0 rounded-full object-cover" />
+                  ) : (
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-sm font-bold text-zinc-400">
+                      {e.name.charAt(0).toUpperCase()}
+                    </span>
+                  )}
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="font-semibold text-zinc-900">{e.name}</p>
@@ -132,6 +143,7 @@ export default function EmployeesClient({
                     </p>
                   )}
                 </div>
+                </div>
                 <div className="flex shrink-0 gap-2">
                   <button
                     type="button"
@@ -140,6 +152,17 @@ export default function EmployeesClient({
                   >
                     Edit
                   </button>
+                  {e.photo_url && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (confirm(`Hapus foto profil ${e.name}?`)) removeEmployeePhoto(businessId, e.id);
+                      }}
+                      className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-50"
+                    >
+                      Hapus Foto
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => setEmployeeActive(businessId, e.id, !e.active)}
