@@ -6,9 +6,9 @@ import { importEmployeesCsv, type ImportState } from "./import-actions";
 const initialState: ImportState = { error: null, importedCount: 0, rowErrors: [] };
 
 const TEMPLATE_CSV =
-  "nama,tipe_gaji,gaji_harian,gaji_bulanan,divisi,email\n" +
-  "Budi Santoso,harian,100000,,Kasir,budi@email.com\n" +
-  "Siti Aminah,bulanan,,3000000,Admin,\n";
+  "nama,tipe_gaji,gaji_harian,gaji_bulanan,divisi,email,nik,tanggal_masuk,bank,no_rekening,atas_nama\n" +
+  "Budi Santoso,harian,100000,,Kasir,budi@email.com,3173012345678901,2025-01-15,BCA,1234567890,Budi Santoso\n" +
+  "Siti Aminah,bulanan,,3000000,Admin,,,,,,\n";
 
 function downloadTemplate() {
   const blob = new Blob([TEMPLATE_CSV], { type: "text/csv;charset=utf-8" });
@@ -39,7 +39,9 @@ export default function ImportEmployeesModal({
         <p className="mb-4 text-xs text-zinc-500">
           Header wajib: <code>nama</code>. Opsional: <code>tipe_gaji</code> (harian/bulanan,
           default harian), <code>gaji_harian</code>, <code>gaji_bulanan</code>,{" "}
-          <code>divisi</code>, <code>email</code>.
+          <code>divisi</code>, <code>email</code>, <code>nik</code> (16 digit),{" "}
+          <code>tanggal_masuk</code> (YYYY-MM-DD), <code>bank</code>, <code>no_rekening</code>,{" "}
+          <code>atas_nama</code>.
         </p>
 
         <button

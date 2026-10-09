@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { logActivity } from "@/lib/activity-log";
+import { identityDbError, parseIdentity, type EmployeeIdentity } from "@/lib/employees/identity";
 
 export type ImportState = {
   error: string | null;
@@ -24,6 +25,18 @@ const HEADER_ALIASES: Record<string, string> = {
   jabatan: "note",
   note: "note",
   email: "email",
+  nik: "nik",
+  tanggal_masuk: "join_date",
+  join_date: "join_date",
+  bank: "bank_name",
+  nama_bank: "bank_name",
+  bank_name: "bank_name",
+  no_rekening: "bank_account_number",
+  nomor_rekening: "bank_account_number",
+  bank_account_number: "bank_account_number",
+  atas_nama: "bank_account_name",
+  nama_rekening: "bank_account_name",
+  bank_account_name: "bank_account_name",
 };
 
 // Parser CSV minimal yang menangani field berkutip (mendukung koma/petik di
@@ -104,8 +117,15 @@ export async function importEmployeesCsv(
   const monthlyRateIdx = headerRow.indexOf("monthly_rate");
   const noteIdx = headerRow.indexOf("note");
   const emailIdx = headerRow.indexOf("email");
+  const identityIdx = {
+    nik: headerRow.indexOf("nik"),
+    join_date: headerRow.indexOf("join_date"),
+    bank_name: headerRow.indexOf("bank_name"),
+    bank_account_number: headerRow.indexOf("bank_account_number"),
+    bank_account_name: headerRow.indexOf("bank_account_name"),
+  };
 
-  const validRows: {
+  const validRows: ({
     business_id: string;
     name: string;
     salary_type: string;
@@ -113,7 +133,7 @@ export async function importEmployeesCsv(
     monthly_rate: number;
     note: string | null;
     email: string | null;
-  }[] = [];
+  } & EmployeeIdentity)[] = [];
   const rowErrors: string[] = [];
 
   for (let i = 1; i < rows.length; i++) {
@@ -138,7 +158,21 @@ export async function importEmployeesCsv(
     const note = noteIdx >= 0 ? (cells[noteIdx] ?? "").trim() || null : null;
     const email = emailIdx >= 0 ? (cells[emailIdx] ?? "").trim() || null : null;
 
+    const cell = (idx: number) => (idx >= 0 ? (cells[idx] ?? "") : "");
+    const identity = parseIdentity({
+      nik: cell(identityIdx.nik),
+      join_date: cell(identityIdx.join_date),
+      bank_name: cell(identityIdx.bank_name),
+      bank_account_number: cell(identityIdx.bank_account_number),
+      bank_account_name: cell(identityIdx.bank_account_name),
+    });
+    if ("error" in identity) {
+      rowErrors.push(`Baris ${rowNum}: ${identity.error} Dilewati.`);
+      continue;
+    }
+
     validRows.push({
+      ...identity.value,
       business_id: businessId,
       name,
       salary_type: salaryType,
@@ -161,7 +195,7 @@ export async function importEmployeesCsv(
   const { error } = await supabase.from("employees").insert(validRows);
 
   if (error) {
-    return { error: error.message, importedCount: 0, rowErrors };
+    return { error: identityDbError(error), importedCount: 0, rowErrors };
   }
 
   await logActivity(

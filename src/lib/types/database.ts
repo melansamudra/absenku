@@ -496,6 +496,11 @@ export type Database = {
           lembur_rate_per_hour: number | null
           monthly_rate: number
           name: string
+          nik: string | null
+          join_date: string | null
+          bank_name: string | null
+          bank_account_number: string | null
+          bank_account_name: string | null
           note: string | null
           ptkp_status: string
           salary_type: string
@@ -518,6 +523,11 @@ export type Database = {
           lembur_rate_per_hour?: number | null
           monthly_rate?: number
           name: string
+          nik?: string | null
+          join_date?: string | null
+          bank_name?: string | null
+          bank_account_number?: string | null
+          bank_account_name?: string | null
           note?: string | null
           ptkp_status?: string
           salary_type?: string
@@ -540,6 +550,11 @@ export type Database = {
           lembur_rate_per_hour?: number | null
           monthly_rate?: number
           name?: string
+          nik?: string | null
+          join_date?: string | null
+          bank_name?: string | null
+          bank_account_number?: string | null
+          bank_account_name?: string | null
           note?: string | null
           ptkp_status?: string
           salary_type?: string

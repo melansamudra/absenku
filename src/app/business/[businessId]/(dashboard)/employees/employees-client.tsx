@@ -11,6 +11,7 @@ import {
 } from "./actions";
 import EmployeeForm, { type EmployeeFormValues } from "./employee-form";
 import ImportEmployeesModal from "./import-employees-modal";
+import { tenureLabel } from "@/lib/employees/identity";
 
 export type EmployeeRow = {
   id: string;
@@ -29,6 +30,11 @@ export type EmployeeRow = {
   bpjs_kesehatan: boolean;
   bpjs_ketenagakerjaan: boolean;
   bpjs_wage_base: number | null;
+  nik: string | null;
+  join_date: string | null;
+  bank_name: string | null;
+  bank_account_number: string | null;
+  bank_account_name: string | null;
   has_pin: boolean;
 };
 
@@ -112,6 +118,19 @@ export default function EmployeesClient({
                       ? `${fmtRupiah(e.daily_rate)}/hari`
                       : `${fmtRupiah(e.monthly_rate)}/bulan`}
                   </p>
+                  {(e.nik || e.join_date || e.bank_name) && (
+                    <p className="mt-0.5 text-xs text-zinc-400">
+                      {e.nik ? `NIK ${e.nik}` : ""}
+                      {e.nik && (e.join_date || e.bank_name) ? " · " : ""}
+                      {e.join_date
+                        ? `Masuk ${new Date(`${e.join_date}T00:00:00Z`).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })} (${tenureLabel(e.join_date)})`
+                        : ""}
+                      {e.join_date && e.bank_name ? " · " : ""}
+                      {e.bank_name
+                        ? `${e.bank_name} ${e.bank_account_number ?? ""}${e.bank_account_name ? ` a.n. ${e.bank_account_name}` : ""}`
+                        : ""}
+                    </p>
+                  )}
                 </div>
                 <div className="flex shrink-0 gap-2">
                   <button

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { logActivity } from "@/lib/activity-log";
 import { hashPin, PIN_PATTERN } from "@/lib/attendance/pin";
+import { identityDbError, parseIdentity } from "@/lib/employees/identity";
 
 export type ActionState = { error: string | null };
 
@@ -29,6 +30,16 @@ function bpjsFields(formData: FormData) {
     bpjs_ketenagakerjaan: formData.get("bpjs_ketenagakerjaan") === "on",
     bpjs_wage_base: wageBase !== null && Number.isFinite(wageBase) && wageBase > 0 ? wageBase : null,
   };
+}
+
+function readIdentity(formData: FormData) {
+  return parseIdentity({
+    nik: formData.get("nik"),
+    join_date: formData.get("join_date"),
+    bank_name: formData.get("bank_name"),
+    bank_account_number: formData.get("bank_account_number"),
+    bank_account_name: formData.get("bank_account_name"),
+  });
 }
 
 function numOrZero(v: FormDataEntryValue | null) {
@@ -59,6 +70,8 @@ export async function createEmployee(
   }
   const pinUpdate = await readPinUpdate(formData);
   if ("error" in pinUpdate) return pinUpdate;
+  const identity = readIdentity(formData);
+  if ("error" in identity) return identity;
 
   const { error } = await supabase.from("employees").insert({
     attendance_pin_hash: pinUpdate.value ?? null,
@@ -71,6 +84,7 @@ export async function createEmployee(
     email,
     contract_end: contractEnd,
     ptkp_status: ptkpStatus,
+    ...identity.value,
     ...bpjsFields(formData),
     daily_meal_allowance: numOrZero(formData.get("daily_meal_allowance")),
     daily_attendance_allowance: numOrZero(formData.get("daily_attendance_allowance")),
@@ -79,7 +93,7 @@ export async function createEmployee(
       : null,
   });
 
-  if (error) return { error: error.message };
+  if (error) return { error: identityDbError(error) };
 
   revalidatePath(`/business/${businessId}/employees`);
   return { error: null };
@@ -109,6 +123,8 @@ export async function updateEmployee(
   }
   const pinUpdate = await readPinUpdate(formData);
   if ("error" in pinUpdate) return pinUpdate;
+  const identity = readIdentity(formData);
+  if ("error" in identity) return identity;
 
   const { error } = await supabase
     .from("employees")
@@ -122,6 +138,7 @@ export async function updateEmployee(
       email,
       contract_end: contractEnd,
       ptkp_status: ptkpStatus,
+      ...identity.value,
       ...bpjsFields(formData),
       daily_meal_allowance: numOrZero(formData.get("daily_meal_allowance")),
       daily_attendance_allowance: numOrZero(formData.get("daily_attendance_allowance")),
@@ -132,7 +149,7 @@ export async function updateEmployee(
     .eq("id", employeeId)
     .eq("business_id", businessId);
 
-  if (error) return { error: error.message };
+  if (error) return { error: identityDbError(error) };
 
   revalidatePath(`/business/${businessId}/employees`);
   return { error: null };

@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import type { ActionState } from "./actions";
+import { BANK_OPTIONS } from "@/lib/employees/identity";
 
 const initialState: ActionState = { error: null };
 
@@ -14,6 +15,11 @@ export type EmployeeFormValues = {
   note: string | null;
   email: string | null;
   contract_end: string | null;
+  nik?: string | null;
+  join_date?: string | null;
+  bank_name?: string | null;
+  bank_account_number?: string | null;
+  bank_account_name?: string | null;
   daily_meal_allowance: number;
   daily_attendance_allowance: number;
   lembur_rate_per_hour: number | null;
@@ -96,6 +102,84 @@ export default function EmployeeForm({
           placeholder="mis. budi@email.com — dipakai buat notifikasi cuti"
         />
       </div>
+
+      <fieldset className="space-y-3 rounded-lg border border-zinc-100 bg-zinc-50/60 p-3">
+        <legend className="px-1 text-xs font-semibold text-zinc-700">Data Pribadi &amp; Rekening</legend>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="nik" className="mb-1 block text-xs font-medium text-zinc-600">
+              NIK (16 digit)
+            </label>
+            <input
+              id="nik"
+              name="nik"
+              inputMode="numeric"
+              maxLength={16}
+              defaultValue={initial?.nik ?? ""}
+              placeholder="3173xxxxxxxxxxxx"
+              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
+            />
+          </div>
+          <div>
+            <label htmlFor="join_date" className="mb-1 block text-xs font-medium text-zinc-600">
+              Tanggal Masuk Kerja
+            </label>
+            <input
+              id="join_date"
+              name="join_date"
+              type="date"
+              defaultValue={initial?.join_date ?? ""}
+              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="bank_name" className="mb-1 block text-xs font-medium text-zinc-600">
+              Bank / E-Wallet
+            </label>
+            <input
+              id="bank_name"
+              name="bank_name"
+              list="bank-options"
+              defaultValue={initial?.bank_name ?? ""}
+              placeholder="mis. BCA"
+              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
+            />
+            <datalist id="bank-options">
+              {BANK_OPTIONS.map((b) => (
+                <option key={b} value={b} />
+              ))}
+            </datalist>
+          </div>
+          <div>
+            <label htmlFor="bank_account_number" className="mb-1 block text-xs font-medium text-zinc-600">
+              No. Rekening
+            </label>
+            <input
+              id="bank_account_number"
+              name="bank_account_number"
+              inputMode="numeric"
+              maxLength={24}
+              defaultValue={initial?.bank_account_number ?? ""}
+              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
+            />
+          </div>
+        </div>
+        <div>
+          <label htmlFor="bank_account_name" className="mb-1 block text-xs font-medium text-zinc-600">
+            Atas Nama Rekening
+          </label>
+          <input
+            id="bank_account_name"
+            name="bank_account_name"
+            maxLength={100}
+            defaultValue={initial?.bank_account_name ?? ""}
+            placeholder="Sesuai buku tabungan"
+            className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
+          />
+        </div>
+      </fieldset>
 
       <fieldset>
         <legend className="mb-1.5 block text-xs font-medium text-zinc-600">Tipe Gaji</legend>
