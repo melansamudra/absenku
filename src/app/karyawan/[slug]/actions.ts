@@ -11,6 +11,7 @@ import {
   setPortalSession,
 } from "@/lib/portal/session";
 import { todayWib, addDays } from "@/lib/portal/dates";
+import { REIMBURSEMENT_CATEGORIES } from "@/lib/reimbursement/categories";
 
 export type PortalActionState = { error: string | null; success?: string | null };
 
@@ -127,4 +128,143 @@ export async function submitOvertimeRequest(
 
   revalidatePath(`/karyawan/${slug}`);
   return { error: null, success: "Pengajuan lembur terkirim — menunggu persetujuan admin." };
+}
+
+const CLAIM_COOLDOWN_MS = 30 * 1000;
+const CLAIM_MAX_AGE_DAYS = 90;
+const CLAIM_MAX_AMOUNT = 50_000_000;
+
+export async function submitReimbursement(
+  slug: string,
+  _prevState: PortalActionState,
+  formData: FormData,
+): Promise<PortalActionState> {
+  const business = await loadPortalBusiness(slug);
+  if (!business) return { error: "Link portal tidak valid." };
+  const employee = await getPortalEmployee(business);
+  if (!employee) return { error: "Sesi habis — masuk lagi dengan PIN." };
+
+  const date = (formData.get("date") as string | null) ?? "";
+  const category = (formData.get("category") as string | null) ?? "";
+  const amount = Number(formData.get("amount") ?? 0);
+  const description = ((formData.get("description") as string | null) ?? "").trim().slice(0, 300) || null;
+
+  const today = todayWib();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { error: "Tanggal tidak valid." };
+  if (date > today) return { error: "Tanggal pengeluaran tidak boleh di masa depan." };
+  if (date < addDays(today, -CLAIM_MAX_AGE_DAYS)) {
+    return { error: `Klaim hanya bisa diajukan maksimal ${CLAIM_MAX_AGE_DAYS} hari ke belakang.` };
+  }
+  if (!(category in REIMBURSEMENT_CATEGORIES)) return { error: "Kategori tidak valid." };
+  if (!Number.isFinite(amount) || amount < 1 || amount > CLAIM_MAX_AMOUNT) {
+    return { error: "Nominal harus antara Rp1 dan Rp50.000.000." };
+  }
+  if (!description) return { error: "Isi keterangan pengeluaran." };
+
+  const supabase = createServiceClient();
+
+  const { data: recent } = await supabase
+    .from("public_submission_log")
+    .select("id")
+    .eq("business_id", business.id)
+    .eq("kind", "klaim")
+    .eq("employee_id", employee.id)
+    .gte("created_at", new Date(Date.now() - CLAIM_COOLDOWN_MS).toISOString())
+    .limit(1)
+    .maybeSingle();
+  if (recent) return { error: "Tunggu sebentar sebelum mengajukan lagi." };
+
+  await supabase
+    .from("public_submission_log")
+    .insert({ business_id: business.id, kind: "klaim", employee_id: employee.id });
+
+  const { error } = await supabase.from("reimbursements").insert({
+    business_id: business.id,
+    employee_id: employee.id,
+    date,
+    category,
+    amount: Math.round(amount),
+    description,
+  });
+  if (error) return { error: "Gagal mengirim klaim. Coba lagi." };
+
+  revalidatePath(`/karyawan/${slug}`);
+  return { error: null, success: "Klaim terkirim — menunggu persetujuan admin." };
+}
+
+const ACTIVITY_COOLDOWN_MS = 10 * 1000;
+const ACTIVITY_MAX_AGE_DAYS = 7;
+
+export async function submitActivity(
+  slug: string,
+  _prevState: PortalActionState,
+  formData: FormData,
+): Promise<PortalActionState> {
+  const business = await loadPortalBusiness(slug);
+  if (!business) return { error: "Link portal tidak valid." };
+  const employee = await getPortalEmployee(business);
+  if (!employee) return { error: "Sesi habis — masuk lagi dengan PIN." };
+
+  const date = (formData.get("date") as string | null) ?? "";
+  const title = ((formData.get("title") as string | null) ?? "").trim().slice(0, 150);
+  const description = ((formData.get("description") as string | null) ?? "").trim().slice(0, 500) || null;
+
+  const today = todayWib();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { error: "Tanggal tidak valid." };
+  if (date > today) return { error: "Tanggal kegiatan tidak boleh di masa depan." };
+  if (date < addDays(today, -ACTIVITY_MAX_AGE_DAYS)) {
+    return { error: `Kegiatan hanya bisa dilaporkan maksimal ${ACTIVITY_MAX_AGE_DAYS} hari ke belakang.` };
+  }
+  if (!title) return { error: "Tulis kegiatan yang kamu lakukan." };
+
+  const supabase = createServiceClient();
+
+  const { data: recent } = await supabase
+    .from("public_submission_log")
+    .select("id")
+    .eq("business_id", business.id)
+    .eq("kind", "kegiatan")
+    .eq("employee_id", employee.id)
+    .gte("created_at", new Date(Date.now() - ACTIVITY_COOLDOWN_MS).toISOString())
+    .limit(1)
+    .maybeSingle();
+  if (recent) return { error: "Tunggu sebentar sebelum melapor lagi." };
+
+  await supabase
+    .from("public_submission_log")
+    .insert({ business_id: business.id, kind: "kegiatan", employee_id: employee.id });
+
+  const { error } = await supabase.from("employee_activities").insert({
+    business_id: business.id,
+    employee_id: employee.id,
+    date,
+    title,
+    description,
+  });
+  if (error) return { error: "Gagal menyimpan kegiatan. Coba lagi." };
+
+  revalidatePath(`/karyawan/${slug}`);
+  return { error: null, success: "Kegiatan tersimpan." };
+}
+
+export async function updateTaskStatus(
+  slug: string,
+  taskId: string,
+  status: "todo" | "in_progress" | "done",
+) {
+  if (status !== "todo" && status !== "in_progress" && status !== "done") return;
+  const business = await loadPortalBusiness(slug);
+  if (!business) return;
+  const employee = await getPortalEmployee(business);
+  if (!employee) return;
+
+  const supabase = createServiceClient();
+  await supabase
+    .from("employee_tasks")
+    .update({ status, completed_at: status === "done" ? new Date().toISOString() : null })
+    .eq("id", taskId)
+    .eq("business_id", business.id)
+    .eq("employee_id", employee.id);
+
+  revalidatePath(`/karyawan/${slug}`);
 }

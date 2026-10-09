@@ -1,6 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { checkEmployeePin } from "@/lib/attendance/pin-check";
-import { distanceMeters } from "@/lib/attendance/geofence";
+import { checkGeofence, type GeofenceSpot } from "@/lib/attendance/geofence";
 import { computeOvertimeHours } from "@/lib/payroll/overtime";
 
 // Karyawan tidak login (buka link publik pakai slug), jadi tidak ada session
@@ -260,29 +260,43 @@ export async function POST(request: Request) {
     );
   }
 
-  // Geofence — aktif hanya kalau titik kantor & radius sudah diisi di
-  // Pengaturan. Lokasi dari browser tetap bisa dipalsukan oleh pengguna yang
-  // niat (GPS spoofing), tapi ini menutup kasus umum absen dari rumah.
+  // Geofence — aktif kalau titik kantor utama (Pengaturan) dan/atau lokasi
+  // kantor tambahan sudah diisi; lolos kalau berada dalam radius SALAH SATU.
+  // Lokasi dari browser tetap bisa dipalsukan oleh pengguna yang niat (GPS
+  // spoofing), tapi ini menutup kasus umum absen dari rumah.
+  const spots: GeofenceSpot[] = [];
   if (
     business.office_lat !== null &&
     business.office_lng !== null &&
     business.attendance_radius_m !== null
   ) {
+    spots.push({
+      lat: Number(business.office_lat),
+      lng: Number(business.office_lng),
+      radiusM: business.attendance_radius_m,
+    });
+  }
+  const { data: extraLocations } = await supabase
+    .from("office_locations")
+    .select("lat, lng, radius_m")
+    .eq("business_id", business.id);
+  for (const l of extraLocations ?? []) {
+    spots.push({ lat: Number(l.lat), lng: Number(l.lng), radiusM: l.radius_m });
+  }
+
+  if (spots.length > 0) {
     if (lat === null || lng === null) {
       return Response.json(
         { ok: false, error: "Lokasi wajib aktif untuk absen. Izinkan akses lokasi di browser lalu coba lagi." },
         { status: 400 },
       );
     }
-    const distance = distanceMeters(
-      { lat, lng },
-      { lat: Number(business.office_lat), lng: Number(business.office_lng) },
-    );
-    if (distance > business.attendance_radius_m) {
+    const geo = checkGeofence({ lat, lng }, spots);
+    if (!geo.ok && geo.nearest) {
       return Response.json(
         {
           ok: false,
-          error: `Kamu berada sekitar ${Math.round(distance)} m dari lokasi kerja (batas ${business.attendance_radius_m} m). Absen hanya bisa dilakukan di lokasi kerja.`,
+          error: `Kamu berada sekitar ${Math.round(geo.nearest.distance)} m dari lokasi kerja terdekat (batas ${geo.nearest.radiusM} m). Absen hanya bisa dilakukan di lokasi kerja.`,
         },
         { status: 403 },
       );

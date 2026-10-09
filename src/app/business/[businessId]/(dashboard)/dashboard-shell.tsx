@@ -12,6 +12,9 @@ const NAV = [
   { key: "leave-requests", label: "Cuti", icon: "🌴" },
   { key: "overtime", label: "Lembur", icon: "⏱️" },
   { key: "payroll", label: "Payroll", icon: "💰" },
+  { key: "reimbursements", label: "Reimbursement", icon: "🧾" },
+  { key: "tasks", label: "Tugas & Kegiatan", icon: "✅" },
+  { key: "letters", label: "Surat SP/SK", icon: "✉️" },
   { key: "settings", label: "Pengaturan", icon: "⚙️" },
 ] as const;
 

@@ -6,6 +6,8 @@ import {
   ChevronRight,
   CircleAlert,
   Clock,
+  ClipboardList,
+  Mail,
   HandCoins,
   House,
   Landmark,
@@ -23,7 +25,15 @@ import { loadAttendanceSummary } from "@/lib/payroll/aggregate";
 import { payslipTotal } from "@/lib/payroll/payslip-total";
 import { loadEmployeeLedgers, type LedgerSummary } from "@/lib/portal/ledgers";
 import { logoutPortal } from "./actions";
-import { OvertimeRequestForm, PortalLoginForm } from "./portal-forms";
+import {
+  ActivityForm,
+  OvertimeRequestForm,
+  PortalLoginForm,
+  ReimbursementForm,
+  TaskStatusSelect,
+} from "./portal-forms";
+import { reimbursementCategoryLabel } from "@/lib/reimbursement/categories";
+import { LETTER_KINDS, isLetterKind } from "@/lib/letters/templates";
 import {
   Badge,
   BottomNav,
@@ -36,7 +46,7 @@ import {
   fmtRupiah,
 } from "./ui";
 
-type Tab = "beranda" | "gaji" | "lembur";
+type Tab = "beranda" | "gaji" | "lembur" | "klaim" | "aktivitas";
 
 const OVERTIME_STATUS: Record<string, { label: string; tone: "green" | "amber" | "red" }> = {
   pending: { label: "Menunggu", tone: "amber" },
@@ -280,6 +290,8 @@ export default async function PortalPage({
     { key: "beranda", label: "Beranda", icon: House },
     { key: "gaji", label: "Gaji", icon: Wallet },
     ...(business.overtime_approval_required ? [{ key: "lembur" as const, label: "Lembur", icon: Clock }] : []),
+    { key: "klaim", label: "Klaim", icon: Receipt },
+    { key: "aktivitas", label: "Aktivitas", icon: ClipboardList },
   ];
   const tab: Tab = tabs.some((t) => t.key === tabParam) ? (tabParam as Tab) : "beranda";
 
@@ -339,6 +351,48 @@ export default async function PortalPage({
       .lte("date", month.end)
       .order("date", { ascending: false }),
   ]);
+
+  const [{ data: claims }, { data: tasks }, { data: activities }, { data: letters }] = await Promise.all([
+    tab === "klaim"
+      ? supabase
+          .from("reimbursements")
+          .select("id, date, category, amount, description, status, reviewed_note, payslip_id")
+          .eq("business_id", business.id)
+          .eq("employee_id", employee.id)
+          .order("date", { ascending: false })
+          .order("created_at", { ascending: false })
+          .limit(15)
+      : Promise.resolve({ data: [] }),
+    tab === "aktivitas"
+      ? supabase
+          .from("employee_tasks")
+          .select("id, title, description, due_date, status")
+          .eq("business_id", business.id)
+          .eq("employee_id", employee.id)
+          .order("created_at", { ascending: false })
+          .limit(30)
+      : Promise.resolve({ data: [] }),
+    tab === "aktivitas"
+      ? supabase
+          .from("employee_activities")
+          .select("id, date, title, description")
+          .eq("business_id", business.id)
+          .eq("employee_id", employee.id)
+          .order("date", { ascending: false })
+          .order("created_at", { ascending: false })
+          .limit(10)
+      : Promise.resolve({ data: [] }),
+    tab === "aktivitas"
+      ? supabase
+          .from("employee_letters")
+          .select("id, kind, letter_number, issued_date, subject, body")
+          .eq("business_id", business.id)
+          .eq("employee_id", employee.id)
+          .order("issued_date", { ascending: false })
+          .limit(20)
+      : Promise.resolve({ data: [] }),
+  ]);
+  const openTaskCount = (tasks ?? []).filter((t) => t.status !== "done").length;
 
   const payslipIds = (payslips ?? []).map((p) => p.id);
   const { data: adjustments } = payslipIds.length
@@ -547,6 +601,131 @@ export default async function PortalPage({
                       </li>
                     );
                   })}
+                </ul>
+              )}
+            </Card>
+          </>
+        )}
+
+        {tab === "klaim" && (
+          <>
+            <Card title="Ajukan reimbursement" icon={Receipt}>
+              <ReimbursementForm slug={slug} today={today} />
+            </Card>
+            <Card title="Riwayat klaim" icon={CalendarCheck}>
+              {(claims ?? []).length === 0 ? (
+                <EmptyState icon={Receipt} text="Belum ada klaim." />
+              ) : (
+                <ul className="divide-y divide-zinc-100">
+                  {(claims ?? []).map((c) => {
+                    const status =
+                      c.status === "rejected"
+                        ? { label: "Ditolak", tone: "red" as const }
+                        : c.status === "approved"
+                          ? { label: c.payslip_id ? "Masuk slip" : "Disetujui", tone: "green" as const }
+                          : { label: "Menunggu", tone: "amber" as const };
+                    return (
+                      <li key={c.id} className="flex items-start justify-between gap-3 py-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-zinc-900">
+                            {fmtRupiah(Number(c.amount))} · {reimbursementCategoryLabel(c.category)}
+                          </p>
+                          <p className="truncate text-xs text-zinc-500">
+                            {fmtDate(c.date, { day: "numeric", month: "short" })}
+                            {c.description ? ` · ${c.description}` : ""}
+                          </p>
+                          {c.status === "rejected" && c.reviewed_note && (
+                            <p className="text-xs text-red-500">Alasan: {c.reviewed_note}</p>
+                          )}
+                        </div>
+                        <Badge tone={status.tone}>{status.label}</Badge>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </Card>
+          </>
+        )}
+
+        {tab === "aktivitas" && (
+          <>
+            <Card
+              title="Tugas dari admin"
+              icon={ClipboardList}
+              action={openTaskCount > 0 ? <Badge tone="amber">{openTaskCount} aktif</Badge> : undefined}
+            >
+              {(tasks ?? []).length === 0 ? (
+                <EmptyState icon={ClipboardList} text="Belum ada tugas." />
+              ) : (
+                <ul className="divide-y divide-zinc-100">
+                  {(tasks ?? []).map((t) => (
+                    <li key={t.id} className="flex items-start justify-between gap-3 py-3">
+                      <div className="min-w-0">
+                        <p
+                          className={`text-sm font-medium ${t.status === "done" ? "text-zinc-400 line-through" : "text-zinc-900"}`}
+                        >
+                          {t.title}
+                        </p>
+                        {t.description && <p className="text-xs text-zinc-500">{t.description}</p>}
+                        {t.due_date && (
+                          <p
+                            className={`text-xs ${t.status !== "done" && t.due_date < today ? "font-semibold text-red-500" : "text-zinc-400"}`}
+                          >
+                            Tenggat {fmtDate(t.due_date, { day: "numeric", month: "short" })}
+                          </p>
+                        )}
+                      </div>
+                      <TaskStatusSelect
+                        slug={slug}
+                        taskId={t.id}
+                        status={(["todo", "in_progress", "done"].includes(t.status) ? t.status : "todo") as "todo" | "in_progress" | "done"}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+
+            <Card title="Lapor kegiatan" icon={CalendarCheck}>
+              <ActivityForm slug={slug} today={today} />
+              {(activities ?? []).length > 0 && (
+                <ul className="mt-4 divide-y divide-zinc-100 border-t border-zinc-100">
+                  {(activities ?? []).map((a) => (
+                    <li key={a.id} className="py-3">
+                      <p className="text-sm font-medium text-zinc-900">{a.title}</p>
+                      <p className="text-xs text-zinc-500">
+                        {fmtDate(a.date, { weekday: "short", day: "numeric", month: "short" })}
+                        {a.description ? ` · ${a.description}` : ""}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+
+            <Card title="Surat untuk saya" icon={Mail}>
+              {(letters ?? []).length === 0 ? (
+                <EmptyState icon={Mail} text="Belum ada surat." />
+              ) : (
+                <ul className="divide-y divide-zinc-100">
+                  {(letters ?? []).map((l) => (
+                    <li key={l.id} className="py-3">
+                      <details>
+                        <summary className="cursor-pointer list-none">
+                          <p className="text-sm font-medium text-zinc-900">
+                            {isLetterKind(l.kind) ? LETTER_KINDS[l.kind] : l.kind}
+                          </p>
+                          <p className="text-xs text-zinc-500">
+                            {fmtDate(l.issued_date)} · {l.letter_number}
+                          </p>
+                        </summary>
+                        <p className="mt-2 whitespace-pre-wrap rounded-xl bg-zinc-50 p-3 text-xs text-zinc-700">
+                          {l.body}
+                        </p>
+                      </details>
+                    </li>
+                  ))}
                 </ul>
               )}
             </Card>
