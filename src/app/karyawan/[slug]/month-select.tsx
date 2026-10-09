@@ -23,7 +23,7 @@ export default function MonthSelect({
         aria-label="Pilih bulan"
         value={value}
         onChange={(e) => router.push(`/karyawan/${slug}?p=${page}&m=${e.target.value}`)}
-        className={`w-full appearance-none rounded-2xl px-4 py-3.5 pr-10 text-base ${
+        className={`w-full appearance-none rounded-2xl px-4 py-3.5 pr-10 text-sm ${
           dark ? "bg-portal-800 text-white" : "bg-white text-portal-800"
         }`}
       >

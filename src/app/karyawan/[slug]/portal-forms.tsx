@@ -14,7 +14,7 @@ import {
 const initialState: PortalActionState = { error: null };
 
 const fieldClass =
-  "w-full rounded-2xl bg-white px-4 py-3.5 text-base text-zinc-700 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-portal-300";
+  "w-full rounded-2xl bg-white px-4 py-3.5 text-sm text-zinc-700 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-portal-300";
 
 const inputClass =
   "w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm focus:border-portal-600 focus:outline-none focus:ring-2 focus:ring-portal-100";
@@ -117,7 +117,7 @@ export function OvertimeRequestForm({ slug, today }: { slug: string; today: stri
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-2xl bg-portal-500 py-3.5 text-base font-semibold text-white disabled:opacity-60"
+        className="w-full rounded-2xl bg-portal-500 py-3.5 text-sm font-semibold text-white disabled:opacity-60"
       >
         {pending ? "Mengirim…" : "Ajukan"}
       </button>
@@ -182,7 +182,7 @@ export function ReimbursementForm({ slug, today }: { slug: string; today: string
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-2xl bg-portal-500 py-3.5 text-base font-semibold text-white disabled:opacity-60"
+        className="w-full rounded-2xl bg-portal-500 py-3.5 text-sm font-semibold text-white disabled:opacity-60"
       >
         {pending ? "Mengirim…" : "Ajukan"}
       </button>
@@ -214,7 +214,7 @@ export function ActivityForm({ slug, today }: { slug: string; today: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-2xl bg-portal-500 py-3.5 text-base font-semibold text-white disabled:opacity-60"
+        className="w-full rounded-2xl bg-portal-500 py-3.5 text-sm font-semibold text-white disabled:opacity-60"
       >
         {pending ? "Menyimpan…" : "Simpan Kegiatan"}
       </button>

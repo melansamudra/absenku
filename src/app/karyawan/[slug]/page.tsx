@@ -5,18 +5,25 @@ import {
   ChevronDown,
   ChevronRight,
   CircleAlert,
+  AlarmClock,
+  BadgeCheck,
+  Check,
   Clock,
   ClipboardList,
-  FileWarning,
+  Coins,
+  FileText,
+  House,
+  IdCard,
+  Info,
+  Moon,
+  TriangleAlert,
+  UserCheck,
   HandCoins,
   Landmark,
-  LogIn,
   LogOut,
   Mail,
   MoreHorizontal,
-  Palmtree,
   Receipt,
-  ScrollText,
   UserRound,
   Wallet,
   type LucideIcon,
@@ -425,7 +432,7 @@ export default async function PortalPage({
           <div className="mx-auto flex max-w-md items-center justify-between px-5">
             <span className="h-10 w-10" />
             <div>
-              <p className="text-2xl font-bold tracking-tight">{business.name}</p>
+              <p className="text-lg font-bold tracking-tight">{business.name}</p>
               <p className="text-sm text-white/80">Portal Karyawan</p>
             </div>
             <form action={logoutPortal.bind(null, slug)}>
@@ -447,10 +454,10 @@ export default async function PortalPage({
                 <span className="inline-block max-w-full truncate rounded-xl bg-portal-700 px-4 py-2 text-white">
                   {business.name}
                 </span>
-                <p className="mt-3 truncate text-xl font-bold text-zinc-700">{employee.name}</p>
+                <p className="mt-3 truncate text-base font-bold text-zinc-700">{employee.name}</p>
                 {employee.note && <p className="truncate italic text-zinc-600">{employee.note}</p>}
               </div>
-              <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-2 border-portal-700 bg-zinc-200 text-3xl font-bold text-zinc-500">
+              <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-2 border-portal-700 bg-zinc-200 text-xl font-bold text-zinc-500">
                 {employee.name.charAt(0).toUpperCase()}
               </span>
             </div>
@@ -460,7 +467,7 @@ export default async function PortalPage({
             <div className="mt-3 flex items-center justify-between gap-3">
               <span className="rounded-xl border border-zinc-300 px-4 py-2 text-zinc-700">{todayShift.name}</span>
               <div className="text-right">
-                <p className="text-lg text-zinc-700">
+                <p className="text-base text-zinc-700">
                   {todayShift.start} - {todayShift.end}
                 </p>
                 <p className="flex items-center justify-end gap-1.5 text-sm italic text-zinc-500">
@@ -477,7 +484,7 @@ export default async function PortalPage({
               ].map((b) => (
                 <div key={b.label} className="rounded-2xl bg-portal-100 px-4 py-4">
                   <p className="text-sm text-zinc-600">{b.label}</p>
-                  <p className="mt-3 text-3xl font-medium tabular-nums text-zinc-700">
+                  <p className="mt-3 text-xl font-medium tabular-nums text-zinc-700">
                     {b.at ? fmtClock(b.at) : "-- : --"}
                   </p>
                 </div>
@@ -486,17 +493,17 @@ export default async function PortalPage({
           </PortalCard>
 
           <div className="grid grid-cols-2 gap-3">
-            <MenuCard href={`/absen/${slug}`} icon={LogIn} label="Check In" />
-            <MenuCard href={`/absen/${slug}`} icon={LogOut} label="Check Out" />
-            <MenuCard href={to("cuti")} icon={Palmtree} label="Cuti" />
-            <MenuCard href={to("lembur")} icon={Clock} label="Lembur" />
-            <MenuCard href={to("tugas")} icon={ClipboardList} label="Tugas" />
+            <MenuCard href={`/absen/${slug}`} icon={ClipboardList} accent={Clock} label="Check In" />
+            <MenuCard href={`/absen/${slug}`} icon={ClipboardList} accent={Clock} label="Check Out" />
+            <MenuCard href={to("cuti")} icon={UserRound} accent={Check} label="Cuti" />
+            <MenuCard href={to("lembur")} icon={AlarmClock} accent={Moon} label="Lembur" />
+            <MenuCard href={to("tugas")} icon={FileText} accent={BadgeCheck} label="Tugas" />
             <MenuCard href={to("lainnya")} icon={MoreHorizontal} label="Lainnya" />
           </div>
 
           <section>
             <div className="mb-2 flex items-center justify-between px-1">
-              <h2 className="text-lg text-portal-800">Tugas Hari Ini</h2>
+              <h2 className="text-base text-portal-800">Tugas Hari Ini</h2>
               <Link href={to("tugas")} prefetch={false} className="text-portal-800">
                 Selengkapnya
               </Link>
@@ -518,7 +525,7 @@ export default async function PortalPage({
 
           <section>
             <div className="mb-3 flex items-center justify-between px-1">
-              <h2 className="text-lg font-bold text-portal-800">Jadwal Standar</h2>
+              <h2 className="text-base font-bold text-portal-800">Jadwal Standar</h2>
               <Link href={to("jadwal")} prefetch={false} className="font-bold text-portal-800">
                 Lihat Semua
               </Link>
@@ -532,17 +539,17 @@ export default async function PortalPage({
 
   // ───────────────────────── Lainnya ─────────────────────────
   if (page === "lainnya") {
-    const tiles: { page: Page; extra?: string; icon: LucideIcon; label: string }[] = [
-      { page: "kehadiran", icon: CalendarCheck, label: "Kehadiran" },
-      { page: "cuti", icon: Palmtree, label: "Cuti" },
-      { page: "lembur", icon: Clock, label: "Lembur" },
+    const tiles: { page: Page; extra?: string; icon: LucideIcon; accent?: LucideIcon; label: string }[] = [
+      { page: "kehadiran", icon: House, accent: UserCheck, label: "Kehadiran" },
+      { page: "cuti", icon: UserRound, accent: Check, label: "Cuti" },
+      { page: "lembur", icon: AlarmClock, accent: Moon, label: "Lembur" },
       { page: "gaji", icon: Wallet, label: "Gaji" },
-      { page: "surat", extra: "&t=sp", icon: FileWarning, label: "Surat Peringatan" },
-      { page: "surat", extra: "&t=sk", icon: ScrollText, label: "Surat Keterangan" },
-      { page: "kegiatan", icon: Mail, label: "Kegiatan Karyawan" },
-      { page: "tugas", icon: ClipboardList, label: "Penugasan" },
-      { page: "reimburse", icon: Receipt, label: "Reimburse" },
-      { page: "jadwal", icon: CalendarDays, label: "Jadwal Kerja" },
+      { page: "surat", extra: "&t=sp", icon: Mail, accent: TriangleAlert, label: "Surat Peringatan" },
+      { page: "surat", extra: "&t=sk", icon: Mail, accent: Info, label: "Surat Keterangan" },
+      { page: "kegiatan", icon: IdCard, label: "Kegiatan Karyawan" },
+      { page: "tugas", icon: ClipboardList, accent: Check, label: "Penugasan" },
+      { page: "reimburse", icon: Receipt, accent: Coins, label: "Reimburse" },
+      { page: "jadwal", icon: CalendarDays, accent: Clock, label: "Jadwal Kerja" },
     ];
     return (
       <div className={shell}>
@@ -550,7 +557,7 @@ export default async function PortalPage({
         <main className="mx-auto max-w-md px-4 pt-6">
           <div className="grid grid-cols-3 gap-x-3 gap-y-6">
             {tiles.map((t) => (
-              <MenuTile key={t.label} href={to(t.page, t.extra)} icon={t.icon} label={t.label} />
+              <MenuTile key={t.label} href={to(t.page, t.extra)} icon={t.icon} accent={t.accent} label={t.label} />
             ))}
           </div>
         </main>
@@ -738,8 +745,8 @@ export default async function PortalPage({
         />
         <main className="mx-auto max-w-md space-y-4 px-4 pt-4">
           <PortalCard className="!py-6 text-center">
-            <p className="text-lg text-zinc-600">Total Jam Lembur Bulan Ini</p>
-            <p className="mt-2 text-3xl font-bold text-portal-500">
+            <p className="text-base text-zinc-600">Total Jam Lembur Bulan Ini</p>
+            <p className="mt-2 text-xl font-bold text-portal-500">
               {overtimeHoursTotal.toLocaleString("id-ID")} Jam
             </p>
           </PortalCard>
