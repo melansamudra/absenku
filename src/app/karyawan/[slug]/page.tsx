@@ -113,7 +113,7 @@ function AttendanceHistory({ rows }: { rows: AttendanceHistoryRow[] }) {
       <AttendanceHistoryList rows={visible} />
       {rest.length > 0 && (
         <details className="group">
-          <summary className="flex cursor-pointer list-none items-center justify-center gap-1 border-t border-zinc-100 pt-3 text-xs font-semibold text-brand-600 group-open:hidden">
+          <summary className="flex cursor-pointer list-none items-center justify-center gap-1 border-t border-zinc-100 pt-3 text-xs font-semibold text-portal-600 group-open:hidden">
             Tampilkan semua ({rows.length} hari)
             <ChevronDown className="h-4 w-4" aria-hidden="true" />
           </summary>
@@ -157,7 +157,7 @@ function AttendanceHistoryList({ rows }: { rows: AttendanceHistoryRow[] }) {
                   )}
                   {r.late && overtime > 0 && <span className="text-zinc-300"> · </span>}
                   {overtime > 0 && (
-                    <span className="font-semibold text-brand-600">Lembur {overtime.toLocaleString("id-ID")} jam</span>
+                    <span className="font-semibold text-portal-600">Lembur {overtime.toLocaleString("id-ID")} jam</span>
                   )}
                 </p>
               )}
@@ -200,7 +200,7 @@ function LedgerCard({ title, icon, ledger }: { title: string; icon: LucideIcon; 
         </p>
       )}
       <details className="group mt-3">
-        <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-semibold text-brand-600">
+        <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-semibold text-portal-600">
           Riwayat
           <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
         </summary>

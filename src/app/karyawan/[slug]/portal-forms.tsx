@@ -17,7 +17,7 @@ const fieldClass =
   "w-full rounded-2xl bg-white px-4 py-3.5 text-base text-zinc-700 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-portal-300";
 
 const inputClass =
-  "w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100";
+  "w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm focus:border-portal-600 focus:outline-none focus:ring-2 focus:ring-portal-100";
 
 export function PortalLoginForm({
   slug,
@@ -69,7 +69,7 @@ export function PortalLoginForm({
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-xl bg-brand-600 py-3 text-sm font-semibold text-white disabled:opacity-60"
+        className="w-full rounded-xl bg-portal-600 py-3 text-sm font-semibold text-white disabled:opacity-60"
       >
         {pending ? "Memeriksa…" : "Masuk"}
       </button>

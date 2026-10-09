@@ -50,7 +50,7 @@ export function Card({
         <div className="mb-4 flex items-center justify-between gap-2">
           <h2 className="flex items-center gap-2 text-[15px] font-semibold text-zinc-900">
             {Icon && (
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-portal-50 text-portal-600">
                 <Icon className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
               </span>
             )}
@@ -101,9 +101,9 @@ export function Hero({
   children?: React.ReactNode;
 }) {
   return (
-    <header className="relative overflow-hidden rounded-b-[2rem] bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 px-5 pb-8 pt-6 text-white">
+    <header className="relative overflow-hidden rounded-b-[2rem] bg-gradient-to-br from-portal-600 via-portal-700 to-portal-900 px-5 pb-8 pt-6 text-white">
       <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
-      <div className="pointer-events-none absolute -bottom-24 -left-10 h-48 w-48 rounded-full bg-brand-400/20 blur-2xl" />
+      <div className="pointer-events-none absolute -bottom-24 -left-10 h-48 w-48 rounded-full bg-portal-300/20 blur-2xl" />
       <div className="relative mx-auto max-w-md">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
@@ -154,10 +154,10 @@ export function BottomNav({
               prefetch={false}
               aria-current={isActive ? "page" : undefined}
               className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-colors ${
-                isActive ? "text-brand-600" : "text-zinc-400 hover:text-zinc-600"
+                isActive ? "text-portal-600" : "text-zinc-400 hover:text-zinc-600"
               }`}
             >
-              <span className={`flex h-7 w-12 items-center justify-center rounded-full ${isActive ? "bg-brand-50" : ""}`}>
+              <span className={`flex h-7 w-12 items-center justify-center rounded-full ${isActive ? "bg-portal-50" : ""}`}>
                 <Icon className="h-5 w-5" strokeWidth={isActive ? 2.4 : 1.9} aria-hidden="true" />
               </span>
               {label}
