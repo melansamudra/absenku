@@ -22,11 +22,14 @@ export default function DashboardShell({
   businessId,
   businessName,
   userEmail,
+  badges = {},
   children,
 }: {
   businessId: string;
   businessName: string;
   userEmail: string;
+  /** Jumlah permintaan menunggu per menu (key menu → angka). 0 = tanpa badge. */
+  badges?: Record<string, number>;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -70,7 +73,15 @@ export default function DashboardShell({
               }`}
             >
               <span className="text-base leading-none">{item.icon}</span>
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {(badges[item.key] ?? 0) > 0 && (
+                <span
+                  className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white"
+                  aria-label={`${badges[item.key]} menunggu`}
+                >
+                  {badges[item.key]}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
@@ -93,6 +104,11 @@ export default function DashboardShell({
               }`}
             >
               {item.icon} {item.label}
+              {(badges[item.key] ?? 0) > 0 && (
+                <span className="ml-1 rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                  {badges[item.key]}
+                </span>
+              )}
             </Link>
           ))}
         </div>
