@@ -61,7 +61,7 @@ export type PortalBusiness = {
   overtime_approval_required: boolean;
 };
 
-export type PortalEmployee = { id: string; name: string; note: string | null };
+export type PortalEmployee = { id: string; name: string; note: string | null; photoPath: string | null };
 
 export async function loadPortalBusiness(slug: string): Promise<PortalBusiness | null> {
   const supabase = createServiceClient();
@@ -92,7 +92,7 @@ export async function getPortalEmployee(business: PortalBusiness): Promise<Porta
   const supabase = createServiceClient();
   const { data: employee } = await supabase
     .from("employees")
-    .select("id, name, note, attendance_pin_hash")
+    .select("id, name, note, photo_path, attendance_pin_hash")
     .eq("id", employeeId)
     .eq("business_id", business.id)
     .eq("active", true)
@@ -106,5 +106,5 @@ export async function getPortalEmployee(business: PortalBusiness): Promise<Porta
   const actual = Buffer.from(sig);
   if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) return null;
 
-  return { id: employee.id, name: employee.name, note: employee.note };
+  return { id: employee.id, name: employee.name, note: employee.note, photoPath: employee.photo_path };
 }

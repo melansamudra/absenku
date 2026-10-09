@@ -268,3 +268,63 @@ export async function updateTaskStatus(
 
   revalidatePath(`/karyawan/${slug}`);
 }
+
+const PHOTO_MAX_BYTES = 1024 * 1024;
+const PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+// Foto sudah diperkecil di browser (±480px JPEG); server tetap memeriksa tipe
+// dan ukuran. Foto lama dihapus setelah yang baru tersimpan.
+export async function uploadProfilePhoto(slug: string, formData: FormData): Promise<PortalActionState> {
+  const business = await loadPortalBusiness(slug);
+  if (!business) return { error: "Link portal tidak valid." };
+  const employee = await getPortalEmployee(business);
+  if (!employee) return { error: "Sesi habis — masuk lagi dengan PIN." };
+
+  const file = formData.get("photo");
+  if (!(file instanceof File) || file.size === 0) return { error: "Pilih foto dulu." };
+  if (!PHOTO_TYPES.includes(file.type)) return { error: "Format foto harus JPG, PNG, atau WEBP." };
+  if (file.size > PHOTO_MAX_BYTES) return { error: "Ukuran foto maksimal 1 MB." };
+
+  const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+  const path = `${business.id}/${employee.id}/${crypto.randomUUID()}.${ext}`;
+
+  const supabase = createServiceClient();
+  const { error: uploadError } = await supabase.storage
+    .from("employee-photos")
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (uploadError) return { error: "Gagal mengunggah foto. Coba lagi." };
+
+  const { error: updateError } = await supabase
+    .from("employees")
+    .update({ photo_path: path })
+    .eq("id", employee.id)
+    .eq("business_id", business.id);
+  if (updateError) {
+    await supabase.storage.from("employee-photos").remove([path]);
+    return { error: "Gagal menyimpan foto. Coba lagi." };
+  }
+
+  if (employee.photoPath) await supabase.storage.from("employee-photos").remove([employee.photoPath]);
+
+  revalidatePath(`/karyawan/${slug}`);
+  return { error: null, success: "Foto profil diperbarui." };
+}
+
+export async function removeProfilePhoto(slug: string): Promise<PortalActionState> {
+  const business = await loadPortalBusiness(slug);
+  if (!business) return { error: "Link portal tidak valid." };
+  const employee = await getPortalEmployee(business);
+  if (!employee) return { error: "Sesi habis — masuk lagi dengan PIN." };
+  if (!employee.photoPath) return { error: null };
+
+  const supabase = createServiceClient();
+  await supabase
+    .from("employees")
+    .update({ photo_path: null })
+    .eq("id", employee.id)
+    .eq("business_id", business.id);
+  await supabase.storage.from("employee-photos").remove([employee.photoPath]);
+
+  revalidatePath(`/karyawan/${slug}`);
+  return { error: null, success: "Foto profil dihapus." };
+}

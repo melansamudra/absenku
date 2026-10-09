@@ -186,3 +186,21 @@ export async function softDeleteEmployee(businessId: string, employeeId: string)
 
   revalidatePath(`/business/${businessId}/employees`);
 }
+
+// Hapus foto profil karyawan (mis. foto tidak pantas). Karyawan bisa
+// mengunggah ulang dari Portal Karyawan.
+export async function removeEmployeePhoto(businessId: string, employeeId: string) {
+  const supabase = await createClient();
+  const { data: employee } = await supabase
+    .from("employees")
+    .select("name, photo_path")
+    .eq("id", employeeId)
+    .eq("business_id", businessId)
+    .single();
+  if (!employee?.photo_path) return;
+
+  await supabase.from("employees").update({ photo_path: null }).eq("id", employeeId).eq("business_id", businessId);
+  await supabase.storage.from("employee-photos").remove([employee.photo_path]);
+  await logActivity(supabase, businessId, "Foto karyawan dihapus", employee.name);
+  revalidatePath(`/business/${businessId}/employees`);
+}

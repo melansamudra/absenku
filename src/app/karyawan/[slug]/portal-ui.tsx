@@ -204,3 +204,20 @@ export function StatCard({ value, label, className }: { value: number | string; 
     </div>
   );
 }
+
+// Foto profil bulat; kalau belum ada foto, tampil inisial nama.
+export function Avatar({ name, src, className }: { name: string; src: string | null; className: string }) {
+  if (src) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- foto dari route handler berautentikasi, bukan aset statis
+      <img src={src} alt={`Foto ${name}`} className={`shrink-0 rounded-full object-cover ${className}`} />
+    );
+  }
+  return (
+    <span
+      className={`flex shrink-0 items-center justify-center rounded-full bg-zinc-200 font-bold text-zinc-500 ${className}`}
+    >
+      {name.charAt(0).toUpperCase()}
+    </span>
+  );
+}
