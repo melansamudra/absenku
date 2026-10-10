@@ -15,6 +15,7 @@ import {
   House,
   IdCard,
   Info,
+  Megaphone,
   Moon,
   TriangleAlert,
   UserCheck,
@@ -34,7 +35,9 @@ import { addDays, monthRange, todayWib } from "@/lib/portal/dates";
 import { loadAttendanceSummary } from "@/lib/payroll/aggregate";
 import { payslipTotal } from "@/lib/payroll/payslip-total";
 import { loadEmployeeLedgers, type LedgerSummary } from "@/lib/portal/ledgers";
+import { loadAnnouncements } from "@/lib/portal/announcements";
 import { logoutPortal } from "./actions";
+import AnnouncementCard from "./announcement-card";
 import MonthSelect from "./month-select";
 import PhotoUploader from "./photo-uploader";
 import {
@@ -78,9 +81,10 @@ type Page =
   | "kegiatan"
   | "tugas"
   | "reimburse"
+  | "info"
   | "profil";
 
-const PAGES: Page[] = ["lainnya", "jadwal", "kehadiran", "cuti", "lembur", "gaji", "surat", "kegiatan", "tugas", "reimburse", "profil"];
+const PAGES: Page[] = ["lainnya", "jadwal", "kehadiran", "cuti", "lembur", "gaji", "surat", "kegiatan", "tugas", "reimburse", "info", "profil"];
 
 const OVERTIME_STATUS: Record<string, { label: string; tone: "green" | "amber" | "red" }> = {
   pending: { label: "Menunggu", tone: "amber" },
@@ -412,7 +416,7 @@ export default async function PortalPage({
 
   // ───────────────────────── Beranda ─────────────────────────
   if (page === "home") {
-    const [{ data: todayRow }, schedule, { data: tasks }] = await Promise.all([
+    const [{ data: todayRow }, schedule, { data: tasks }, announcements] = await Promise.all([
       supabase
         .from("attendance")
         .select("check_in_at, check_out_at")
@@ -429,6 +433,7 @@ export default async function PortalPage({
         .neq("status", "done")
         .order("due_date", { ascending: true, nullsFirst: false })
         .limit(5),
+      loadAnnouncements(supabase, business.id, 2),
     ]);
     const todayShift = schedule[0];
     const dueTasks = (tasks ?? []).filter((t) => !t.due_date || t.due_date <= today);
@@ -510,6 +515,22 @@ export default async function PortalPage({
             <MenuCard href={to("lainnya")} icon={MoreHorizontal} label="Lainnya" />
           </div>
 
+          {announcements.length > 0 && (
+            <section>
+              <div className="mb-2 flex items-center justify-between px-1">
+                <h2 className="text-base font-bold text-portal-800">Papan Informasi</h2>
+                <Link href={to("info")} prefetch={false} className="font-bold text-portal-800">
+                  Lihat Semua
+                </Link>
+              </div>
+              <div className="space-y-3">
+                {announcements.map((a) => (
+                  <AnnouncementCard key={a.id} item={a} compact />
+                ))}
+              </div>
+            </section>
+          )}
+
           <section>
             <div className="mb-2 flex items-center justify-between px-1">
               <h2 className="text-base text-portal-800">Tugas Hari Ini</h2>
@@ -550,6 +571,7 @@ export default async function PortalPage({
   if (page === "lainnya") {
     const tiles: { page: Page; extra?: string; icon: LucideIcon; accent?: LucideIcon; label: string }[] = [
       { page: "kehadiran", icon: House, accent: UserCheck, label: "Kehadiran" },
+      { page: "info", icon: Megaphone, label: "Papan Info" },
       { page: "cuti", icon: UserRound, accent: Check, label: "Cuti" },
       { page: "lembur", icon: AlarmClock, accent: Moon, label: "Lembur" },
       { page: "gaji", icon: Wallet, label: "Gaji" },
@@ -570,6 +592,19 @@ export default async function PortalPage({
               <MenuTile key={t.label} href={to(t.page, t.extra)} icon={t.icon} accent={t.accent} label={t.label} />
             ))}
           </div>
+        </main>
+      </div>
+    );
+  }
+
+  // ───────────────────────── Papan Informasi ─────────────────────────
+  if (page === "info") {
+    const items = await loadAnnouncements(supabase, business.id);
+    return (
+      <div className={shell}>
+        <PortalHeader title="Papan Informasi" backHref={base} />
+        <main className="mx-auto max-w-md space-y-3 px-4 pt-4">
+          {items.length === 0 ? <PortalEmpty text="Belum ada pengumuman." /> : items.map((a) => <AnnouncementCard key={a.id} item={a} />)}
         </main>
       </div>
     );
