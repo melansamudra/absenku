@@ -15,6 +15,7 @@ const NAV = [
   { key: "reimbursements", label: "Reimbursement", icon: "🧾" },
   { key: "tasks", label: "Tugas & Kegiatan", icon: "✅" },
   { key: "letters", label: "Surat SP/SK", icon: "✉️" },
+  { key: "announcements", label: "Papan Informasi", icon: "📢" },
   { key: "settings", label: "Pengaturan", icon: "⚙️" },
 ] as const;
 

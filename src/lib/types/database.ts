@@ -709,6 +709,42 @@ export type Database = {
           },
         ]
       }
+      announcements: {
+        Row: {
+          body: string | null
+          business_id: string
+          category: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          pinned: boolean
+          title: string
+        }
+        Insert: {
+          body?: string | null
+          business_id: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          pinned?: boolean
+          title: string
+        }
+        Update: {
+          body?: string | null
+          business_id?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          pinned?: boolean
+          title?: string
+        }
+        Relationships: []
+      }
       employee_activities: {
         Row: {
           business_id: string
