@@ -9,8 +9,13 @@ import {
   Building2,
   CalendarCheck,
   CalendarClock,
+  CalendarRange,
   ChevronDown,
-  ChevronLeft,
+  ClipboardList,
+  Target,
+  ClipboardCheck,
+  FileBarChart,
+ChevronLeft,
   House,
   ListChecks,
   LogOut,
@@ -38,9 +43,10 @@ const NAV: NavEntry[] = [
     group: "Kehadiran",
     icon: CalendarCheck,
     items: [
-      { key: "attendance", label: "Absensi", icon: CalendarCheck },
+      { key: "attendance", label: "Presensi", icon: CalendarCheck },
+      { key: "attendance/approval", label: "Approval Presensi", icon: ClipboardCheck },
       { key: "shifts", label: "Jadwal Shift", icon: CalendarClock },
-      { key: "leave-requests", label: "Cuti", icon: Umbrella },
+      { key: "leave-requests", label: "Izin & Cuti", icon: Umbrella },
       { key: "overtime", label: "Lembur", icon: Timer },
     ],
   },
@@ -61,6 +67,16 @@ const NAV: NavEntry[] = [
       { key: "letters", label: "Surat SP/SK", icon: Mail },
     ],
   },
+  {
+    group: "KPI",
+    icon: Target,
+    items: [
+      { key: "kpi/forms", label: "Formulir", icon: ClipboardList },
+      { key: "kpi/schedules", label: "Jadwal", icon: CalendarRange },
+      { key: "kpi/reviews", label: "Evaluasi", icon: ListChecks },
+    ],
+  },
+  { key: "report", label: "Laporan", icon: FileBarChart },
   { key: "settings", label: "Pengaturan", icon: Settings },
 ];
 
@@ -69,6 +85,7 @@ const ALL_ITEMS: NavItem[] = NAV.flatMap((e) => (isGroup(e) ? e.items : [e]));
 
 // Menu yang punya badge "menunggu" dan nama yang tampil di lonceng notifikasi.
 const NOTIFICATION_LABEL: Record<string, string> = {
+  "attendance/approval": "presensi menunggu approval",
   "leave-requests": "pengajuan cuti",
   overtime: "pengajuan lembur",
   reimbursements: "klaim reimbursement",
@@ -98,11 +115,14 @@ export default function DashboardShell({
   const topbarRef = useRef<HTMLDivElement>(null);
 
   const href = (key: string) => (key ? `${base}/${key}` : base);
-  const isActive = (key: string) => {
-    const target = href(key);
-    if (key === "") return pathname === base;
-    return pathname === target || pathname.startsWith(`${target}/`);
-  };
+  // Hanya menu yang paling spesifik yang menyala (mis. attendance/approval, bukan attendance).
+  let bestKey: string | null = null;
+  for (const item of ALL_ITEMS) {
+    const target = href(item.key);
+    const hit = item.key === "" ? pathname === base : pathname === target || pathname.startsWith(`${target}/`);
+    if (hit && (bestKey === null || item.key.length > bestKey.length)) bestKey = item.key;
+  }
+  const isActive = (key: string) => key === bestKey;
   const groupActive = (g: Extract<NavEntry, { group: string }>) => g.items.some((i) => isActive(i.key));
   const groupBadge = (g: Extract<NavEntry, { group: string }>) => g.items.reduce((t, i) => t + (badges[i.key] ?? 0), 0);
 

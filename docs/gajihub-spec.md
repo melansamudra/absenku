@@ -4,6 +4,19 @@ Hasil riset menu & tampilan GajiHub v0.3.98 (akun trial "Pro Free Trial", 11 Okt
 Tujuan: ABSENKU meniru struktur, alur, dan tampilan ini. Fitur berlabel paket Elite/Champion
 di GajiHub tetap ditandai sebagai "terkunci" di sini, tapi bisa kita buka semua.
 
+## 0. Status implementasi di ABSENKU (update 12 Okt 2026)
+
+Sudah dibuat (prioritas 1 & 2): Pengaturan hub (`/settings`) + kelola Organisasi/Jabatan/Pangkat, wizard Karyawan (+ Tambah Cepat, detail,
+Riwayat Karir & Riwayat Gaji/Penyesuaian Gaji, Ekspor CSV), Presensi Harian (date strip, kolom shift/telat/lembur, Ekspor),
+Approval Presensi (Menunggu/Disetujui/Ditolak), Izin & Cuti (tab per jenis, modal Tambah Pengajuan, Sisa Cuti),
+Payroll (date strip bulan, Generate Payroll massal), Laporan (hub + Ringkasan Gaji, per Organisasi, per Komponen, PPh 21, BPJS),
+Beranda (demografi, gaji bulan ini, kalender), KPI (Formulir → Jadwal → Evaluasi, nilai tertimbang).
+KPI dibangun dari pola umum (formulir berindikator berbobot 100%, jadwal periode + peserta, penilaian 0–100) karena halaman KPI
+GajiHub belum sempat dibuka detailnya — cocokkan lagi setelah ada akses.
+
+Belum: Jadwal Tetap, kebijakan cuti lanjutan (carry-over, hutang cuti, cuti bersama), Slip Tidak Tetap & komponen slip kustom,
+Bukti Potong/Coretax, Peran & Hak Akses, Rekrutmen, Inventaris Aset, Time Tracker, Pelacakan Lokasi realtime, Kunjungan Klien, Approval lintas modul.
+
 ## 1. Desain & Layout
 
 - Basis UI: **Ant Design** (kelas `ant-*`). Bahasa UI: Indonesia (toggle bahasa ID di header).

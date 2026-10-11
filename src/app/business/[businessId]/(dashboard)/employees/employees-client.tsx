@@ -7,6 +7,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Download,
   MoreVertical,
   Plus,
   Search,
@@ -63,6 +64,37 @@ const TABS: { key: Tab; label: string }[] = [
 ];
 
 const PER_PAGE = 15;
+
+function csvCell(v: string | number | null | undefined) {
+  const s = v == null ? "" : String(v);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+// Ekspor daftar yang sedang tampil (sesuai filter & pencarian) ke CSV yang bisa dibuka di Excel.
+function exportEmployeesCsv(rows: EmployeeRow[]) {
+  const header = [
+    "ID Karyawan", "Nama", "Email", "Nomor Ponsel", "NIK / No. Identitas", "Tanggal Lahir", "Jenis Kelamin",
+    "Organisasi", "Jabatan", "Pangkat", "Status Karyawan", "Tanggal Bergabung", "Tipe Gaji", "Gaji", "PTKP", "NPWP", "Bank", "Nomor Rekening", "Status",
+  ];
+  const lines = rows.map((e) =>
+    [
+      e.employee_code, e.name, e.email, e.phone, e.nik ?? e.id_number, e.birth_date,
+      e.gender === "P" ? "Perempuan" : e.gender === "L" ? "Laki-laki" : "",
+      e.organizations?.name, e.positions?.name ?? e.note, e.ranks?.name, employmentLabel(e.employment_status), e.join_date,
+      e.salary_type === "harian" ? "Harian" : "Bulanan", e.salary_type === "harian" ? e.daily_rate : e.monthly_rate,
+      e.ptkp_status, e.npwp, e.bank_name, e.bank_account_number, e.active ? "Aktif" : "Nonaktif",
+    ]
+      .map(csvCell)
+      .join(","),
+  );
+  const blob = new Blob(["﻿" + [header.join(","), ...lines].join("\n")], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `karyawan-${new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" })}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 const rp = (v: number) => `Rp ${Math.round(v).toLocaleString("id-ID")}`;
 function fmtDate(v: string | null) {
@@ -188,6 +220,9 @@ export default function EmployeesClient({
                 </div>
                 <button type="button" onClick={() => setShowImport(true)} className={btnOutline}>
                   <Upload size={14} /> Import CSV
+                </button>
+                <button type="button" onClick={() => exportEmployeesCsv(filtered)} className={btnOutline}>
+                  <Download size={14} /> Ekspor
                 </button>
                 <Link href={`${base}/tunjangan-tetap`} className={btnOutline}>
                   Tunjangan Tetap

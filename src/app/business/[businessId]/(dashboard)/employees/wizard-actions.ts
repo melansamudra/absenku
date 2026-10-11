@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { logActivity } from "@/lib/activity-log";
 import { nextEmployeeCode } from "@/lib/employee/code";
+import { recordCareerChange, recordSalaryChange } from "@/lib/employee/history";
 import { hashPin, PIN_PATTERN } from "@/lib/attendance/pin";
 import { identityDbError, parseIdentity } from "@/lib/employees/identity";
 import { CONTRACT_STATUSES, EMPLOYMENT_STATUSES, PTKP_OPTIONS } from "@/lib/employee/constants";
@@ -166,6 +167,13 @@ export async function saveStep2(
     .eq("business_id", businessId)
     .maybeSingle();
 
+  const { data: beforeCareer } = await supabase
+    .from("employees")
+    .select("employment_status, placement_type, organization_id, position_id, rank_id")
+    .eq("id", employeeId)
+    .eq("business_id", businessId)
+    .maybeSingle();
+
   const { error } = await supabase
     .from("employees")
     .update({
@@ -183,6 +191,22 @@ export async function saveStep2(
     .eq("id", employeeId)
     .eq("business_id", businessId);
   if (error) return { error: error.message };
+
+  // Riwayat karir: pertama kali diisi → berlaku sejak tanggal bergabung, perubahan berikutnya → hari ini.
+  await recordCareerChange(
+    supabase,
+    businessId,
+    employeeId,
+    beforeCareer ?? null,
+    {
+      employment_status: status,
+      placement_type: str(fd, "placement_type"),
+      organization_id: str(fd, "organization_id"),
+      position_id: str(fd, "position_id"),
+      rank_id: str(fd, "rank_id"),
+    },
+    beforeCareer?.organization_id ? null : joinDate,
+  );
 
   revalidatePath(`/business/${businessId}/employees`);
   redirect(`/business/${businessId}/employees/${employeeId}/setup/3`);
@@ -216,6 +240,13 @@ export async function saveStep3(
   const wageRaw = str(fd, "bpjs_wage_base");
   const wage = wageRaw ? Number(wageRaw) : null;
 
+  const { data: beforeSalary } = await supabase
+    .from("employees")
+    .select("salary_type, daily_rate, monthly_rate, daily_meal_allowance, daily_attendance_allowance")
+    .eq("id", employeeId)
+    .eq("business_id", businessId)
+    .maybeSingle();
+
   const { error } = await supabase
     .from("employees")
     .update({
@@ -244,6 +275,21 @@ export async function saveStep3(
     .eq("id", employeeId)
     .eq("business_id", businessId);
   if (error) return { error: identityDbError(error) };
+
+  await recordSalaryChange(
+    supabase,
+    businessId,
+    employeeId,
+    beforeSalary ?? null,
+    {
+      salary_type: salaryType,
+      daily_rate: salaryType === "harian" ? num(fd, "daily_rate") : 0,
+      monthly_rate: salaryType === "bulanan" ? num(fd, "monthly_rate") : 0,
+      daily_meal_allowance: num(fd, "daily_meal_allowance"),
+      daily_attendance_allowance: num(fd, "daily_attendance_allowance"),
+    },
+    null,
+  );
 
   revalidatePath(`/business/${businessId}/employees`);
   redirect(`/business/${businessId}/employees/${employeeId}`);

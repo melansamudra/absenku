@@ -4,11 +4,14 @@ import { Pencil } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Card, PageHeader, btnOutline, btnPrimary } from "@/components/form-ui";
 import { employmentLabel } from "@/lib/employee/constants";
+import SalaryAdjustModal from "./salary-adjust-modal";
 
 const TABS = [
   { key: "personal", label: "Personal" },
   { key: "kepegawaian", label: "Kepegawaian" },
+  { key: "karir", label: "Karir" },
   { key: "payroll", label: "Payroll" },
+  { key: "riwayat-gaji", label: "Riwayat Gaji" },
 ] as const;
 
 function fmtDate(v: string | null) {
@@ -62,6 +65,27 @@ export default async function EmployeeDetailPage({
     const { data: signed } = await supabase.storage.from("employee-photos").createSignedUrl(e.photo_path, 60 * 60);
     photoUrl = signed?.signedUrl ?? null;
   }
+
+  const [{ data: careerRows }, { data: salaryRows }] = await Promise.all([
+    tab === "karir"
+      ? supabase
+          .from("career_history")
+          .select("id, effective_date, employment_status, placement_type, organization_name, position_name, rank_name")
+          .eq("employee_id", employeeId)
+          .eq("business_id", businessId)
+          .order("effective_date", { ascending: false })
+          .order("created_at", { ascending: false })
+      : Promise.resolve({ data: null }),
+    tab === "riwayat-gaji"
+      ? supabase
+          .from("salary_history")
+          .select("id, effective_date, salary_type, daily_rate, monthly_rate, daily_meal_allowance, daily_attendance_allowance, note")
+          .eq("employee_id", employeeId)
+          .eq("business_id", businessId)
+          .order("effective_date", { ascending: false })
+          .order("created_at", { ascending: false })
+      : Promise.resolve({ data: null }),
+  ]);
 
   const base = `/business/${businessId}/employees`;
   const initials = e.name
@@ -181,6 +205,99 @@ export default async function EmployeeDetailPage({
               <Item label="Golongan" value={e.grade} />
               <Item label="Masa Akhir Kerja" value={fmtDate(e.contract_end)} />
             </Section>
+          )}
+
+          {tab === "karir" && (
+            <Card className="!p-0">
+              <h3 className="border-b border-zinc-100 px-5 py-4 text-sm font-bold text-zinc-900">Riwayat Karir</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[640px] text-left text-[13px]">
+                  <thead className="bg-zinc-50 text-xs font-semibold text-zinc-600">
+                    <tr>
+                      <th className="px-5 py-3">Tanggal Efektif</th>
+                      <th className="px-3 py-3">Penempatan</th>
+                      <th className="px-3 py-3">Status</th>
+                      <th className="px-3 py-3">Organisasi</th>
+                      <th className="px-3 py-3">Jabatan</th>
+                      <th className="px-3 py-3">Pangkat</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100">
+                    {(careerRows ?? []).length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="py-12 text-center text-sm text-zinc-400">
+                          Belum ada riwayat karir. Tercatat otomatis saat data Kepegawaian disimpan.
+                        </td>
+                      </tr>
+                    )}
+                    {(careerRows ?? []).map((c) => (
+                      <tr key={c.id}>
+                        <td className="px-5 py-3 text-zinc-700">{fmtDate(c.effective_date)}</td>
+                        <td className="px-3 py-3 text-zinc-700">{c.placement_type ?? "—"}</td>
+                        <td className="px-3 py-3 text-zinc-700">{employmentLabel(c.employment_status)}</td>
+                        <td className="px-3 py-3 text-zinc-700">{c.organization_name ?? "—"}</td>
+                        <td className="px-3 py-3 text-zinc-700">{c.position_name ?? "—"}</td>
+                        <td className="px-3 py-3 text-zinc-700">{c.rank_name ?? "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          )}
+
+          {tab === "riwayat-gaji" && (
+            <Card className="!p-0">
+              <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-4">
+                <h3 className="text-sm font-bold text-zinc-900">Riwayat Gaji</h3>
+                <SalaryAdjustModal
+                  businessId={businessId}
+                  employeeId={e.id}
+                  current={{
+                    salary_type: e.salary_type === "harian" ? "harian" : "bulanan",
+                    daily_rate: e.daily_rate,
+                    monthly_rate: e.monthly_rate,
+                    daily_meal_allowance: e.daily_meal_allowance,
+                    daily_attendance_allowance: e.daily_attendance_allowance,
+                  }}
+                />
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[640px] text-left text-[13px]">
+                  <thead className="bg-zinc-50 text-xs font-semibold text-zinc-600">
+                    <tr>
+                      <th className="px-5 py-3">Tanggal Efektif</th>
+                      <th className="px-3 py-3">Tipe</th>
+                      <th className="px-3 py-3 text-right">Gaji</th>
+                      <th className="px-3 py-3 text-right">Uang Makan</th>
+                      <th className="px-3 py-3 text-right">Tunj. Hadir</th>
+                      <th className="px-5 py-3">Keterangan</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100">
+                    {(salaryRows ?? []).length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="py-12 text-center text-sm text-zinc-400">
+                          Belum ada riwayat gaji. Tercatat otomatis saat gaji disimpan atau disesuaikan.
+                        </td>
+                      </tr>
+                    )}
+                    {(salaryRows ?? []).map((s) => (
+                      <tr key={s.id}>
+                        <td className="px-5 py-3 text-zinc-700">{fmtDate(s.effective_date)}</td>
+                        <td className="px-3 py-3 text-zinc-700">{s.salary_type === "harian" ? "Harian" : "Bulanan"}</td>
+                        <td className="px-3 py-3 text-right font-semibold text-zinc-900">
+                          {rp(s.salary_type === "harian" ? s.daily_rate : s.monthly_rate)}
+                        </td>
+                        <td className="px-3 py-3 text-right text-zinc-700">{rp(s.daily_meal_allowance)}</td>
+                        <td className="px-3 py-3 text-right text-zinc-700">{rp(s.daily_attendance_allowance)}</td>
+                        <td className="px-5 py-3 text-zinc-500">{s.note ?? "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
           )}
 
           {tab === "payroll" && (

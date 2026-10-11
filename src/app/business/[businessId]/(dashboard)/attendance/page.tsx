@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { ChevronLeft, ChevronRight, Settings2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { signSelfieUrls } from "@/lib/attendance/selfie";
-import AttendanceRow, { type AttendanceRowData } from "./attendance-row";
+import { Card, PageHeader, btnOutline } from "@/components/form-ui";
+import AttendanceTable, { ExportButton, type AttendanceRowData } from "./attendance-table";
 import type { AttendanceStatus } from "./actions";
 
 function todayWib() {
@@ -15,6 +17,15 @@ function shiftDate(dateStr: string, days: number) {
   return dt.toISOString().slice(0, 10);
 }
 
+function shiftMonth(dateStr: string, delta: number) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const last = new Date(Date.UTC(y, m + delta, 0)).getUTCDate();
+  const dt = new Date(Date.UTC(y, m - 1 + delta, Math.min(d, last)));
+  return dt.toISOString().slice(0, 10);
+}
+
+const DAY = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+
 export default async function AttendancePage({
   params,
   searchParams,
@@ -24,14 +35,16 @@ export default async function AttendancePage({
 }) {
   const { businessId } = await params;
   const { date: dateParam } = await searchParams;
-  const date = dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : todayWib();
+  const today = todayWib();
+  const date = dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : today;
+  const base = `/business/${businessId}/attendance`;
 
   const supabase = await createClient();
 
-  const [{ data: employees }, { data: attendanceRows }] = await Promise.all([
+  const [{ data: employees }, { data: attendanceRows }, { data: assignments }, { data: business }] = await Promise.all([
     supabase
       .from("employees")
-      .select("id, name, note")
+      .select("id, name, employee_code, note, positions(name), organizations(name)")
       .eq("business_id", businessId)
       .eq("active", true)
       .is("deleted_at", null)
@@ -43,9 +56,26 @@ export default async function AttendancePage({
       )
       .eq("business_id", businessId)
       .eq("date", date),
+    supabase
+      .from("employee_shift_assignments")
+      .select("employee_id, shift_templates(name, start_time, end_time)")
+      .eq("business_id", businessId)
+      .eq("date", date),
+    supabase.from("businesses").select("work_start_time, work_end_time").eq("id", businessId).single(),
   ]);
 
   const attendanceByEmployee = new Map((attendanceRows ?? []).map((a) => [a.employee_id, a]));
+  const shiftByEmployee = new Map(
+    (assignments ?? []).map((a) => [
+      a.employee_id,
+      a.shift_templates
+        ? `${a.shift_templates.name} (${a.shift_templates.start_time.slice(0, 5)}–${a.shift_templates.end_time.slice(0, 5)})`
+        : null,
+    ]),
+  );
+  const defaultShift = business
+    ? `Reguler (${business.work_start_time.slice(0, 5)}–${business.work_end_time.slice(0, 5)})`
+    : "Reguler";
   const selfieUrls = await signSelfieUrls(
     supabase,
     (attendanceRows ?? []).map((a) => a.check_in_photo_url),
@@ -56,7 +86,10 @@ export default async function AttendancePage({
     return {
       employeeId: e.id,
       employeeName: e.name,
-      employeeNote: e.note,
+      employeeCode: e.employee_code,
+      position: e.positions?.name ?? e.note,
+      organization: e.organizations?.name ?? null,
+      shift: shiftByEmployee.get(e.id) ?? defaultShift,
       attendanceId: a?.id ?? null,
       status: (a?.status as AttendanceStatus | undefined) ?? null,
       note: a?.note ?? null,
@@ -75,54 +108,89 @@ export default async function AttendancePage({
     return acc;
   }, {});
 
+  // Date strip: semua hari di bulan yang dipilih.
+  const [y, m] = date.split("-").map(Number);
+  const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const monthDays = Array.from({ length: daysInMonth }, (_, i) => {
+    const d = `${date.slice(0, 7)}-${String(i + 1).padStart(2, "0")}`;
+    return { d, n: i + 1, dow: DAY[new Date(`${d}T00:00:00Z`).getUTCDay()] };
+  });
+  const monthLabel = new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString("id-ID", { month: "long", year: "numeric", timeZone: "UTC" });
+
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-zinc-900 sm:text-2xl">Absensi</h1>
-          <p className="mt-0.5 text-sm text-zinc-500">
-            {rows.length} karyawan aktif · Hadir {summary.hadir ?? 0} · Izin {summary.izin ?? 0} ·
-            Sakit {summary.sakit ?? 0} · Alpa {summary.alpa ?? 0}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link
-            href={`/business/${businessId}/attendance/rekap`}
-            className="rounded-lg border border-zinc-200 px-3 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50"
-          >
-            Rekap Bulanan
-          </Link>
-          <Link
-            href={`?date=${shiftDate(date, -1)}`}
-            className="rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-600 hover:bg-zinc-50"
-          >
-            ← Kemarin
-          </Link>
-          <span className="rounded-lg bg-white px-3 py-2 text-sm font-semibold text-zinc-900 shadow-sm">
-            {date}
-          </span>
-          <Link
-            href={`?date=${shiftDate(date, 1)}`}
-            className="rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-600 hover:bg-zinc-50"
-          >
-            Besok →
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Presensi"
+        subtitle={`${rows.length} karyawan aktif · Hadir ${summary.hadir ?? 0} · Izin ${summary.izin ?? 0} · Sakit ${summary.sakit ?? 0} · Alpa ${summary.alpa ?? 0}`}
+        actions={
+          <>
+            <ExportButton date={date} rows={rows} />
+            <Link href={`/business/${businessId}/attendance/approval`} className={btnOutline}>
+              Approval Presensi
+            </Link>
+            <Link href={`/business/${businessId}/settings`} className={btnOutline}>
+              <Settings2 size={14} /> Atur Kebijakan Presensi
+            </Link>
+          </>
+        }
+      />
 
-      {rows.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-zinc-300 bg-white py-16 text-center">
-          <p className="text-sm text-zinc-500">Belum ada karyawan aktif.</p>
+      <Card className="!p-0">
+        <div className="flex gap-1 border-b border-zinc-100 p-3">
+          <span className="rounded-lg border border-brand-500 bg-white px-4 py-1.5 text-[13px] font-semibold text-brand-700">Harian</span>
+          <Link href={`${base}/rekap`} className="rounded-lg border border-zinc-200 bg-white px-4 py-1.5 text-[13px] text-zinc-600 hover:bg-zinc-50">
+            Ringkasan
+          </Link>
         </div>
-      ) : (
-        <div className="overflow-hidden rounded-xl border border-zinc-100 bg-white shadow-sm">
-          <div className="divide-y divide-zinc-100">
-            {rows.map((row) => (
-              <AttendanceRow key={row.employeeId} businessId={businessId} date={date} row={row} />
-            ))}
+
+        <div className="border-b border-zinc-100 p-3">
+          <div className="mb-2 flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Link href={`${base}?date=${shiftMonth(date, -1)}`} className="rounded-lg border border-zinc-200 p-1.5 hover:bg-zinc-50" aria-label="Bulan sebelumnya">
+                <ChevronLeft size={15} />
+              </Link>
+              <span className="min-w-32 text-center text-[13px] font-semibold text-zinc-800">{monthLabel}</span>
+              <Link href={`${base}?date=${shiftMonth(date, 1)}`} className="rounded-lg border border-zinc-200 p-1.5 hover:bg-zinc-50" aria-label="Bulan berikutnya">
+                <ChevronRight size={15} />
+              </Link>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Link href={`${base}?date=${shiftDate(date, -1)}`} className="rounded-lg border border-zinc-200 px-2.5 py-1 text-xs text-zinc-600 hover:bg-zinc-50">
+                ← Kemarin
+              </Link>
+              <Link href={base} className="rounded-lg border border-zinc-200 px-2.5 py-1 text-xs font-semibold text-zinc-700 hover:bg-zinc-50">
+                Hari Ini
+              </Link>
+              <Link href={`${base}?date=${shiftDate(date, 1)}`} className="rounded-lg border border-zinc-200 px-2.5 py-1 text-xs text-zinc-600 hover:bg-zinc-50">
+                Besok →
+              </Link>
+            </div>
+          </div>
+          <div className="flex gap-1.5 overflow-x-auto pb-1">
+            {monthDays.map((day) => {
+              const active = day.d === date;
+              return (
+                <Link
+                  key={day.d}
+                  href={`${base}?date=${day.d}`}
+                  className={`flex w-12 shrink-0 flex-col items-center rounded-xl py-1.5 text-center transition-colors ${
+                    active
+                      ? "bg-brand-600 text-white"
+                      : day.d === today
+                        ? "bg-brand-100 text-brand-800"
+                        : "bg-zinc-50 text-zinc-600 hover:bg-zinc-100"
+                  }`}
+                >
+                  <span className="text-[10px] font-medium opacity-80">{day.dow}</span>
+                  <span className="text-sm font-bold">{day.n}</span>
+                </Link>
+              );
+            })}
           </div>
         </div>
-      )}
+
+        <AttendanceTable businessId={businessId} date={date} rows={rows} />
+      </Card>
     </div>
   );
 }

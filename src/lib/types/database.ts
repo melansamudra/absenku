@@ -73,6 +73,8 @@ export type Database = {
           status: string
           verified_at: string | null
           verified_by_admin: boolean
+          rejected_at: string | null
+          rejected_note: string | null
         }
         Insert: {
           business_id: string
@@ -97,6 +99,8 @@ export type Database = {
           status: string
           verified_at?: string | null
           verified_by_admin?: boolean
+          rejected_at?: string | null
+          rejected_note?: string | null
         }
         Update: {
           business_id?: string
@@ -121,6 +125,8 @@ export type Database = {
           status?: string
           verified_at?: string | null
           verified_by_admin?: boolean
+          rejected_at?: string | null
+          rejected_note?: string | null
         }
         Relationships: [
           {
@@ -1188,6 +1194,358 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      career_history: {
+        Row: {
+          business_id: string
+          created_at: string
+          effective_date: string
+          employee_id: string
+          employment_status: string | null
+          id: string
+          note: string | null
+          organization_name: string | null
+          placement_type: string | null
+          position_name: string | null
+          rank_name: string | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          effective_date: string
+          employee_id: string
+          employment_status?: string | null
+          id?: string
+          note?: string | null
+          organization_name?: string | null
+          placement_type?: string | null
+          position_name?: string | null
+          rank_name?: string | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          effective_date?: string
+          employee_id?: string
+          employment_status?: string | null
+          id?: string
+          note?: string | null
+          organization_name?: string | null
+          placement_type?: string | null
+          position_name?: string | null
+          rank_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "career_history_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "career_history_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salary_history: {
+        Row: {
+          business_id: string
+          created_at: string
+          daily_attendance_allowance: number
+          daily_meal_allowance: number
+          daily_rate: number
+          effective_date: string
+          employee_id: string
+          id: string
+          monthly_rate: number
+          note: string | null
+          salary_type: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          daily_attendance_allowance?: number
+          daily_meal_allowance?: number
+          daily_rate?: number
+          effective_date: string
+          employee_id: string
+          id?: string
+          monthly_rate?: number
+          note?: string | null
+          salary_type: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          daily_attendance_allowance?: number
+          daily_meal_allowance?: number
+          daily_rate?: number
+          effective_date?: string
+          employee_id?: string
+          id?: string
+          monthly_rate?: number
+          note?: string | null
+          salary_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salary_history_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salary_history_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kpi_forms: {
+        Row: {
+          business_id: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          status: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          status?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kpi_forms_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kpi_indicators: {
+        Row: {
+          business_id: string
+          created_at: string
+          description: string | null
+          form_id: string
+          id: string
+          name: string
+          sort_order: number
+          weight: number
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          description?: string | null
+          form_id: string
+          id?: string
+          name: string
+          sort_order?: number
+          weight?: number
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          form_id?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kpi_indicators_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kpi_indicators_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "kpi_forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kpi_schedules: {
+        Row: {
+          business_id: string
+          created_at: string
+          form_id: string
+          id: string
+          name: string
+          observe_end: string
+          observe_start: string
+          status: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          form_id: string
+          id?: string
+          name: string
+          observe_end: string
+          observe_start: string
+          status?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          form_id?: string
+          id?: string
+          name?: string
+          observe_end?: string
+          observe_start?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kpi_schedules_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kpi_schedules_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "kpi_forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kpi_reviews: {
+        Row: {
+          business_id: string
+          created_at: string
+          employee_id: string
+          id: string
+          notes: string | null
+          reviewed_at: string | null
+          schedule_id: string
+          status: string
+          total_score: number | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          employee_id: string
+          id?: string
+          notes?: string | null
+          reviewed_at?: string | null
+          schedule_id: string
+          status?: string
+          total_score?: number | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          reviewed_at?: string | null
+          schedule_id?: string
+          status?: string
+          total_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kpi_reviews_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kpi_reviews_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kpi_reviews_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "kpi_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kpi_review_scores: {
+        Row: {
+          business_id: string
+          id: string
+          indicator_id: string
+          note: string | null
+          review_id: string
+          score: number
+        }
+        Insert: {
+          business_id: string
+          id?: string
+          indicator_id: string
+          note?: string | null
+          review_id: string
+          score: number
+        }
+        Update: {
+          business_id?: string
+          id?: string
+          indicator_id?: string
+          note?: string | null
+          review_id?: string
+          score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kpi_review_scores_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kpi_review_scores_indicator_id_fkey"
+            columns: ["indicator_id"]
+            isOneToOne: false
+            referencedRelation: "kpi_indicators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kpi_review_scores_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "kpi_reviews"
             referencedColumns: ["id"]
           },
         ]

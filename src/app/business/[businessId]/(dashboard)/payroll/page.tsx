@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { payslipTotal } from "@/lib/payroll/payslip-total";
+import { Card, PageHeader, btnOutline, btnPrimary } from "@/components/form-ui";
+import GenerateButton from "./generate-button";
 
 function fmtRupiah(v: number) {
   return `Rp ${Math.round(v).toLocaleString("id-ID")}`;
@@ -8,12 +10,6 @@ function fmtRupiah(v: number) {
 
 function currentMonth() {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" }).slice(0, 7);
-}
-
-function addMonths(month: string, delta: number) {
-  const [y, m] = month.split("-").map(Number);
-  const d = new Date(Date.UTC(y, m - 1 + delta, 1));
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
 function lastDay(month: string) {
@@ -26,6 +22,12 @@ function monthLabel(month: string) {
   return new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString("id-ID", { month: "long", year: "numeric", timeZone: "UTC" });
 }
 
+const MONTH_NAMES = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+function fmtDate(d: string) {
+  return new Date(`${d}T00:00:00Z`).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+}
+
 export default async function PayrollPage({
   params,
   searchParams,
@@ -36,13 +38,14 @@ export default async function PayrollPage({
   const { businessId } = await params;
   const { month: m } = await searchParams;
   const month = m && /^\d{4}-\d{2}$/.test(m) ? m : currentMonth();
+  const year = Number(month.slice(0, 4));
   const base = `/business/${businessId}/payroll`;
   const supabase = await createClient();
 
   const { data: payslips } = await supabase
     .from("payslips")
     .select(
-      "id, period_start, period_end, base_pay, meal_allowance, attendance_allowance, lembur_amount, thr_amount, izin_deduction, late_deduction, kasbon_deduction, personal_loan_deduction, pph21_amount, bpjs_employee_amount, paid_at, employee_id, employees(name), payslip_adjustments(type, amount)",
+      "id, period_start, period_end, base_pay, meal_allowance, attendance_allowance, lembur_amount, thr_amount, izin_deduction, late_deduction, kasbon_deduction, personal_loan_deduction, pph21_amount, bpjs_employee_amount, paid_at, employee_id, employees(name, employee_code), payslip_adjustments(type, amount)",
     )
     .eq("business_id", businessId)
     .gte("period_start", `${month}-01`)
@@ -61,47 +64,68 @@ export default async function PayrollPage({
   const grandTotal = rows.reduce((t, r) => t + r.total, 0);
   const unpaidTotal = unpaid.reduce((t, r) => t + r.total, 0);
 
+  const thisMonth = currentMonth();
+
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-zinc-900 sm:text-2xl">Payroll</h1>
-          <p className="mt-0.5 text-sm text-zinc-500">
-            {rows.length} slip · {unpaid.length} belum dibayar
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href={`${base}/laporan?month=${month}`} className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50">
-            Laporan Gaji
-          </Link>
-          <Link href={`${base}/kasbon`} className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50">
-            Kasbon
-          </Link>
-          <Link href={`${base}/pinjaman`} className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50">
-            Pinjaman Pribadi
-          </Link>
-          <Link href={`${base}/rekap`} className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
-            + Buat Slip Gaji
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Payroll"
+        subtitle={`${rows.length} slip · ${unpaid.length} belum dibayar`}
+        actions={
+          <>
+            <Link href={`${base}/laporan?month=${month}`} className={btnOutline}>
+              Laporan Gaji
+            </Link>
+            <Link href={`${base}/kasbon`} className={btnOutline}>
+              Kasbon
+            </Link>
+            <Link href={`${base}/pinjaman`} className={btnOutline}>
+              Pinjaman Pribadi
+            </Link>
+            <GenerateButton businessId={businessId} month={month} label={monthLabel(month)} />
+            <Link href={`${base}/rekap`} className={btnPrimary}>
+              + Buat Slip Gaji
+            </Link>
+          </>
+        }
+      />
 
-      <div className="mb-4 flex items-center justify-between rounded-xl border border-zinc-100 bg-white px-4 py-2.5 shadow-sm">
-        <Link href={`${base}?month=${addMonths(month, -1)}`} className="text-sm font-semibold text-zinc-600 hover:text-zinc-900">
-          ← {monthLabel(addMonths(month, -1))}
-        </Link>
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-bold text-zinc-900">{monthLabel(month)}</span>
-          {month !== currentMonth() && (
-            <Link href={base} className="text-xs text-brand-600 hover:underline">
-              Bulan ini
+      <Card className="mb-4 !p-3">
+        <div className="mb-2 flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <Link href={`${base}?month=${year - 1}-${month.slice(5)}`} className="rounded-lg border border-zinc-200 px-2.5 py-1 text-xs hover:bg-zinc-50" aria-label="Tahun sebelumnya">
+              ←
+            </Link>
+            <span className="min-w-14 text-center text-[13px] font-semibold text-zinc-800">{year}</span>
+            <Link href={`${base}?month=${year + 1}-${month.slice(5)}`} className="rounded-lg border border-zinc-200 px-2.5 py-1 text-xs hover:bg-zinc-50" aria-label="Tahun berikutnya">
+              →
+            </Link>
+          </div>
+          {month !== thisMonth && (
+            <Link href={base} className="text-xs font-semibold text-brand-700 hover:underline">
+              Bulan Ini
             </Link>
           )}
         </div>
-        <Link href={`${base}?month=${addMonths(month, 1)}`} className="text-sm font-semibold text-zinc-600 hover:text-zinc-900">
-          {monthLabel(addMonths(month, 1))} →
-        </Link>
-      </div>
+        <div className="flex gap-1.5 overflow-x-auto pb-1">
+          {MONTH_NAMES.map((name, i) => {
+            const ym = `${year}-${String(i + 1).padStart(2, "0")}`;
+            const active = ym === month;
+            return (
+              <Link
+                key={ym}
+                href={`${base}?month=${ym}`}
+                className={`flex w-24 shrink-0 flex-col items-center rounded-xl py-2 text-center transition-colors ${
+                  active ? "bg-brand-600 text-white" : ym === thisMonth ? "bg-brand-100 text-brand-800" : "bg-zinc-50 text-zinc-600 hover:bg-zinc-100"
+                }`}
+              >
+                <span className="text-[13px] font-semibold">{name}</span>
+                <span className="text-[10px] opacity-75">{year}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </Card>
 
       {rows.length > 0 && (
         <div className="mb-4 grid grid-cols-2 gap-3">
@@ -116,33 +140,57 @@ export default async function PayrollPage({
         </div>
       )}
 
-      {rows.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-zinc-300 bg-white py-16 text-center">
-          <p className="text-sm text-zinc-500">Belum ada slip gaji di {monthLabel(month)}.</p>
+      <Card className="!p-0">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[680px] text-left text-[13px]">
+            <thead className="bg-zinc-50 text-xs font-semibold text-zinc-600">
+              <tr>
+                <th className="w-12 px-5 py-3">No.</th>
+                <th className="px-3 py-3">Karyawan</th>
+                <th className="px-3 py-3">Periode</th>
+                <th className="px-3 py-3 text-right">Total Gaji Bersih</th>
+                <th className="px-5 py-3 text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-100">
+              {rows.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="py-14 text-center text-sm text-zinc-400">
+                    Belum ada slip gaji di {monthLabel(month)}. Klik <b>Generate Payroll</b> untuk membuat slip semua karyawan sekaligus.
+                  </td>
+                </tr>
+              )}
+              {rows.map(({ p, total }, i) => {
+                const emp = p.employees as unknown as { name: string; employee_code: string | null } | null;
+                return (
+                  <tr key={p.id} className="hover:bg-zinc-50/60">
+                    <td className="px-5 py-3 text-zinc-500">{i + 1}</td>
+                    <td className="px-3 py-3">
+                      <Link href={`${base}/${p.id}`} className="font-medium text-brand-700 hover:underline">
+                        {emp?.name ?? "—"}
+                      </Link>
+                      <p className="text-xs text-zinc-400">{emp?.employee_code ?? ""}</p>
+                    </td>
+                    <td className="px-3 py-3 text-zinc-600">
+                      {fmtDate(p.period_start)} – {fmtDate(p.period_end)}
+                    </td>
+                    <td className="px-3 py-3 text-right font-semibold text-zinc-900">{fmtRupiah(total)}</td>
+                    <td className="px-5 py-3 text-right">
+                      <span
+                        className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                          p.paid_at ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                        }`}
+                      >
+                        {p.paid_at ? "Sudah Bayar" : "Siap Bayar"}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-      ) : (
-        <div className="overflow-hidden rounded-xl border border-zinc-100 bg-white shadow-sm">
-          <div className="divide-y divide-zinc-100">
-            {rows.map(({ p, total }) => {
-              const employeeName = (p.employees as unknown as { name: string } | null)?.name ?? "—";
-              return (
-                <Link key={p.id} href={`${base}/${p.id}`} className="flex items-center justify-between px-5 py-4 hover:bg-zinc-50">
-                  <div>
-                    <p className="font-semibold text-zinc-900">{employeeName}</p>
-                    <p className="mt-0.5 text-xs text-zinc-400">
-                      {p.period_start} — {p.period_end}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-zinc-900">{fmtRupiah(total)}</p>
-                    <span className={`text-[11px] font-semibold ${p.paid_at ? "text-emerald-600" : "text-amber-600"}`}>{p.paid_at ? "Lunas" : "Belum dibayar"}</span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      </Card>
     </div>
   );
 }

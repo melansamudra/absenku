@@ -108,5 +108,6 @@ export async function updateBusinessSettings(
   await logActivity(supabase, businessId, "Pengaturan bisnis diubah");
 
   revalidatePath(`/business/${businessId}/settings`);
+  revalidatePath(`/business/${businessId}/settings/general`);
   return { error: null };
 }

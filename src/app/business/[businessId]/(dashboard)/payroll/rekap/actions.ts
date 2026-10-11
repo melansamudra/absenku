@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { loadAttendanceSummary, loadPayrollSettings } from "@/lib/payroll/aggregate";
@@ -26,6 +27,61 @@ export async function createPayslip(
   const thrAmount = Number(formData.get("thr_amount") ?? 0) || 0;
   const lemburHoursRaw = formData.get("lembur_hours");
 
+  const result = await buildPayslip(businessId, employeeId, periodStart, periodEnd, thrAmount, lemburHoursRaw);
+  if (result.error || !result.payslipId) return { error: result.error ?? "Gagal membuat slip gaji." };
+  redirect(`/business/${businessId}/payroll/${result.payslipId}`);
+}
+
+export type GenerateResult = { created: number; skipped: number; errors: string[] };
+
+/** Buat slip gaji bulan `month` (YYYY-MM) untuk semua karyawan aktif yang belum punya slip periode itu. */
+export async function generatePayrollForMonth(businessId: string, month: string): Promise<GenerateResult> {
+  if (!/^\d{4}-\d{2}$/.test(month)) return { created: 0, skipped: 0, errors: ["Bulan tidak valid."] };
+  const [y, m] = month.split("-").map(Number);
+  const periodStart = `${month}-01`;
+  const periodEnd = `${month}-${String(new Date(Date.UTC(y, m, 0)).getUTCDate()).padStart(2, "0")}`;
+
+  const supabase = await createClient();
+  const [{ data: employees }, { data: existing }] = await Promise.all([
+    supabase
+      .from("employees")
+      .select("id, name")
+      .eq("business_id", businessId)
+      .eq("active", true)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("payslips")
+      .select("employee_id")
+      .eq("business_id", businessId)
+      .eq("period_start", periodStart)
+      .eq("period_end", periodEnd),
+  ]);
+
+  const have = new Set((existing ?? []).map((p) => p.employee_id));
+  const result: GenerateResult = { created: 0, skipped: 0, errors: [] };
+  // Berurutan (bukan paralel) supaya tidak membebani database dan urutan tetap rapi.
+  for (const e of employees ?? []) {
+    if (have.has(e.id)) {
+      result.skipped++;
+      continue;
+    }
+    const r = await buildPayslip(businessId, e.id, periodStart, periodEnd, 0, null);
+    if (r.error) result.errors.push(`${e.name}: ${r.error}`);
+    else result.created++;
+  }
+  revalidatePath(`/business/${businessId}/payroll`);
+  return result;
+}
+
+async function buildPayslip(
+  businessId: string,
+  employeeId: string,
+  periodStart: string,
+  periodEnd: string,
+  thrAmount: number,
+  lemburHoursRaw: FormDataEntryValue | null,
+): Promise<{ error: string | null; payslipId?: string }> {
   if (!periodStart || !periodEnd || periodStart > periodEnd) {
     return { error: "Periode tidak valid." };
   }
@@ -197,5 +253,5 @@ export async function createPayslip(
     }
   }
 
-  redirect(`/business/${businessId}/payroll/${payslip.id}`);
+  return { error: null, payslipId: payslip.id };
 }

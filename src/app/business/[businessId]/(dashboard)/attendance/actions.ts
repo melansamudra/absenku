@@ -45,10 +45,31 @@ export async function setAttendanceVerified(
     .update({
       verified_by_admin: verified,
       verified_at: verified ? new Date().toISOString() : null,
+      // Menyetujui membatalkan penolakan sebelumnya.
+      ...(verified && { rejected_at: null, rejected_note: null }),
     })
     .eq("id", attendanceId)
     .eq("business_id", businessId);
   revalidatePath(`/business/${businessId}/attendance`);
+  revalidatePath(`/business/${businessId}/attendance/approval`);
+}
+
+// Tolak presensi: dicatat sebagai alpa supaya hitungan payroll tetap konsisten.
+export async function rejectAttendance(businessId: string, attendanceId: string, note: string) {
+  const supabase = await createClient();
+  await supabase
+    .from("attendance")
+    .update({
+      rejected_at: new Date().toISOString(),
+      rejected_note: note.trim() || null,
+      verified_by_admin: false,
+      verified_at: null,
+      status: "alpa",
+    })
+    .eq("id", attendanceId)
+    .eq("business_id", businessId);
+  revalidatePath(`/business/${businessId}/attendance`);
+  revalidatePath(`/business/${businessId}/attendance/approval`);
 }
 
 export async function clearAttendance(businessId: string, attendanceId: string) {

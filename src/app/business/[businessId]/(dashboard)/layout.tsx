@@ -63,6 +63,7 @@ export default async function BusinessDashboardLayout({
       businessName={business.name}
       userEmail={userData.user.email ?? ""}
       badges={{
+        "attendance/approval": pending.presensi,
         "leave-requests": pending.cuti,
         overtime: pending.lembur,
         reimbursements: pending.reimbursements,

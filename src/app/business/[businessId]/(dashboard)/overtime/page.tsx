@@ -51,7 +51,7 @@ export default async function OvertimePage({ params }: { params: Promise<{ busin
         <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
           Mode pengajuan lembur sedang mati — lembur masih dihitung otomatis dari jam absen pulang.
           Aktifkan di{" "}
-          <Link href={`/business/${businessId}/settings`} className="font-semibold underline">
+          <Link href={`/business/${businessId}/settings/general`} className="font-semibold underline">
             Pengaturan → Lembur
           </Link>
           .
