@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Banknote, CalendarCheck, FileText, Megaphone, QrCode, Users, UserCheck, UserMinus, UserRoundX, UsersRound, type LucideIcon } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { loadPendingCounts } from "@/lib/dashboard/pending";
 
@@ -48,7 +49,7 @@ export default async function BusinessOverviewPage({
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-zinc-900 sm:text-2xl">Ringkasan</h1>
+        <h1 className="text-xl font-bold text-zinc-900 sm:text-2xl">Beranda</h1>
         <p className="mt-0.5 text-sm text-zinc-500">Absensi hari ini, {today}</p>
       </div>
 
@@ -83,73 +84,57 @@ export default async function BusinessOverviewPage({
       </div>
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-xl border border-zinc-100 bg-white p-4 shadow-sm">
-          <p className="text-xs font-medium text-zinc-400">Karyawan Aktif</p>
-          <p className="mt-1.5 text-2xl font-bold text-zinc-900">{activeCount}</p>
-          <p className="mt-1 text-xs text-zinc-400">dari {totalCount} total</p>
-        </div>
-        <div className="rounded-xl border border-zinc-100 bg-white p-4 shadow-sm">
-          <p className="text-xs font-medium text-zinc-400">Hadir</p>
-          <p className="mt-1.5 text-2xl font-bold text-emerald-600">
-            {statusCounts.hadir ?? 0}
-          </p>
-        </div>
-        <div className="rounded-xl border border-zinc-100 bg-white p-4 shadow-sm">
-          <p className="text-xs font-medium text-zinc-400">Izin/Sakit</p>
-          <p className="mt-1.5 text-2xl font-bold text-amber-600">
-            {(statusCounts.izin ?? 0) + (statusCounts.sakit ?? 0)}
-          </p>
-        </div>
-        <div className="rounded-xl border border-zinc-100 bg-white p-4 shadow-sm">
-          <p className="text-xs font-medium text-zinc-400">Belum Absen</p>
-          <p className="mt-1.5 text-2xl font-bold text-zinc-900">{belumAbsen}</p>
-        </div>
+        <Stat icon={UsersRound} tone="indigo" label="Karyawan Aktif" value={activeCount} note={`dari ${totalCount} total`} />
+        <Stat icon={UserCheck} tone="emerald" label="Hadir" value={statusCounts.hadir ?? 0} />
+        <Stat icon={UserMinus} tone="amber" label="Izin/Sakit" value={(statusCounts.izin ?? 0) + (statusCounts.sakit ?? 0)} />
+        <Stat icon={UserRoundX} tone="zinc" label="Belum Absen" value={belumAbsen} />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-xl border border-zinc-100 bg-white p-5 shadow-sm">
-          <h2 className="mb-1 text-sm font-semibold text-zinc-800">Karyawan</h2>
-          <p className="mb-4 text-xs text-zinc-500">Kelola data karyawan & tarif gaji.</p>
-          <Link
-            href={`/business/${businessId}/employees`}
-            className="inline-block rounded-lg bg-brand-600 px-4 py-2 text-xs font-semibold text-white hover:bg-brand-700"
-          >
-            Kelola Karyawan
-          </Link>
-        </div>
-        <div className="rounded-xl border border-zinc-100 bg-white p-5 shadow-sm">
-          <h2 className="mb-1 text-sm font-semibold text-zinc-800">Absensi</h2>
-          <p className="mb-4 text-xs text-zinc-500">Tandai kehadiran manual atau cek rekap.</p>
-          <Link
-            href={`/business/${businessId}/attendance`}
-            className="inline-block rounded-lg bg-brand-600 px-4 py-2 text-xs font-semibold text-white hover:bg-brand-700"
-          >
-            Buka Absensi
-          </Link>
-        </div>
-        <div className="rounded-xl border border-zinc-100 bg-white p-5 shadow-sm">
-          <h2 className="mb-1 text-sm font-semibold text-zinc-800">Payroll</h2>
-          <p className="mb-4 text-xs text-zinc-500">Buat & kelola slip gaji per periode.</p>
-          <Link
-            href={`/business/${businessId}/payroll`}
-            className="inline-block rounded-lg bg-brand-600 px-4 py-2 text-xs font-semibold text-white hover:bg-brand-700"
-          >
-            Buka Payroll
-          </Link>
-        </div>
-        <div className="rounded-xl border border-zinc-100 bg-white p-5 shadow-sm">
-          <h2 className="mb-1 text-sm font-semibold text-zinc-800">Link Absen Selfie</h2>
-          <p className="mb-4 text-xs text-zinc-500">
-            Bagikan link/poster QR ini ke karyawan untuk absen sendiri.
-          </p>
-          <Link
-            href={`/business/${businessId}/settings`}
-            className="inline-block rounded-lg border border-zinc-300 px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
-          >
-            Lihat Link
-          </Link>
-        </div>
+      <h2 className="mb-3 text-sm font-semibold text-zinc-800">Akses Cepat</h2>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <Shortcut href={`/business/${businessId}/employees`} icon={Users} title="Karyawan" desc="Data karyawan & tarif gaji" />
+        <Shortcut href={`/business/${businessId}/attendance`} icon={CalendarCheck} title="Absensi" desc="Tandai kehadiran atau cek rekap" />
+        <Shortcut href={`/business/${businessId}/payroll`} icon={Banknote} title="Payroll" desc="Buat & kelola slip gaji" />
+        <Shortcut href={`/business/${businessId}/payroll/laporan`} icon={FileText} title="Laporan Gaji" desc="Total transfer & rekening per bulan" />
+        <Shortcut href={`/business/${businessId}/announcements`} icon={Megaphone} title="Papan Informasi" desc="Pengumuman untuk karyawan" />
+        <Shortcut href={`/business/${businessId}/settings`} icon={QrCode} title="Link Absen Selfie" desc="Bagikan link/poster QR ke karyawan" />
       </div>
     </div>
+  );
+}
+
+const TONES = {
+  indigo: "bg-brand-50 text-brand-600",
+  emerald: "bg-emerald-50 text-emerald-600",
+  amber: "bg-amber-50 text-amber-600",
+  zinc: "bg-zinc-100 text-zinc-600",
+} as const;
+
+function Stat({ icon: Icon, tone, label, value, note }: { icon: LucideIcon; tone: keyof typeof TONES; label: string; value: number; note?: string }) {
+  return (
+    <div className="rounded-xl border border-zinc-100 bg-white p-4 shadow-sm">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-medium text-zinc-500">{label}</p>
+        <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${TONES[tone]}`}>
+          <Icon className="h-4 w-4" aria-hidden="true" />
+        </span>
+      </div>
+      <p className="mt-2 text-2xl font-bold text-zinc-900">{value}</p>
+      {note && <p className="mt-0.5 text-xs text-zinc-400">{note}</p>}
+    </div>
+  );
+}
+
+function Shortcut({ href, icon: Icon, title, desc }: { href: string; icon: LucideIcon; title: string; desc: string }) {
+  return (
+    <Link href={href} className="group flex items-start gap-3 rounded-xl border border-zinc-100 bg-white p-4 shadow-sm transition-colors hover:border-brand-200 hover:bg-brand-50/40">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 group-hover:bg-brand-100">
+        <Icon className="h-5 w-5" aria-hidden="true" />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-sm font-semibold text-zinc-900">{title}</span>
+        <span className="mt-0.5 block text-xs text-zinc-500">{desc}</span>
+      </span>
+    </Link>
   );
 }
