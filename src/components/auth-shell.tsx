@@ -18,7 +18,7 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
       />
 
       {/* Panel brand — desktop */}
-      <div className="relative hidden w-1/2 shrink-0 flex-col justify-between overflow-hidden bg-gradient-to-br from-brand-700 via-brand-600 to-indigo-600 p-12 text-white lg:flex">
+      <div className="relative hidden w-1/2 shrink-0 flex-col justify-between overflow-hidden bg-gradient-to-br from-brand-600 via-brand-500 to-brand-300 p-12 text-white lg:flex">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 opacity-[0.15]"

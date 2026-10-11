@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { logActivity } from "@/lib/activity-log";
 import { hashPin, PIN_PATTERN } from "@/lib/attendance/pin";
 import { identityDbError, parseIdentity } from "@/lib/employees/identity";
+import { nextEmployeeCode } from "@/lib/employee/code";
 
 export type ActionState = { error: string | null };
 
@@ -73,9 +74,12 @@ export async function createEmployee(
   const identity = readIdentity(formData);
   if ("error" in identity) return identity;
 
+  // Tambah Cepat: data minimum → ditandai "belum lengkap" sampai wizard dilengkapi.
   const { error } = await supabase.from("employees").insert({
     attendance_pin_hash: pinUpdate.value ?? null,
     business_id: businessId,
+    employee_code: await nextEmployeeCode(supabase, businessId),
+    setup_complete: false,
     name,
     salary_type: salaryType,
     daily_rate: numOrZero(formData.get("daily_rate")),

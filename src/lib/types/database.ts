@@ -479,6 +479,47 @@ export type Database = {
       }
       employees: {
         Row: {
+          employee_code: string | null
+          birth_place: string | null
+          birth_date: string | null
+          gender: string | null
+          marital_status: string | null
+          blood_type: string | null
+          religion: string | null
+          citizenship_country: string | null
+          id_number: string | null
+          family_card_number: string | null
+          phone: string | null
+          phone_alt: string | null
+          id_address: string | null
+          id_country: string | null
+          id_province: string | null
+          id_city: string | null
+          dom_address: string | null
+          dom_country: string | null
+          dom_province: string | null
+          dom_city: string | null
+          emergency_name: string | null
+          emergency_phone: string | null
+          edu_level: string | null
+          edu_institution: string | null
+          edu_major: string | null
+          employment_status: string | null
+          placement_type: string | null
+          organization_id: string | null
+          position_id: string | null
+          rank_id: string | null
+          grade: string | null
+          npwp: string | null
+          bpjs_tk_number: string | null
+          bpjs_tk_effective: string | null
+          bpjs_kes_number: string | null
+          bpjs_kes_effective: string | null
+          bpjs_family_count: number | null
+          citizenship: string
+          id_type: string
+          domicile_same: boolean
+          setup_complete: boolean
           bpjs_kesehatan: boolean
           bpjs_ketenagakerjaan: boolean
           bpjs_wage_base: number | null
@@ -507,6 +548,47 @@ export type Database = {
           salary_type: string
         }
         Insert: {
+          employee_code?: string | null
+          birth_place?: string | null
+          birth_date?: string | null
+          gender?: string | null
+          marital_status?: string | null
+          blood_type?: string | null
+          religion?: string | null
+          citizenship_country?: string | null
+          id_number?: string | null
+          family_card_number?: string | null
+          phone?: string | null
+          phone_alt?: string | null
+          id_address?: string | null
+          id_country?: string | null
+          id_province?: string | null
+          id_city?: string | null
+          dom_address?: string | null
+          dom_country?: string | null
+          dom_province?: string | null
+          dom_city?: string | null
+          emergency_name?: string | null
+          emergency_phone?: string | null
+          edu_level?: string | null
+          edu_institution?: string | null
+          edu_major?: string | null
+          employment_status?: string | null
+          placement_type?: string | null
+          organization_id?: string | null
+          position_id?: string | null
+          rank_id?: string | null
+          grade?: string | null
+          npwp?: string | null
+          bpjs_tk_number?: string | null
+          bpjs_tk_effective?: string | null
+          bpjs_kes_number?: string | null
+          bpjs_kes_effective?: string | null
+          bpjs_family_count?: number | null
+          citizenship?: string
+          id_type?: string
+          domicile_same?: boolean
+          setup_complete?: boolean
           bpjs_kesehatan?: boolean
           bpjs_ketenagakerjaan?: boolean
           bpjs_wage_base?: number | null
@@ -535,6 +617,47 @@ export type Database = {
           salary_type?: string
         }
         Update: {
+          employee_code?: string | null
+          birth_place?: string | null
+          birth_date?: string | null
+          gender?: string | null
+          marital_status?: string | null
+          blood_type?: string | null
+          religion?: string | null
+          citizenship_country?: string | null
+          id_number?: string | null
+          family_card_number?: string | null
+          phone?: string | null
+          phone_alt?: string | null
+          id_address?: string | null
+          id_country?: string | null
+          id_province?: string | null
+          id_city?: string | null
+          dom_address?: string | null
+          dom_country?: string | null
+          dom_province?: string | null
+          dom_city?: string | null
+          emergency_name?: string | null
+          emergency_phone?: string | null
+          edu_level?: string | null
+          edu_institution?: string | null
+          edu_major?: string | null
+          employment_status?: string | null
+          placement_type?: string | null
+          organization_id?: string | null
+          position_id?: string | null
+          rank_id?: string | null
+          grade?: string | null
+          npwp?: string | null
+          bpjs_tk_number?: string | null
+          bpjs_tk_effective?: string | null
+          bpjs_kes_number?: string | null
+          bpjs_kes_effective?: string | null
+          bpjs_family_count?: number | null
+          citizenship?: string
+          id_type?: string
+          domicile_same?: boolean
+          setup_complete?: boolean
           bpjs_kesehatan?: boolean
           bpjs_ketenagakerjaan?: boolean
           bpjs_wage_base?: number | null
@@ -563,6 +686,27 @@ export type Database = {
           salary_type?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "employees_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "positions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_rank_id_fkey"
+            columns: ["rank_id"]
+            isOneToOne: false
+            referencedRelation: "ranks"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "employees_business_id_fkey"
             columns: ["business_id"]
@@ -960,6 +1104,93 @@ export type Database = {
           status?: string
         }
         Relationships: []
+      }
+      organizations: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organizations_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      positions: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "positions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ranks: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ranks_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payroll_holidays: {
         Row: {

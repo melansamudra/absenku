@@ -256,13 +256,13 @@ export default function DashboardShell({
 
       <div className="flex min-h-screen min-w-0 flex-1 flex-col">
         {/* Top bar */}
-        <header ref={topbarRef} className="relative z-30 flex h-16 shrink-0 items-center justify-between gap-3 bg-brand-600 px-4 text-white sm:px-6 print:hidden">
+        <header ref={topbarRef} className="relative z-30 flex h-16 shrink-0 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-4 text-zinc-700 sm:px-6 print:hidden">
           <div className="flex min-w-0 items-center gap-3">
-            <button type="button" aria-label="Buka menu" onClick={() => setDrawer(true)} className="rounded-lg p-1.5 hover:bg-white/10 md:hidden">
+            <button type="button" aria-label="Buka menu" onClick={() => setDrawer(true)} className="rounded-lg p-1.5 hover:bg-zinc-100 md:hidden">
               <Menu className="h-6 w-6" aria-hidden="true" />
             </button>
-            <Building2 className="hidden h-5 w-5 shrink-0 text-white/80 sm:block" aria-hidden="true" />
-            <span className="truncate text-sm font-bold uppercase tracking-wide">{businessName}</span>
+            <Building2 className="hidden h-5 w-5 shrink-0 text-brand-500 sm:block" aria-hidden="true" />
+            <span className="truncate text-sm font-bold tracking-wide text-zinc-800">{businessName}</span>
           </div>
 
           <div className="flex items-center gap-1.5">
@@ -272,11 +272,11 @@ export default function DashboardShell({
                 aria-label="Notifikasi"
                 aria-expanded={menu === "bell"}
                 onClick={() => setMenu(menu === "bell" ? null : "bell")}
-                className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 hover:bg-white/25"
+                className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
               >
                 <Bell className="h-5 w-5" aria-hidden="true" />
                 {pendingTotal > 0 && (
-                  <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none ring-2 ring-brand-600">
+                  <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white">
                     {pendingTotal}
                   </span>
                 )}
@@ -306,9 +306,9 @@ export default function DashboardShell({
                 aria-label="Menu akun"
                 aria-expanded={menu === "user"}
                 onClick={() => setMenu(menu === "user" ? null : "user")}
-                className="flex h-10 items-center gap-1 rounded-xl bg-white/15 pl-1.5 pr-2 hover:bg-white/25"
+                className="flex h-10 items-center gap-1 rounded-xl bg-zinc-100 pl-1.5 pr-2 text-zinc-600 hover:bg-zinc-200"
               >
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-sm font-bold text-brand-700">{initial}</span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-100 text-sm font-bold text-brand-700">{initial}</span>
                 <ChevronDown className="h-4 w-4" aria-hidden="true" />
               </button>
               {menu === "user" && (
