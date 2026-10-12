@@ -15,6 +15,7 @@ export type AttendanceSummary = {
   sakit: number;
   alpa: number;
   off: number;
+  /** Jumlah hari kerja terjadwal di periode (tanpa hari libur mingguan & tanggal merah). */
   periodTotalDays: number;
   lateMinutesList: number[]; // satu entri per hari 'hadir' yang ditandai telat
 };
@@ -79,7 +80,10 @@ export function calcPayslip(
 
   const izinUnnottedCount = att.izinUnnotedWeekday + att.izinUnnotedWeekend;
   const paidDays = att.hadir + att.sakit + att.izinNoted + izinUnnottedCount;
-  const basePay = Math.round(dailyEquivalent * paidDays);
+  const proratedPay = Math.round(dailyEquivalent * paidDays);
+  // Gaji bulanan tidak pernah melebihi gaji bulanan penuh (mis. hadir di hari libur
+  // mingguan tidak menambah gaji pokok).
+  const basePay = emp.salaryType === "bulanan" ? Math.min(Math.round(emp.monthlyRate), proratedPay) : proratedPay;
 
   const mealAllowance = Math.round(att.hadir * emp.dailyMealAllowance);
   const attendanceAllowance = Math.round(att.hadir * emp.dailyAttendanceAllowance);
