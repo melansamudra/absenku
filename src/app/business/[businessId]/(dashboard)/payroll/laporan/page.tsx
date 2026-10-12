@@ -100,7 +100,7 @@ export default async function LaporanGajiPage({ params, searchParams }: { params
   ].join("\n");
 
   return (
-    <div className="w-full max-w-3xl print:max-w-none">
+    <div className="w-full">
       <style>{"@media print { @page { size: portrait; margin: 12mm; } }"}</style>
 
       <div className="flex flex-wrap items-start justify-between gap-2 print:hidden">
@@ -210,7 +210,7 @@ export default async function LaporanGajiPage({ params, searchParams }: { params
           )}
 
           <h2 className="mt-6 text-sm font-semibold text-zinc-900 print:mt-5">Rincian per Karyawan</h2>
-          <div className="mt-2 grid gap-3 sm:grid-cols-2 print:grid-cols-2 print:gap-2">
+          <div className="mt-2 grid gap-3 sm:grid-cols-2 xl:grid-cols-3 print:grid-cols-2 print:gap-2">
             {slips.map((r) => (
               <div key={r.slip.id} className="break-inside-avoid rounded-xl border border-zinc-200 bg-white p-3 text-xs">
                 <div className="flex items-start justify-between gap-2">
