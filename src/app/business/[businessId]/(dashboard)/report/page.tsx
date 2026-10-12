@@ -45,7 +45,7 @@ export default async function ReportHubPage({
       <div className="space-y-4">
         {GROUPS.map((g) => (
           <Card key={g.name}>
-            <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">{g.name}</h2>
+            <h2 className="mb-3 text-[12px] font-semibold uppercase tracking-wider text-zinc-400">{g.name}</h2>
             <div className="grid gap-3 sm:grid-cols-2">
               {g.items.map((i) => (
                 <Link
@@ -57,7 +57,7 @@ export default async function ReportHubPage({
                     <i.icon size={19} />
                   </span>
                   <span>
-                    <span className="block text-[13px] font-semibold text-zinc-900">{i.title}</span>
+                    <span className="block text-[14px] font-semibold text-zinc-900">{i.title}</span>
                     <span className="mt-0.5 block text-xs text-zinc-500">{i.desc}</span>
                   </span>
                 </Link>

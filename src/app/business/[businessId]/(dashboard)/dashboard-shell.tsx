@@ -235,7 +235,7 @@ export default function DashboardShell({
   );
 
   return (
-    <div className="flex min-h-screen bg-zinc-50">
+    <div className="admin-scale flex min-h-screen bg-zinc-50">
       {/* Sidebar desktop */}
       <aside className={`hidden shrink-0 flex-col border-r border-zinc-200 bg-white transition-[width] md:flex print:hidden ${collapsed ? "w-[72px]" : "w-64"}`}>
         <div className={`flex h-16 items-center border-b border-zinc-100 ${collapsed ? "justify-center px-2" : "px-5"}`}>
@@ -296,7 +296,7 @@ export default function DashboardShell({
               >
                 <Bell className="h-5 w-5" aria-hidden="true" />
                 {pendingTotal > 0 && (
-                  <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white">
+                  <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[11px] font-bold leading-none text-white ring-2 ring-white">
                     {pendingTotal}
                   </span>
                 )}
@@ -334,7 +334,7 @@ export default function DashboardShell({
               {menu === "user" && (
                 <div className="absolute right-0 top-12 w-64 overflow-hidden rounded-2xl bg-white text-zinc-800 shadow-xl ring-1 ring-zinc-200">
                   <div className="border-b border-zinc-100 px-4 py-3">
-                    <p className="text-[11px] text-zinc-500">Masuk sebagai</p>
+                    <p className="text-[12px] text-zinc-500">Masuk sebagai</p>
                     <p className="truncate text-sm font-semibold">{userEmail}</p>
                   </div>
                   <Link href={href("settings")} className="flex items-center gap-2.5 px-4 py-3 text-sm hover:bg-zinc-50">
@@ -372,7 +372,7 @@ export default function DashboardShell({
 
 function Badge({ n }: { n: number }) {
   return (
-    <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white" aria-label={`${n} menunggu`}>
+    <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white" aria-label={`${n} menunggu`}>
       {n}
     </span>
   );

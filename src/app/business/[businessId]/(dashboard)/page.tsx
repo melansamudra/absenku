@@ -139,7 +139,7 @@ export default async function BusinessOverviewPage({
                 }`}
               >
                 <p className={`text-xl font-bold ${i.count > 0 ? "text-amber-700" : "text-zinc-300"}`}>{i.count}</p>
-                <p className="text-[11px] font-medium text-zinc-600">{i.label}</p>
+                <p className="text-[12px] font-medium text-zinc-600">{i.label}</p>
               </Link>
             ))}
           </div>

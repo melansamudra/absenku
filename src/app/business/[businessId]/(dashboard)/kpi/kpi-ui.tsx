@@ -17,7 +17,7 @@ export function KpiTabs({ businessId, active }: { businessId: string; active: (t
         <Link
           key={t.key}
           href={`/business/${businessId}/kpi/${t.key}`}
-          className={`shrink-0 rounded-lg border px-4 py-1.5 text-[13px] ${
+          className={`shrink-0 rounded-lg border px-4 py-1.5 text-[14px] ${
             active === t.key
               ? "border-brand-500 bg-white font-semibold text-brand-700"
               : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
@@ -58,7 +58,7 @@ export function DeleteButton({
       >
         <Trash2 size={15} />
       </button>
-      {error && <span className="max-w-48 text-right text-[11px] text-red-600">{error}</span>}
+      {error && <span className="max-w-48 text-right text-[12px] text-red-600">{error}</span>}
     </span>
   );
 }

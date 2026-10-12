@@ -32,7 +32,7 @@ export default function TaskRow({ businessId, task }: { businessId: string; task
         {task.description && <p className="mt-0.5 text-xs text-zinc-400">{task.description}</p>}
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${status.className}`}>
+        <span className={`rounded-full px-2 py-0.5 text-[12px] font-medium ${status.className}`}>
           {status.label}
         </span>
         <select

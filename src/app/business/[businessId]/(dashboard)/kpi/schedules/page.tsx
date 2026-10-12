@@ -45,7 +45,7 @@ export default async function KpiSchedulesPage({
 
       <Card className="!p-0">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-left text-[13px]">
+          <table className="w-full min-w-[720px] text-left text-[14px]">
             <thead className="bg-zinc-50 text-xs font-semibold text-zinc-600">
               <tr>
                 <th className="w-12 px-5 py-3">No.</th>
@@ -85,7 +85,7 @@ export default async function KpiSchedulesPage({
                       {done}/{reviews.length} dinilai
                     </td>
                     <td className="px-3 py-3">
-                      <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${st.badge}`}>{st.label}</span>
+                      <span className={`rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${st.badge}`}>{st.label}</span>
                     </td>
                     <td className="px-5 py-3 text-right">
                       <DeleteButton action={deleteKpiSchedule.bind(null, businessId, s.id)} confirmText={`Hapus jadwal "${s.name}" beserta seluruh hasil penilaiannya?`} />

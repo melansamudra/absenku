@@ -148,7 +148,7 @@ export default function SettingsHub({ businessId }: { businessId: string }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Cari pengaturan"
-            className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-8 pr-3 text-[13px] focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+            className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-8 pr-3 text-[14px] focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
           />
         </div>
       </div>
@@ -163,7 +163,7 @@ export default function SettingsHub({ businessId }: { businessId: string }) {
                 setActive(c.key);
                 setQuery("");
               }}
-              className={`flex shrink-0 items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-left text-[13px] transition-colors ${
+              className={`flex shrink-0 items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-left text-[14px] transition-colors ${
                 !q && active === c.key ? "bg-brand-600 font-semibold text-white" : "text-zinc-600 hover:bg-zinc-50"
               }`}
             >
@@ -190,7 +190,7 @@ export default function SettingsHub({ businessId }: { businessId: string }) {
               <div className="space-y-6">
                 {category.groups.map((g) => (
                   <div key={g.name}>
-                    <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">{g.name}</p>
+                    <p className="mb-2.5 text-[12px] font-semibold uppercase tracking-wider text-zinc-400">{g.name}</p>
                     <ItemGrid items={g.items} base={base} />
                   </div>
                 ))}
@@ -216,9 +216,9 @@ function ItemGrid({ items, base }: { items: (Item & { category?: string })[]; ba
             <i.icon size={19} />
           </span>
           <span className="min-w-0">
-            <span className="block text-[13px] font-semibold text-zinc-900">{i.title}</span>
+            <span className="block text-[14px] font-semibold text-zinc-900">{i.title}</span>
             <span className="mt-0.5 block text-xs text-zinc-500">{i.desc}</span>
-            {i.category && <span className="mt-1 block text-[11px] text-zinc-400">{i.category}</span>}
+            {i.category && <span className="mt-1 block text-[12px] text-zinc-400">{i.category}</span>}
           </span>
         </Link>
       ))}

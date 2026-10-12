@@ -58,10 +58,10 @@ export default function ReviewForm({
         <Card key={r.id}>
           <div className="mb-3 flex items-start justify-between gap-3">
             <div>
-              <p className="text-[13px] font-semibold text-zinc-900">{r.name}</p>
+              <p className="text-[14px] font-semibold text-zinc-900">{r.name}</p>
               {r.description && <p className="mt-0.5 text-xs text-zinc-400">{r.description}</p>}
             </div>
-            <span className="shrink-0 rounded-full bg-brand-50 px-2.5 py-0.5 text-[11px] font-semibold text-brand-700">Bobot {r.weight}%</span>
+            <span className="shrink-0 rounded-full bg-brand-50 px-2.5 py-0.5 text-[12px] font-semibold text-brand-700">Bobot {r.weight}%</span>
           </div>
           <div className="grid gap-3 sm:grid-cols-[180px_1fr]">
             <Field label="Nilai (0–100)" required>

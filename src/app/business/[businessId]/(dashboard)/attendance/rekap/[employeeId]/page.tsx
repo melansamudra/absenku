@@ -115,7 +115,7 @@ export default async function AttendanceRekapDetailPage({
         ].map((s) => (
           <div key={s.label} className="rounded-xl border border-zinc-100 bg-white p-3 text-center shadow-sm">
             <p className={`text-xl font-bold ${s.className}`}>{s.value}</p>
-            <p className="text-[11px] text-zinc-400">{s.label}</p>
+            <p className="text-[12px] text-zinc-400">{s.label}</p>
           </div>
         ))}
       </div>

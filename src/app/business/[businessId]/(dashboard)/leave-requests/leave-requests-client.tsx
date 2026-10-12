@@ -58,7 +58,7 @@ function RequestRow({ businessId, index, request }: { businessId: string; index:
         {request.reason && <p className="mt-0.5 text-xs text-zinc-400">&ldquo;{request.reason}&rdquo;</p>}
       </td>
       <td className="px-3 py-3">
-        <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${status.className}`}>{status.label}</span>
+        <span className={`rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${status.className}`}>{status.label}</span>
       </td>
       <td className="px-5 py-3">
         {request.status === "pending" && (
@@ -234,7 +234,7 @@ export default function LeaveRequestsClient({
               key={t.id}
               type="button"
               onClick={() => setTypeTab(t.id)}
-              className={`shrink-0 rounded-lg border px-4 py-1.5 text-[13px] ${
+              className={`shrink-0 rounded-lg border px-4 py-1.5 text-[14px] ${
                 typeTab === t.id
                   ? "border-brand-500 bg-white font-semibold text-brand-700"
                   : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
@@ -272,7 +272,7 @@ export default function LeaveRequestsClient({
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[860px] text-left text-[13px]">
+          <table className="w-full min-w-[860px] text-left text-[14px]">
             <thead className="bg-zinc-50 text-xs font-semibold text-zinc-600">
               <tr>
                 <th className="w-12 px-5 py-3">No.</th>

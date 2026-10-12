@@ -51,7 +51,7 @@ export default function MasterManager({
               setEditing(null);
               setError(null);
             }}
-            className={`shrink-0 rounded-lg border px-4 py-1.5 text-[13px] ${
+            className={`shrink-0 rounded-lg border px-4 py-1.5 text-[14px] ${
               tab === t.key
                 ? "border-brand-500 bg-white font-semibold text-brand-700"
                 : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
@@ -115,7 +115,7 @@ export default function MasterManager({
                 </>
               ) : (
                 <>
-                  <span className="flex-1 text-[13px] font-medium text-zinc-900">{it.name}</span>
+                  <span className="flex-1 text-[14px] font-medium text-zinc-900">{it.name}</span>
                   <span className="text-xs text-zinc-400">{it.used} karyawan</span>
                   <button
                     type="button"

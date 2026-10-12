@@ -96,7 +96,7 @@ export default async function PayrollPage({
             <Link href={`${base}?month=${year - 1}-${month.slice(5)}`} className="rounded-lg border border-zinc-200 px-2.5 py-1 text-xs hover:bg-zinc-50" aria-label="Tahun sebelumnya">
               ←
             </Link>
-            <span className="min-w-14 text-center text-[13px] font-semibold text-zinc-800">{year}</span>
+            <span className="min-w-14 text-center text-[14px] font-semibold text-zinc-800">{year}</span>
             <Link href={`${base}?month=${year + 1}-${month.slice(5)}`} className="rounded-lg border border-zinc-200 px-2.5 py-1 text-xs hover:bg-zinc-50" aria-label="Tahun berikutnya">
               →
             </Link>
@@ -119,8 +119,8 @@ export default async function PayrollPage({
                   active ? "bg-brand-600 text-white" : ym === thisMonth ? "bg-brand-100 text-brand-800" : "bg-zinc-50 text-zinc-600 hover:bg-zinc-100"
                 }`}
               >
-                <span className="text-[13px] font-semibold">{name}</span>
-                <span className="text-[10px] opacity-75">{year}</span>
+                <span className="text-[14px] font-semibold">{name}</span>
+                <span className="text-[11px] opacity-75">{year}</span>
               </Link>
             );
           })}
@@ -130,11 +130,11 @@ export default async function PayrollPage({
       {rows.length > 0 && (
         <div className="mb-4 grid grid-cols-2 gap-3">
           <div className="rounded-xl border border-brand-200 bg-brand-50 px-4 py-3">
-            <p className="text-[11px] font-semibold uppercase text-brand-700">Total Gaji Bersih</p>
+            <p className="text-[12px] font-semibold uppercase text-brand-700">Total Gaji Bersih</p>
             <p className="mt-0.5 text-lg font-bold text-brand-700">{fmtRupiah(grandTotal)}</p>
           </div>
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-            <p className="text-[11px] font-semibold uppercase text-amber-700">Belum Dibayar</p>
+            <p className="text-[12px] font-semibold uppercase text-amber-700">Belum Dibayar</p>
             <p className="mt-0.5 text-lg font-bold text-amber-700">{fmtRupiah(unpaidTotal)}</p>
           </div>
         </div>
@@ -142,7 +142,7 @@ export default async function PayrollPage({
 
       <Card className="!p-0">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[680px] text-left text-[13px]">
+          <table className="w-full min-w-[680px] text-left text-[14px]">
             <thead className="bg-zinc-50 text-xs font-semibold text-zinc-600">
               <tr>
                 <th className="w-12 px-5 py-3">No.</th>
@@ -177,7 +177,7 @@ export default async function PayrollPage({
                     <td className="px-3 py-3 text-right font-semibold text-zinc-900">{fmtRupiah(total)}</td>
                     <td className="px-5 py-3 text-right">
                       <span
-                        className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                        className={`rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${
                           p.paid_at ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
                         }`}
                       >

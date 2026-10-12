@@ -137,8 +137,8 @@ export default async function AttendancePage({
 
       <Card className="!p-0">
         <div className="flex gap-1 border-b border-zinc-100 p-3">
-          <span className="rounded-lg border border-brand-500 bg-white px-4 py-1.5 text-[13px] font-semibold text-brand-700">Harian</span>
-          <Link href={`${base}/rekap`} className="rounded-lg border border-zinc-200 bg-white px-4 py-1.5 text-[13px] text-zinc-600 hover:bg-zinc-50">
+          <span className="rounded-lg border border-brand-500 bg-white px-4 py-1.5 text-[14px] font-semibold text-brand-700">Harian</span>
+          <Link href={`${base}/rekap`} className="rounded-lg border border-zinc-200 bg-white px-4 py-1.5 text-[14px] text-zinc-600 hover:bg-zinc-50">
             Ringkasan
           </Link>
         </div>
@@ -149,7 +149,7 @@ export default async function AttendancePage({
               <Link href={`${base}?date=${shiftMonth(date, -1)}`} className="rounded-lg border border-zinc-200 p-1.5 hover:bg-zinc-50" aria-label="Bulan sebelumnya">
                 <ChevronLeft size={15} />
               </Link>
-              <span className="min-w-32 text-center text-[13px] font-semibold text-zinc-800">{monthLabel}</span>
+              <span className="min-w-32 text-center text-[14px] font-semibold text-zinc-800">{monthLabel}</span>
               <Link href={`${base}?date=${shiftMonth(date, 1)}`} className="rounded-lg border border-zinc-200 p-1.5 hover:bg-zinc-50" aria-label="Bulan berikutnya">
                 <ChevronRight size={15} />
               </Link>
@@ -181,7 +181,7 @@ export default async function AttendancePage({
                         : "bg-zinc-50 text-zinc-600 hover:bg-zinc-100"
                   }`}
                 >
-                  <span className="text-[10px] font-medium opacity-80">{day.dow}</span>
+                  <span className="text-[11px] font-medium opacity-80">{day.dow}</span>
                   <span className="text-sm font-bold">{day.n}</span>
                 </Link>
               );

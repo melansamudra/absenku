@@ -117,7 +117,7 @@ export default async function TasksPage({
       </h2>
       <form method="get" className="mb-3 flex flex-wrap items-end gap-2 rounded-xl border border-zinc-100 bg-white p-3 shadow-sm">
         <div>
-          <label htmlFor="f-emp" className="mb-1 block text-[11px] font-medium text-zinc-500">Karyawan</label>
+          <label htmlFor="f-emp" className="mb-1 block text-[12px] font-medium text-zinc-500">Karyawan</label>
           <select id="f-emp" name="emp" defaultValue={empFilter} className="rounded-lg border border-zinc-200 px-2 py-1.5 text-xs">
             <option value="">Semua karyawan</option>
             {(employees ?? []).map((e) => (
@@ -128,11 +128,11 @@ export default async function TasksPage({
           </select>
         </div>
         <div>
-          <label htmlFor="f-from" className="mb-1 block text-[11px] font-medium text-zinc-500">Dari</label>
+          <label htmlFor="f-from" className="mb-1 block text-[12px] font-medium text-zinc-500">Dari</label>
           <input id="f-from" name="from" type="date" defaultValue={fromFilter} className="rounded-lg border border-zinc-200 px-2 py-1.5 text-xs" />
         </div>
         <div>
-          <label htmlFor="f-to" className="mb-1 block text-[11px] font-medium text-zinc-500">Sampai</label>
+          <label htmlFor="f-to" className="mb-1 block text-[12px] font-medium text-zinc-500">Sampai</label>
           <input id="f-to" name="to" type="date" defaultValue={toFilter} className="rounded-lg border border-zinc-200 px-2 py-1.5 text-xs" />
         </div>
         <button type="submit" className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700">

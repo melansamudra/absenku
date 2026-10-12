@@ -88,7 +88,7 @@ export default async function OvertimePage({ params }: { params: Promise<{ busin
                       </p>
                       {r.reviewed_note && <p className="text-xs text-zinc-400">{r.reviewed_note}</p>}
                     </div>
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${status.className}`}>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[12px] font-medium ${status.className}`}>
                       {status.label}
                     </span>
                   </div>

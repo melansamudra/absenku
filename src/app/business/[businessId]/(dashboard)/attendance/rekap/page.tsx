@@ -102,7 +102,7 @@ export default async function AttendanceRekapPage({
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
+                <tr className="text-left text-[12px] font-semibold uppercase tracking-wide text-zinc-400">
                   <th className="px-5 py-2.5">Karyawan</th>
                   <th className="px-4 py-2.5 text-right">Hadir</th>
                   <th className="px-4 py-2.5 text-right">Izin</th>

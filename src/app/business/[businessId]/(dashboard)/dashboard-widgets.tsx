@@ -7,7 +7,7 @@ export function DistributionCard({ title, data, empty = "Belum ada data" }: { ti
   const total = data.reduce((t, s) => t + s.count, 0);
   return (
     <div className="rounded-2xl border border-zinc-100 bg-white p-5 shadow-sm">
-      <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">{title}</h3>
+      <h3 className="mb-3 text-[12px] font-semibold uppercase tracking-wider text-zinc-400">{title}</h3>
       {total === 0 ? (
         <p className="py-6 text-center text-xs text-zinc-400">{empty}</p>
       ) : (
@@ -19,7 +19,7 @@ export function DistributionCard({ title, data, empty = "Belum ada data" }: { ti
           </div>
           <ul className="space-y-1.5">
             {data.slice(0, 6).map((s, i) => (
-              <li key={s.label} className="flex items-center gap-2 text-[13px]">
+              <li key={s.label} className="flex items-center gap-2 text-[14px]">
                 <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${COLORS[i % COLORS.length]}`} />
                 <span className="flex-1 truncate text-zinc-700">{s.label}</span>
                 <span className="font-semibold text-zinc-900">{s.count}</span>
@@ -59,12 +59,12 @@ export function MonthCalendar({ year, month, today, marks }: { year: number; mon
   return (
     <div className="rounded-2xl border border-zinc-100 bg-white p-5 shadow-sm">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Kalender</h3>
-        <span className="text-[13px] font-semibold text-zinc-800">{label}</span>
+        <h3 className="text-[12px] font-semibold uppercase tracking-wider text-zinc-400">Kalender</h3>
+        <span className="text-[14px] font-semibold text-zinc-800">{label}</span>
       </div>
       <div className="grid grid-cols-7 gap-1 text-center">
         {DOW.map((d) => (
-          <span key={d} className="py-1 text-[10px] font-semibold text-zinc-400">
+          <span key={d} className="py-1 text-[11px] font-semibold text-zinc-400">
             {d}
           </span>
         ))}
@@ -77,7 +77,7 @@ export function MonthCalendar({ year, month, today, marks }: { year: number; mon
             <span
               key={i}
               title={holiday}
-              className={`relative flex h-9 flex-col items-center justify-center rounded-lg text-[13px] ${
+              className={`relative flex h-9 flex-col items-center justify-center rounded-lg text-[14px] ${
                 isToday ? "bg-brand-600 font-bold text-white" : holiday || sunday ? "text-red-500" : "text-zinc-700"
               }`}
             >
@@ -91,7 +91,7 @@ export function MonthCalendar({ year, month, today, marks }: { year: number; mon
           );
         })}
       </div>
-      <div className="mt-3 flex flex-wrap gap-3 text-[11px] text-zinc-500">
+      <div className="mt-3 flex flex-wrap gap-3 text-[12px] text-zinc-500">
         <span className="flex items-center gap-1"><i className="h-2 w-2 rounded-full bg-red-500" /> Libur</span>
         <span className="flex items-center gap-1"><i className="h-2 w-2 rounded-full bg-brand-500" /> Ulang tahun</span>
         <span className="flex items-center gap-1"><i className="h-2 w-2 rounded-full bg-amber-500" /> Cuti</span>

@@ -47,7 +47,7 @@ export default function ReportTable({
         </button>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-[13px]">
+        <table className="w-full text-left text-[14px]">
           <thead className="bg-zinc-50 text-xs font-semibold text-zinc-600">
             <tr>
               <th className="w-12 px-5 py-3">No.</th>

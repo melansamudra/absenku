@@ -147,19 +147,19 @@ export default async function LaporanGajiPage({ params, searchParams }: { params
         <>
           <div className="mt-4 grid grid-cols-3 gap-2 print:mt-3">
             <div className="rounded-xl border border-brand-200 bg-brand-50 px-3 py-2.5">
-              <p className="text-[10px] font-semibold uppercase text-brand-700">Total Transfer</p>
+              <p className="text-[11px] font-semibold uppercase text-brand-700">Total Transfer</p>
               <p className="mt-0.5 text-lg font-bold text-brand-700">{rp(grandTotal)}</p>
-              <p className="text-[10px] text-brand-600">{slips.length} karyawan</p>
+              <p className="text-[11px] text-brand-600">{slips.length} karyawan</p>
             </div>
             <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
-              <p className="text-[10px] font-semibold uppercase text-amber-700">Belum Dibayar</p>
+              <p className="text-[11px] font-semibold uppercase text-amber-700">Belum Dibayar</p>
               <p className="mt-0.5 text-lg font-bold text-amber-700">{rp(totalBelumDibayar)}</p>
-              <p className="text-[10px] text-amber-600">{belumDibayar.length} karyawan</p>
+              <p className="text-[11px] text-amber-600">{belumDibayar.length} karyawan</p>
             </div>
             <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5">
-              <p className="text-[10px] font-semibold uppercase text-zinc-500">BPJS Ditanggung Perusahaan</p>
+              <p className="text-[11px] font-semibold uppercase text-zinc-500">BPJS Ditanggung Perusahaan</p>
               <p className="mt-0.5 text-lg font-bold text-zinc-800">{rp(totalBpjsPerusahaan)}</p>
-              <p className="text-[10px] text-zinc-500">tidak memotong gaji</p>
+              <p className="text-[11px] text-zinc-500">tidak memotong gaji</p>
             </div>
           </div>
 
@@ -167,7 +167,7 @@ export default async function LaporanGajiPage({ params, searchParams }: { params
             <p className="border-b border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold text-zinc-700">Daftar Transfer</p>
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-zinc-200 text-left text-[10px] uppercase text-zinc-500">
+                <tr className="border-b border-zinc-200 text-left text-[11px] uppercase text-zinc-500">
                   <th className="px-3 py-1.5">No</th>
                   <th className="px-3 py-1.5">Nama / Rekening</th>
                   <th className="px-3 py-1.5 text-right">Pendapatan</th>
@@ -182,7 +182,7 @@ export default async function LaporanGajiPage({ params, searchParams }: { params
                     <td className="px-3 py-1.5 text-zinc-500">{i + 1}</td>
                     <td className="px-3 py-1.5">
                       <p className="font-medium text-zinc-900">{r.emp?.name ?? "—"}</p>
-                      <p className="text-[10px] text-zinc-500">{bank(r.emp) ?? "Rekening belum diisi"}</p>
+                      <p className="text-[11px] text-zinc-500">{bank(r.emp) ?? "Rekening belum diisi"}</p>
                     </td>
                     <td className="px-3 py-1.5 text-right">{rp(r.pendapatan)}</td>
                     <td className="px-3 py-1.5 text-right text-red-600">{r.totalPotongan > 0 ? `−${rp(r.totalPotongan)}` : "-"}</td>
@@ -204,7 +204,7 @@ export default async function LaporanGajiPage({ params, searchParams }: { params
           </div>
 
           {belumAdaSlip.length > 0 && (
-            <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-700">
+            <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] text-amber-700">
               Belum dibuat slip (belum termasuk total): {belumAdaSlip.map((e) => e.name).join(", ")}
             </p>
           )}
@@ -216,11 +216,11 @@ export default async function LaporanGajiPage({ params, searchParams }: { params
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="text-sm font-semibold text-zinc-900">{r.emp?.name ?? "—"}</p>
-                    <p className="text-[10px] text-zinc-500">
+                    <p className="text-[11px] text-zinc-500">
                       {r.slip.period_start} — {r.slip.period_end}
                     </p>
                   </div>
-                  <Link href={`/business/${businessId}/payroll/${r.slip.id}`} className="shrink-0 text-[10px] font-medium text-brand-600 hover:underline print:hidden">
+                  <Link href={`/business/${businessId}/payroll/${r.slip.id}`} className="shrink-0 text-[11px] font-medium text-brand-600 hover:underline print:hidden">
                     Buka slip →
                   </Link>
                 </div>
@@ -251,7 +251,7 @@ export default async function LaporanGajiPage({ params, searchParams }: { params
                   <span>Total Transfer</span>
                   <span>{rp(r.total)}</span>
                 </div>
-                {bank(r.emp) && <p className="mt-1 text-[10px] text-zinc-500">{bank(r.emp)}</p>}
+                {bank(r.emp) && <p className="mt-1 text-[11px] text-zinc-500">{bank(r.emp)}</p>}
               </div>
             ))}
           </div>
