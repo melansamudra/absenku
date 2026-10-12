@@ -100,7 +100,7 @@ export default async function EmployeeDetailPage({
     : [e.dom_address, e.dom_city, e.dom_province].filter(Boolean).join(", ");
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="w-full">
       <PageHeader
         title={e.name}
         actions={

@@ -154,7 +154,7 @@ export default async function BusinessOverviewPage({
       </div>
 
       <h2 className="mb-3 text-sm font-semibold text-zinc-800">Akses Cepat</h2>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
         <Shortcut href={`/business/${businessId}/employees`} icon={Users} title="Karyawan" desc="Data karyawan & tarif gaji" />
         <Shortcut href={`/business/${businessId}/attendance`} icon={CalendarCheck} title="Absensi" desc="Tandai kehadiran atau cek rekap" />
         <Shortcut href={`/business/${businessId}/payroll`} icon={Banknote} title="Payroll" desc="Buat & kelola slip gaji" />
