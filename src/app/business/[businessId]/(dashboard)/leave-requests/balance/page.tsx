@@ -65,7 +65,7 @@ export default async function LeaveBalancePage({
             <Link href={`${base}?year=${year - 1}${selected ? `&type=${selected.id}` : ""}`} className="rounded-lg border border-zinc-200 bg-white p-2 hover:bg-zinc-50" aria-label="Tahun sebelumnya">
               <ChevronLeft size={15} />
             </Link>
-            <span className="min-w-20 rounded-lg bg-white px-3 py-2 text-center text-[13px] font-semibold shadow-sm">{year}</span>
+            <span className="min-w-20 rounded-lg bg-white px-3 py-2 text-center text-[14px] font-semibold shadow-sm">{year}</span>
             <Link href={`${base}?year=${year + 1}${selected ? `&type=${selected.id}` : ""}`} className="rounded-lg border border-zinc-200 bg-white p-2 hover:bg-zinc-50" aria-label="Tahun berikutnya">
               <ChevronRight size={15} />
             </Link>
@@ -82,7 +82,7 @@ export default async function LeaveBalancePage({
             <Link
               key={t.id || "all"}
               href={`${base}?year=${year}${t.id ? `&type=${t.id}` : ""}`}
-              className={`shrink-0 rounded-lg border px-4 py-1.5 text-[13px] ${
+              className={`shrink-0 rounded-lg border px-4 py-1.5 text-[14px] ${
                 (selected?.id ?? "") === t.id
                   ? "border-brand-500 bg-white font-semibold text-brand-700"
                   : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
@@ -99,7 +99,7 @@ export default async function LeaveBalancePage({
           </p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left text-[13px]">
+            <table className="w-full min-w-[640px] text-left text-[14px]">
               <thead className="bg-zinc-50 text-xs font-semibold text-zinc-600">
                 <tr>
                   <th className="w-12 px-5 py-3">No.</th>
@@ -107,7 +107,7 @@ export default async function LeaveBalancePage({
                   {shownTypes.map((t) => (
                     <th key={t.id} className="px-3 py-3 text-right">
                       {t.name}
-                      <span className="block text-[10px] font-normal text-zinc-400">sisa / kuota {fmtNum(t.default_days_per_year)}</span>
+                      <span className="block text-[11px] font-normal text-zinc-400">sisa / kuota {fmtNum(t.default_days_per_year)}</span>
                     </th>
                   ))}
                 </tr>

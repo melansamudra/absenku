@@ -95,7 +95,7 @@ export default function RekapRow({
           <input type="hidden" name="period_end" value={periodEnd} />
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-[11px] font-medium text-zinc-500">
+              <label className="mb-1 block text-[12px] font-medium text-zinc-500">
                 Jam Lembur
               </label>
               <input
@@ -108,7 +108,7 @@ export default function RekapRow({
               />
             </div>
             <div>
-              <label className="mb-1 block text-[11px] font-medium text-zinc-500">
+              <label className="mb-1 block text-[12px] font-medium text-zinc-500">
                 THR (Rp)
               </label>
               <input

@@ -80,7 +80,7 @@ export default async function AttendanceApprovalPage({
             <Link href={`${base}?tab=${tab}&month=${shiftMonth(month, -1)}`} className="rounded-lg border border-zinc-200 bg-white p-2 hover:bg-zinc-50" aria-label="Bulan sebelumnya">
               <ChevronLeft size={15} />
             </Link>
-            <span className="min-w-36 rounded-lg bg-white px-3 py-2 text-center text-[13px] font-semibold text-zinc-800 shadow-sm">{monthLabel(month)}</span>
+            <span className="min-w-36 rounded-lg bg-white px-3 py-2 text-center text-[14px] font-semibold text-zinc-800 shadow-sm">{monthLabel(month)}</span>
             <Link href={`${base}?tab=${tab}&month=${shiftMonth(month, 1)}`} className="rounded-lg border border-zinc-200 bg-white p-2 hover:bg-zinc-50" aria-label="Bulan berikutnya">
               <ChevronRight size={15} />
             </Link>
@@ -94,7 +94,7 @@ export default async function AttendanceApprovalPage({
             <Link
               key={t.key}
               href={`${base}?tab=${t.key}&month=${month}`}
-              className={`shrink-0 rounded-lg border px-4 py-1.5 text-[13px] ${
+              className={`shrink-0 rounded-lg border px-4 py-1.5 text-[14px] ${
                 tab === t.key
                   ? "border-brand-500 bg-white font-semibold text-brand-700"
                   : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
@@ -106,7 +106,7 @@ export default async function AttendanceApprovalPage({
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[820px] text-left text-[13px]">
+          <table className="w-full min-w-[820px] text-left text-[14px]">
             <thead className="bg-zinc-50 text-xs font-semibold text-zinc-600">
               <tr>
                 <th className="w-12 px-5 py-3">No.</th>
@@ -143,7 +143,7 @@ export default async function AttendanceApprovalPage({
                     <td className="px-3 py-3 text-zinc-700">{fmtDate(r.date)}</td>
                     <td className="px-3 py-3 text-zinc-700">
                       {fmtTime(r.check_in_at)}
-                      {r.late_minutes > 0 && <span className="ml-1 text-[11px] font-semibold text-orange-600">telat {r.late_minutes} mnt</span>}
+                      {r.late_minutes > 0 && <span className="ml-1 text-[12px] font-semibold text-orange-600">telat {r.late_minutes} mnt</span>}
                     </td>
                     <td className="px-3 py-3 text-zinc-700">{fmtTime(r.check_out_at)}</td>
                     <td className="px-3 py-3">

@@ -24,7 +24,7 @@ function Item({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
       <p className="text-xs text-zinc-400">{label}</p>
-      <p className="mt-0.5 text-[13px] font-medium text-zinc-900">{value || <span className="text-zinc-300">—</span>}</p>
+      <p className="mt-0.5 text-[14px] font-medium text-zinc-900">{value || <span className="text-zinc-300">—</span>}</p>
     </div>
   );
 }
@@ -135,14 +135,14 @@ export default async function EmployeeDetailPage({
           <p className="mt-0.5 text-xs text-zinc-400">{e.employee_code ?? "—"}</p>
           <div className="mt-3 flex flex-wrap justify-center gap-1.5">
             <span
-              className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+              className={`rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${
                 e.active ? "bg-emerald-50 text-emerald-700" : "bg-zinc-100 text-zinc-500"
               }`}
             >
               {e.active ? "Aktif" : "Nonaktif"}
             </span>
             {!e.setup_complete && (
-              <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold text-amber-700">
+              <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-[12px] font-semibold text-amber-700">
                 Belum lengkap
               </span>
             )}
@@ -155,7 +155,7 @@ export default async function EmployeeDetailPage({
               <Link
                 key={t.key}
                 href={`${base}/${e.id}?tab=${t.key}`}
-                className={`shrink-0 rounded-lg border px-4 py-1.5 text-[13px] ${
+                className={`shrink-0 rounded-lg border px-4 py-1.5 text-[14px] ${
                   tab === t.key
                     ? "border-brand-500 bg-white font-semibold text-brand-700"
                     : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
@@ -211,7 +211,7 @@ export default async function EmployeeDetailPage({
             <Card className="!p-0">
               <h3 className="border-b border-zinc-100 px-5 py-4 text-sm font-bold text-zinc-900">Riwayat Karir</h3>
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[640px] text-left text-[13px]">
+                <table className="w-full min-w-[640px] text-left text-[14px]">
                   <thead className="bg-zinc-50 text-xs font-semibold text-zinc-600">
                     <tr>
                       <th className="px-5 py-3">Tanggal Efektif</th>
@@ -263,7 +263,7 @@ export default async function EmployeeDetailPage({
                 />
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[640px] text-left text-[13px]">
+                <table className="w-full min-w-[640px] text-left text-[14px]">
                   <thead className="bg-zinc-50 text-xs font-semibold text-zinc-600">
                     <tr>
                       <th className="px-5 py-3">Tanggal Efektif</th>

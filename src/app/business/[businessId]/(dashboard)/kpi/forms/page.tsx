@@ -35,7 +35,7 @@ export default async function KpiFormsPage({
 
       <Card className="!p-0">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left text-[13px]">
+          <table className="w-full min-w-[640px] text-left text-[14px]">
             <thead className="bg-zinc-50 text-xs font-semibold text-zinc-600">
               <tr>
                 <th className="w-12 px-5 py-3">No.</th>
@@ -72,7 +72,7 @@ export default async function KpiFormsPage({
                     </td>
                     <td className="px-3 py-3">
                       <span
-                        className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                        className={`rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${
                           f.status === "active" ? "bg-emerald-50 text-emerald-700" : "bg-zinc-100 text-zinc-500"
                         }`}
                       >

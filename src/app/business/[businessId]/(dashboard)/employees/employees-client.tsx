@@ -9,6 +9,8 @@ import {
   ChevronRight,
   Download,
   MoreVertical,
+  Printer,
+  SlidersHorizontal,
   Plus,
   Search,
   Upload,
@@ -55,12 +57,13 @@ export type EmployeeRow = {
   ranks: { name: string } | null;
 };
 
-type Tab = "pribadi" | "kontak" | "kepegawaian" | "payroll";
+type Tab = "pribadi" | "kontak" | "kepegawaian" | "payroll" | "akses";
 const TABS: { key: Tab; label: string }[] = [
   { key: "pribadi", label: "Informasi Pribadi" },
   { key: "kontak", label: "Kontak" },
   { key: "kepegawaian", label: "Kepegawaian" },
   { key: "payroll", label: "Payroll" },
+  { key: "akses", label: "Akses Portal" },
 ];
 
 const PER_PAGE = 15;
@@ -127,6 +130,19 @@ const COLUMNS: Record<Tab, { head: string; cell: (e: EmployeeRow) => React.React
     { head: "NPWP", cell: (e) => e.npwp ?? "—" },
     { head: "Rekening", cell: (e) => (e.bank_name ? `${e.bank_name} ${e.bank_account_number ?? ""}`.trim() : "—") },
   ],
+  akses: [
+    { head: "ID Karyawan", cell: (e) => e.employee_code ?? "—" },
+    { head: "Email", cell: (e) => e.email ?? "—" },
+    {
+      head: "PIN Portal & Absen",
+      cell: (e) =>
+        e.has_pin ? (
+          <span className="font-medium text-emerald-700">Sudah diatur</span>
+        ) : (
+          <span className="font-medium text-amber-600">Belum diatur</span>
+        ),
+    },
+  ],
 };
 
 export default function EmployeesClient({
@@ -145,6 +161,19 @@ export default function EmployeesClient({
   const [rowMenu, setRowMenu] = useState<string | null>(null);
   const [quick, setQuick] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [moreMenu, setMoreMenu] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
+  const [adv, setAdv] = useState({ org: "", position: "", rank: "", status: "", gender: "" });
+  const activeAdv = Object.values(adv).filter(Boolean).length;
+  const options = useMemo(() => {
+    const uniq = (vals: (string | null | undefined)[]) => [...new Set(vals.filter((v): v is string => !!v))].sort((a, b) => a.localeCompare(b));
+    return {
+      org: uniq(employees.map((e) => e.organizations?.name)),
+      position: uniq(employees.map((e) => e.positions?.name)),
+      rank: uniq(employees.map((e) => e.ranks?.name)),
+      status: uniq(employees.map((e) => e.employment_status)),
+    };
+  }, [employees]);
 
   const incomplete = employees.filter((e) => !e.setup_complete && e.active).length;
 
@@ -153,12 +182,17 @@ export default function EmployeesClient({
     return employees.filter((e) => {
       if (filter === "aktif" && !e.active) return false;
       if (filter === "nonaktif" && e.active) return false;
+      if (adv.org && e.organizations?.name !== adv.org) return false;
+      if (adv.position && e.positions?.name !== adv.position) return false;
+      if (adv.rank && e.ranks?.name !== adv.rank) return false;
+      if (adv.status && e.employment_status !== adv.status) return false;
+      if (adv.gender && e.gender !== adv.gender) return false;
       if (!q) return true;
       return [e.name, e.employee_code, e.email, e.phone, e.positions?.name, e.organizations?.name, e.note]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q));
     });
-  }, [employees, query, filter]);
+  }, [employees, query, filter, adv]);
 
   const pages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   const current = Math.min(page, pages);
@@ -171,7 +205,7 @@ export default function EmployeesClient({
   return (
     <div>
       {incomplete > 0 && (
-        <div className="mb-4 flex items-center gap-3 rounded-xl border-l-4 border-amber-400 bg-amber-50 px-4 py-3 text-[13px] text-amber-900">
+        <div className="mb-4 flex items-center gap-3 rounded-xl border-l-4 border-amber-400 bg-amber-50 px-4 py-3 text-[14px] text-amber-900 print:hidden">
           <AlertTriangle size={16} className="shrink-0 text-amber-500" />
           <span>
             Ada <b>{incomplete}</b> karyawan yang datanya belum lengkap. Klik namanya lalu pilih{" "}
@@ -200,7 +234,7 @@ export default function EmployeesClient({
                           className="block px-4 py-2.5 hover:bg-zinc-50"
                           onClick={() => setAddMenu(false)}
                         >
-                          <p className="text-[13px] font-semibold text-zinc-900">Tambah Lengkap</p>
+                          <p className="text-[14px] font-semibold text-zinc-900">Tambah Lengkap</p>
                           <p className="text-xs text-zinc-400">3 langkah: personal, kepegawaian, payroll</p>
                         </Link>
                         <button
@@ -211,7 +245,7 @@ export default function EmployeesClient({
                             setQuick(true);
                           }}
                         >
-                          <p className="text-[13px] font-semibold text-zinc-900">Tambah Cepat</p>
+                          <p className="text-[14px] font-semibold text-zinc-900">Tambah Cepat</p>
                           <p className="text-xs text-zinc-400">Nama, jabatan &amp; gaji saja</p>
                         </button>
                       </div>
@@ -227,18 +261,107 @@ export default function EmployeesClient({
                 <Link href={`${base}/tunjangan-tetap`} className={btnOutline}>
                   Tunjangan Tetap
                 </Link>
+                <div className="relative">
+                  <button type="button" onClick={() => setMoreMenu((v) => !v)} className={btnOutline}>
+                    Aksi Lainnya <ChevronDown size={14} />
+                  </button>
+                  {moreMenu && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setMoreMenu(false)} />
+                      <div className="absolute right-0 z-20 mt-1.5 w-52 overflow-hidden rounded-xl border border-zinc-200 bg-white py-1 shadow-lg">
+                        <button
+                          type="button"
+                          className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-[14px] hover:bg-zinc-50"
+                          onClick={() => {
+                            setMoreMenu(false);
+                            setTimeout(() => window.print(), 50);
+                          }}
+                        >
+                          <Printer size={15} className="text-zinc-500" /> Print
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               </>
             }
           />
 
+          <div className="mb-3 print:hidden">
+            <button type="button" onClick={() => setShowFilter((v) => !v)} className={btnOutline}>
+              <SlidersHorizontal size={14} /> Filter
+              {activeAdv > 0 && <span className="rounded-full bg-brand-600 px-1.5 text-[11px] font-bold leading-5 text-white">{activeAdv}</span>}
+            </button>
+            {showFilter && (
+              <div className="mt-3 grid gap-3 rounded-xl border border-zinc-200 bg-zinc-50/60 p-4 sm:grid-cols-2 lg:grid-cols-5">
+                {(
+                  [
+                    ["org", "Organisasi", options.org],
+                    ["position", "Jabatan", options.position],
+                    ["rank", "Pangkat", options.rank],
+                    ["status", "Status Karyawan", options.status],
+                  ] as const
+                ).map(([key, label, opts]) => (
+                  <label key={key} className="block text-xs font-medium text-zinc-600">
+                    {label}
+                    <select
+                      value={adv[key]}
+                      onChange={(ev) => {
+                        setAdv((a) => ({ ...a, [key]: ev.target.value }));
+                        setPage(1);
+                      }}
+                      className={`${inputClass} mt-1`}
+                    >
+                      <option value="">Semua</option>
+                      {opts.map((o) => (
+                        <option key={o} value={o}>
+                          {key === "status" ? employmentLabel(o) : o}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ))}
+                <label className="block text-xs font-medium text-zinc-600">
+                  Jenis Kelamin
+                  <select
+                    value={adv.gender}
+                    onChange={(ev) => {
+                      setAdv((a) => ({ ...a, gender: ev.target.value }));
+                      setPage(1);
+                    }}
+                    className={`${inputClass} mt-1`}
+                  >
+                    <option value="">Semua</option>
+                    <option value="L">Laki-laki</option>
+                    <option value="P">Perempuan</option>
+                  </select>
+                </label>
+                {activeAdv > 0 && (
+                  <div className="sm:col-span-2 lg:col-span-5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAdv({ org: "", position: "", rank: "", status: "", gender: "" });
+                        setPage(1);
+                      }}
+                      className="text-xs font-semibold text-brand-700 hover:underline"
+                    >
+                      Reset filter
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex gap-1 overflow-x-auto">
+            <div className="flex gap-1 overflow-x-auto print:hidden">
               {TABS.map((t) => (
                 <button
                   key={t.key}
                   type="button"
                   onClick={() => setTab(t.key)}
-                  className={`shrink-0 rounded-lg border px-4 py-1.5 text-[13px] ${
+                  className={`shrink-0 rounded-lg border px-4 py-1.5 text-[14px] ${
                     tab === t.key
                       ? "border-brand-500 bg-white font-semibold text-brand-700"
                       : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
@@ -248,7 +371,7 @@ export default function EmployeesClient({
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 print:hidden">
               <select
                 value={filter}
                 onChange={(ev) => {
@@ -278,8 +401,8 @@ export default function EmployeesClient({
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-left text-[13px]">
-            <thead className="bg-zinc-50 text-xs font-semibold text-zinc-600">
+          <table className="w-full min-w-[720px] text-left text-[14px]">
+            <thead className="bg-zinc-50 text-xs font-semibold text-zinc-700">
               <tr>
                 <th className="w-12 px-5 py-3">No.</th>
                 <th className="px-3 py-3">Nama</th>
@@ -288,7 +411,7 @@ export default function EmployeesClient({
                     {c.head}
                   </th>
                 ))}
-                <th className="w-12 px-3 py-3" />
+                <th className="w-12 px-3 py-3 print:hidden" />
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
@@ -301,8 +424,8 @@ export default function EmployeesClient({
               )}
               {rows.map((e, i) => (
                 <tr key={e.id} className="hover:bg-zinc-50/60">
-                  <td className="px-5 py-3 text-zinc-500">{(current - 1) * PER_PAGE + i + 1}</td>
-                  <td className="px-3 py-3">
+                  <td className="px-5 py-3.5 text-zinc-500">{(current - 1) * PER_PAGE + i + 1}</td>
+                  <td className="px-3 py-3.5">
                     <Link href={`${base}/${e.id}`} className="flex items-center gap-2.5">
                       {e.photo_url ? (
                         // eslint-disable-next-line @next/next/no-img-element -- signed URL sementara dari bucket privat
@@ -315,17 +438,17 @@ export default function EmployeesClient({
                       <span>
                         <span className="font-medium text-brand-700 hover:underline">{e.name}</span>
                         {!e.setup_complete && (
-                          <span className="ml-2 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                          <span className="ml-2 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
                             Belum lengkap
                           </span>
                         )}
                         {!e.active && (
-                          <span className="ml-2 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold text-zinc-500">
+                          <span className="ml-2 rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold text-zinc-500">
                             Nonaktif
                           </span>
                         )}
                         {e.has_pin && (
-                          <span className="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                          <span className="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
                             PIN
                           </span>
                         )}
@@ -333,11 +456,11 @@ export default function EmployeesClient({
                     </Link>
                   </td>
                   {cols.map((c) => (
-                    <td key={c.head} className="px-3 py-3 text-zinc-700">
+                    <td key={c.head} className="px-3 py-3.5 text-zinc-700">
                       {c.cell(e)}
                     </td>
                   ))}
-                  <td className="relative px-3 py-3">
+                  <td className="relative px-3 py-3 print:hidden">
                     <button
                       type="button"
                       onClick={() => setRowMenu(rowMenu === e.id ? null : e.id)}
@@ -350,16 +473,16 @@ export default function EmployeesClient({
                       <>
                         <div className="fixed inset-0 z-10" onClick={() => setRowMenu(null)} />
                         <div className="absolute right-3 top-10 z-20 w-44 overflow-hidden rounded-xl border border-zinc-200 bg-white py-1 shadow-lg">
-                          <Link href={`${base}/${e.id}`} className="block px-4 py-2 text-[13px] hover:bg-zinc-50">
+                          <Link href={`${base}/${e.id}`} className="block px-4 py-2 text-[14px] hover:bg-zinc-50">
                             Lihat Detail
                           </Link>
-                          <Link href={`${base}/${e.id}/setup/1`} className="block px-4 py-2 text-[13px] hover:bg-zinc-50">
+                          <Link href={`${base}/${e.id}/setup/1`} className="block px-4 py-2 text-[14px] hover:bg-zinc-50">
                             {e.setup_complete ? "Ubah Data" : "Lengkapi Data"}
                           </Link>
                           {e.photo_url && (
                             <button
                               type="button"
-                              className="block w-full px-4 py-2 text-left text-[13px] hover:bg-zinc-50"
+                              className="block w-full px-4 py-2 text-left text-[14px] hover:bg-zinc-50"
                               onClick={() => {
                                 setRowMenu(null);
                                 if (confirm(`Hapus foto profil ${e.name}?`)) removeEmployeePhoto(businessId, e.id);
@@ -370,7 +493,7 @@ export default function EmployeesClient({
                           )}
                           <button
                             type="button"
-                            className="block w-full px-4 py-2 text-left text-[13px] hover:bg-zinc-50"
+                            className="block w-full px-4 py-2 text-left text-[14px] hover:bg-zinc-50"
                             onClick={() => {
                               setRowMenu(null);
                               setEmployeeActive(businessId, e.id, !e.active);
@@ -380,7 +503,7 @@ export default function EmployeesClient({
                           </button>
                           <button
                             type="button"
-                            className="block w-full px-4 py-2 text-left text-[13px] text-red-600 hover:bg-red-50"
+                            className="block w-full px-4 py-2 text-left text-[14px] text-red-600 hover:bg-red-50"
                             onClick={() => {
                               setRowMenu(null);
                               if (confirm(`Hapus ${e.name} dari daftar karyawan?`)) softDeleteEmployee(businessId, e.id);
@@ -398,7 +521,7 @@ export default function EmployeesClient({
           </table>
         </div>
 
-        <div className="flex items-center justify-between border-t border-zinc-100 px-5 py-3 text-xs text-zinc-500">
+        <div className="flex items-center justify-between border-t border-zinc-100 px-5 py-3 text-xs text-zinc-500 print:hidden">
           <span>
             {filtered.length === 0 ? 0 : (current - 1) * PER_PAGE + 1}–{Math.min(current * PER_PAGE, filtered.length)} dari{" "}
             {filtered.length}

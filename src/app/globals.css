@@ -59,3 +59,10 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
+
+/* Backoffice: huruf ±1px lebih besar dari bawaan Tailwind (xs 12→13, sm 14→15) agar nyaman
+   dibaca di layar lebar. Hanya berlaku di dalam .admin-scale (shell dashboard), bukan portal. */
+.admin-scale {
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+}

@@ -343,7 +343,7 @@ export default function EmployeeForm({
             </option>
           ))}
         </select>
-        <p className="mt-1 text-[11px] text-zinc-400">
+        <p className="mt-1 text-[12px] text-zinc-400">
           Dipakai untuk hitung PPh 21 kalau fitur pajak diaktifkan di Pengaturan.
         </p>
       </div>
@@ -379,7 +379,7 @@ export default function EmployeeForm({
           placeholder="Upah dasar BPJS (opsional)"
           className="mt-2 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
         />
-        <p className="mt-1 text-[11px] text-zinc-400">
+        <p className="mt-1 text-[12px] text-zinc-400">
           Kosongkan untuk pakai gaji pokok slip + tunjangan tetap. Isi kalau upah yang didaftarkan
           ke BPJS berbeda (mis. sesuai UMK). Hanya berlaku kalau BPJS diaktifkan di Pengaturan.
         </p>
@@ -400,7 +400,7 @@ export default function EmployeeForm({
           placeholder="4–6 digit"
           className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
         />
-        <p className="mt-1 text-[11px] text-zinc-400">
+        <p className="mt-1 text-[12px] text-zinc-400">
           Diminta saat karyawan absen selfie, supaya tidak bisa dititipkan ke orang lain. Beri tahu
           PIN ini ke karyawan yang bersangkutan saja.
         </p>

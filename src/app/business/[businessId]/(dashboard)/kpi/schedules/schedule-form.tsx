@@ -101,7 +101,7 @@ export default function ScheduleForm({
             <label key={e.id} className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 ${picked.has(e.id) ? "border-brand-400 bg-brand-50" : "border-zinc-100 hover:bg-zinc-50"}`}>
               <input type="checkbox" checked={picked.has(e.id)} onChange={() => toggle(e.id)} className="h-4 w-4 accent-[var(--color-brand-600)]" />
               <span>
-                <span className="block text-[13px] font-medium text-zinc-900">{e.name}</span>
+                <span className="block text-[14px] font-medium text-zinc-900">{e.name}</span>
                 <span className="block text-xs text-zinc-400">{e.sub}</span>
               </span>
             </label>

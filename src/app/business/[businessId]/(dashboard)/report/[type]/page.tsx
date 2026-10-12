@@ -204,7 +204,7 @@ export default async function ReportPage({
             <Link href={`${base}?month=${shiftMonth(month, -1)}`} className="rounded-lg border border-zinc-200 bg-white p-2 hover:bg-zinc-50" aria-label="Bulan sebelumnya">
               <ChevronLeft size={15} />
             </Link>
-            <span className="min-w-36 rounded-lg bg-white px-3 py-2 text-center text-[13px] font-semibold shadow-sm">{monthLabel(month)}</span>
+            <span className="min-w-36 rounded-lg bg-white px-3 py-2 text-center text-[14px] font-semibold shadow-sm">{monthLabel(month)}</span>
             <Link href={`${base}?month=${shiftMonth(month, 1)}`} className="rounded-lg border border-zinc-200 bg-white p-2 hover:bg-zinc-50" aria-label="Bulan berikutnya">
               <ChevronRight size={15} />
             </Link>

@@ -53,7 +53,7 @@ export default async function LettersPage({
 
       <form method="get" className="mb-3 flex flex-wrap items-end gap-2 rounded-xl border border-zinc-100 bg-white p-3 shadow-sm">
         <div>
-          <label htmlFor="f-emp" className="mb-1 block text-[11px] font-medium text-zinc-500">Karyawan</label>
+          <label htmlFor="f-emp" className="mb-1 block text-[12px] font-medium text-zinc-500">Karyawan</label>
           <select id="f-emp" name="emp" defaultValue={empFilter} className="rounded-lg border border-zinc-200 px-2 py-1.5 text-xs">
             <option value="">Semua karyawan</option>
             {(employees ?? []).map((e) => (
@@ -64,7 +64,7 @@ export default async function LettersPage({
           </select>
         </div>
         <div>
-          <label htmlFor="f-kind" className="mb-1 block text-[11px] font-medium text-zinc-500">Jenis</label>
+          <label htmlFor="f-kind" className="mb-1 block text-[12px] font-medium text-zinc-500">Jenis</label>
           <select id="f-kind" name="kind" defaultValue={kindFilter} className="rounded-lg border border-zinc-200 px-2 py-1.5 text-xs">
             <option value="">Semua jenis</option>
             <option value="sp">Surat Peringatan (SP1–SP3)</option>

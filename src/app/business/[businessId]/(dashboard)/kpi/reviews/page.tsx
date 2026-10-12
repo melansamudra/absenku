@@ -76,7 +76,7 @@ export default async function KpiReviewsPage({
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-left text-[13px]">
+          <table className="w-full min-w-[720px] text-left text-[14px]">
             <thead className="bg-zinc-50 text-xs font-semibold text-zinc-600">
               <tr>
                 <th className="w-12 px-5 py-3">No.</th>
@@ -108,7 +108,7 @@ export default async function KpiReviewsPage({
                     <td className="px-3 py-3 text-zinc-600">{(r.kpi_schedules as unknown as { name: string } | null)?.name ?? "—"}</td>
                     <td className="px-3 py-3 font-semibold text-zinc-900">{r.status === "done" ? Number(r.total_score).toLocaleString("id-ID") : "—"}</td>
                     <td className="px-3 py-3">
-                      <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${g.badge}`}>{g.label}</span>
+                      <span className={`rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${g.badge}`}>{g.label}</span>
                     </td>
                     <td className="px-5 py-3 text-right">
                       <Link href={`${base}/${r.id}`} className={r.status === "done" ? btnOutline : "inline-flex items-center rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700"}>

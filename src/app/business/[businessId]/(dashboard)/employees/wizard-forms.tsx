@@ -152,7 +152,7 @@ export function Step1Form({
                 ["L", "Laki-laki"],
                 ["P", "Perempuan"],
               ].map(([v, l]) => (
-                <label key={v} className="flex items-center gap-2 text-[13px] text-zinc-700">
+                <label key={v} className="flex items-center gap-2 text-[14px] text-zinc-700">
                   <input type="radio" name="gender" value={v} defaultChecked={(e?.gender ?? "L") === v} className="accent-[var(--color-brand-600)]" />
                   {l}
                 </label>
@@ -245,7 +245,7 @@ export function Step1Form({
             <input name="id_city" className={inputClass} defaultValue={e?.id_city ?? ""} placeholder="Kota / Kabupaten" />
           </Field>
 
-          <label className="flex items-center gap-2 text-[13px] text-zinc-700 sm:col-span-2">
+          <label className="flex items-center gap-2 text-[14px] text-zinc-700 sm:col-span-2">
             <input
               type="checkbox"
               name="domicile_same"
@@ -529,7 +529,7 @@ export function Step3Form({
               {(["bulanan", "harian"] as const).map((t) => (
                 <label
                   key={t}
-                  className={`cursor-pointer rounded-lg border px-3 py-2 text-center text-[13px] capitalize ${
+                  className={`cursor-pointer rounded-lg border px-3 py-2 text-center text-[14px] capitalize ${
                     salaryType === t
                       ? "border-brand-500 bg-brand-50 font-semibold text-brand-700"
                       : "border-zinc-200 text-zinc-600"
@@ -581,11 +581,11 @@ export function Step3Form({
       <div>
         <SectionTitle>BPJS</SectionTitle>
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="flex items-center gap-2 text-[13px] text-zinc-700">
+          <label className="flex items-center gap-2 text-[14px] text-zinc-700">
             <input type="checkbox" name="bpjs_kesehatan" defaultChecked={e.bpjs_kesehatan} className="h-4 w-4 accent-[var(--color-brand-600)]" />
             Potong BPJS Kesehatan di slip gaji
           </label>
-          <label className="flex items-center gap-2 text-[13px] text-zinc-700">
+          <label className="flex items-center gap-2 text-[14px] text-zinc-700">
             <input type="checkbox" name="bpjs_ketenagakerjaan" defaultChecked={e.bpjs_ketenagakerjaan} className="h-4 w-4 accent-[var(--color-brand-600)]" />
             Potong BPJS Ketenagakerjaan di slip gaji
           </label>

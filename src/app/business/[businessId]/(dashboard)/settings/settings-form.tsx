@@ -188,7 +188,7 @@ export default function SettingsForm({
             >
               {locating ? "Membaca lokasi…" : "Pakai lokasi saya sekarang"}
             </button>
-            <span className="text-[11px] text-zinc-400">
+            <span className="text-[12px] text-zinc-400">
               Tekan saat berada di lokasi kerja. Radius 100–200 m disarankan karena akurasi GPS
               di dalam gedung bisa meleset puluhan meter.
             </span>
@@ -334,7 +334,7 @@ export default function SettingsForm({
             />
           </div>
         </div>
-        <p className="-mt-2 mb-4 text-[11px] text-zinc-400">
+        <p className="-mt-2 mb-4 text-[12px] text-zinc-400">
           Contoh default: lembur di bawah 30 menit tidak dihitung, 1 jam 40 menit dihitung 1,5 jam,
           maksimal 4 jam/hari (PP 35/2021). Berlaku untuk absen pulang berikutnya.
         </p>
@@ -363,7 +363,7 @@ export default function SettingsForm({
             </select>
           </div>
         </div>
-        <p className="-mt-2 mb-4 text-[11px] text-zinc-400">
+        <p className="-mt-2 mb-4 text-[12px] text-zinc-400">
           PP 35/2021: upah sejam = (gaji bulanan + tunjangan tetap) ÷ 173; karyawan harian pakai gaji
           harian × 25 (6 hari kerja) atau × 21 (5 hari kerja). Jam pertama tiap hari 1,5×, jam
           berikutnya 2×. Lembur di hari libur tetap dihitung seperti hari kerja (penyederhanaan).

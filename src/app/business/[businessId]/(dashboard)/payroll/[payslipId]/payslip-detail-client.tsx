@@ -254,7 +254,7 @@ export default function PayslipDetailClient({
                 <span className="text-zinc-600">
                   {a.label}{" "}
                   <span
-                    className={`ml-1 text-[10px] font-semibold uppercase ${
+                    className={`ml-1 text-[11px] font-semibold uppercase ${
                       a.type === "tunjangan" ? "text-emerald-600" : "text-red-500"
                     }`}
                   >

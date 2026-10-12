@@ -120,7 +120,7 @@ function Row({ businessId, date, index, row }: { businessId: string; date: strin
             type="button"
             disabled={pending || !row.attendanceId}
             onClick={() => row.attendanceId && startTransition(() => setAttendanceLate(businessId, row.attendanceId!, !row.late))}
-            className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${row.late ? "bg-orange-500 text-white" : "bg-zinc-100 text-zinc-400 hover:bg-zinc-200"}`}
+            className={`rounded-full px-2 py-0.5 text-[12px] font-semibold ${row.late ? "bg-orange-500 text-white" : "bg-zinc-100 text-zinc-400 hover:bg-zinc-200"}`}
           >
             Tandai telat
           </button>
@@ -143,7 +143,7 @@ function Row({ businessId, date, index, row }: { businessId: string; date: strin
               type="button"
               disabled={pending || !row.attendanceId}
               onClick={() => row.attendanceId && startTransition(() => setAttendanceVerified(businessId, row.attendanceId!, !row.verifiedByAdmin))}
-              className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${row.verifiedByAdmin ? "bg-brand-600 text-white" : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200"}`}
+              className={`rounded-full px-2 py-0.5 text-[12px] font-semibold ${row.verifiedByAdmin ? "bg-brand-600 text-white" : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200"}`}
             >
               {row.verifiedByAdmin ? "✓ Terverifikasi" : "Verifikasi"}
             </button>
@@ -165,7 +165,7 @@ export default function AttendanceTable({
 }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[860px] text-left text-[13px]">
+      <table className="w-full min-w-[860px] text-left text-[14px]">
         <thead className="bg-zinc-50 text-xs font-semibold text-zinc-600">
           <tr>
             <th className="w-12 px-5 py-3">No.</th>
