@@ -56,7 +56,16 @@ export async function loadAttendanceSummary(
   employeeId: string,
   periodStart: string,
   periodEnd: string,
-): Promise<{ summary: AttendanceSummary; overtimeHoursTotal: number; overtimeHoursPerDay: number[] }> {
+  /** Akhir periode untuk menghitung hari kerja terjadwal (pembagi gaji bulanan). Kosong = `periodEnd`.
+   *  Dipakai estimasi gaji berjalan: absensi dibaca sampai hari ini, tapi pembaginya sebulan penuh. */
+  workdaysEnd?: string,
+): Promise<{
+  summary: AttendanceSummary;
+  overtimeHoursTotal: number;
+  overtimeHoursPerDay: number[];
+  scheduledDates: Set<string>;
+}> {
+  const daysEnd = workdaysEnd && workdaysEnd > periodEnd ? workdaysEnd : periodEnd;
   const [{ data: rows }, { data: holidayRows }, { data: business }] = await Promise.all([
     supabase
       .from("attendance")
@@ -70,13 +79,13 @@ export async function loadAttendanceSummary(
       .select("holiday_date")
       .eq("business_id", businessId)
       .gte("holiday_date", periodStart)
-      .lte("holiday_date", periodEnd),
+      .lte("holiday_date", daysEnd),
     supabase.from("businesses").select("work_days_per_week").eq("id", businessId).single(),
   ]);
 
   const holidays = new Set((holidayRows ?? []).map((h) => h.holiday_date));
   // Hari kerja terjadwal (tanpa hari libur mingguan & tanggal merah) = pembagi gaji bulanan.
-  const workdays = scheduledWorkdays(periodStart, periodEnd, business?.work_days_per_week === 5 ? 5 : 6, holidays);
+  const workdays = scheduledWorkdays(periodStart, daysEnd, business?.work_days_per_week === 5 ? 5 : 6, holidays);
 
   const summary: AttendanceSummary = {
     hadir: 0,
@@ -127,5 +136,6 @@ export async function loadAttendanceSummary(
     summary,
     overtimeHoursTotal: Math.round(overtimeHoursTotal * 100) / 100,
     overtimeHoursPerDay,
+    scheduledDates: workdays,
   };
 }

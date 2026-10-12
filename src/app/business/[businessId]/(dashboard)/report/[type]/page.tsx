@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { payslipTotal } from "@/lib/payroll/payslip-total";
+import { loadSalaryEstimates } from "@/lib/payroll/estimate";
 import { Card, PageHeader } from "@/components/form-ui";
 import ReportTable, { type ReportCell, type ReportColumn } from "../report-table";
 
@@ -37,7 +38,7 @@ export default async function ReportPage({
   searchParams,
 }: {
   params: Promise<{ businessId: string; type: string }>;
-  searchParams: Promise<{ month?: string }>;
+  searchParams: Promise<{ month?: string; mode?: string; asof?: string }>;
 }) {
   const { businessId, type } = await params;
   const meta = TITLES[type];
@@ -46,12 +47,16 @@ export default async function ReportPage({
   const sp = await searchParams;
   const month = sp.month && /^\d{4}-\d{2}$/.test(sp.month) ? sp.month : currentMonth();
   const base = `/business/${businessId}/report/${type}`;
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
+  // `asof` hanya untuk meninjau "gaji berjalan" pada tanggal lain (mis. uji coba); bawaannya hari ini.
+  const asOf = sp.asof && /^\d{4}-\d{2}-\d{2}$/.test(sp.asof) ? sp.asof : today;
+  const projection = sp.mode === "proyeksi";
 
   const supabase = await createClient();
   const { data } = await supabase
     .from("payslips")
     .select(
-      "id, base_pay, meal_allowance, attendance_allowance, lembur_amount, thr_amount, izin_deduction, late_deduction, kasbon_deduction, personal_loan_deduction, pph21_amount, bpjs_employee_amount, bpjs_employer_amount, ptkp_status, employees(name, employee_code, npwp, organizations(name)), payslip_adjustments(type, amount)",
+      "id, employee_id, base_pay, meal_allowance, attendance_allowance, lembur_amount, thr_amount, izin_deduction, late_deduction, kasbon_deduction, personal_loan_deduction, pph21_amount, bpjs_employee_amount, bpjs_employer_amount, ptkp_status, employees(name, employee_code, npwp, organizations(name)), payslip_adjustments(type, amount)",
     )
     .eq("business_id", businessId)
     .gte("period_start", `${month}-01`)
@@ -80,6 +85,16 @@ export default async function ReportPage({
   let columns: ReportColumn[] = [];
   let rows: ReportCell[][] = [];
 
+  // Estimasi untuk karyawan yang slipnya belum dibuat (hanya Ringkasan Gaji).
+  let estimates: Awaited<ReturnType<typeof loadSalaryEstimates>> | null = null;
+  if (type === "salary") {
+    estimates = await loadSalaryEstimates(supabase, businessId, month, asOf, new Set(slips.map((s) => s.p.employee_id)));
+  }
+  const estRows = estimates?.rows ?? [];
+  const showToggle = estRows.length > 0 && (estimates?.remainingDays ?? 0) > 0;
+  const useProjection = showToggle && projection;
+  const estLine = (r: (typeof estRows)[number]) => (useProjection ? r.projected : r.running);
+
   if (type === "salary") {
     columns = [
       { label: "Nama" },
@@ -94,6 +109,7 @@ export default async function ReportPage({
       { label: "PPh 21", money: true },
       { label: "BPJS", money: true },
       { label: "Gaji Bersih", money: true },
+      ...(estRows.length > 0 ? [{ label: "Status" }] : []),
     ];
     rows = slips.map((s) => [
       s.name,
@@ -108,7 +124,12 @@ export default async function ReportPage({
       s.p.pph21_amount,
       s.p.bpjs_employee_amount,
       s.net,
+      ...(estRows.length > 0 ? ["Slip"] : []),
     ]);
+    for (const r of estRows) {
+      const l = estLine(r);
+      rows.push([r.name, r.code, l.basePay, l.meal, l.attendance, l.lembur, 0, l.tunjanganLain, l.potongan, l.pph21, l.bpjs, l.net, "Estimasi"]);
+    }
   } else if (type === "salary-org") {
     columns = [
       { label: "Organisasi" },
@@ -211,6 +232,52 @@ export default async function ReportPage({
           </div>
         }
       />
+      {estimates && estRows.length > 0 && (() => {
+        const slipNet = slips.reduce((t, s) => t + s.net, 0);
+        const runTotal = estRows.reduce((t, r) => t + r.running.net, 0);
+        const projTotal = estRows.reduce((t, r) => t + r.projected.net, 0);
+        const rp = (v: number) => `Rp ${Math.round(v).toLocaleString("id-ID")}`;
+        const tab = (active: boolean) =>
+          `rounded-lg px-3.5 py-1.5 text-[14px] font-semibold ${active ? "bg-brand-600 text-white" : "bg-white text-zinc-600 hover:bg-zinc-50 border border-zinc-200"}`;
+        const keep = sp.asof ? `&asof=${sp.asof}` : "";
+        const asOfLabel = new Date(`${asOf > lastDay(month) ? lastDay(month) : asOf}T00:00:00Z`).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+        return (
+          <div className="mb-4 space-y-3 print:hidden">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-xl border border-zinc-100 bg-white p-4 shadow-sm">
+                <p className="text-xs text-zinc-500">Estimasi sampai {asOfLabel}</p>
+                <p className="mt-1 text-xl font-bold text-zinc-900">{rp(runTotal)}</p>
+              </div>
+              <div className="rounded-xl border border-zinc-100 bg-white p-4 shadow-sm">
+                <p className="text-xs text-zinc-500">Proyeksi akhir bulan</p>
+                <p className="mt-1 text-xl font-bold text-zinc-900">{showToggle ? rp(projTotal) : "—"}</p>
+              </div>
+              <div className="rounded-xl border border-zinc-100 bg-white p-4 shadow-sm">
+                <p className="text-xs text-zinc-500">Sudah final (slip dibuat)</p>
+                <p className="mt-1 text-xl font-bold text-zinc-900">{rp(slipNet)}</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {showToggle && (
+                <>
+                  <Link href={`${base}?month=${month}${keep}`} className={tab(!useProjection)}>
+                    Sampai hari ini
+                  </Link>
+                  <Link href={`${base}?month=${month}&mode=proyeksi${keep}`} className={tab(useProjection)}>
+                    Proyeksi akhir bulan
+                  </Link>
+                </>
+              )}
+              <p className="text-[13px] text-zinc-500">
+                {useProjection
+                  ? "Proyeksi: sisa hari kerja dianggap hadir normal, tanpa telat, izin, atau lembur."
+                  : `Estimasi gaji berjalan per ${asOfLabel}: hanya absensi yang sudah tercatat. Belum final.`}{" "}
+                Baris berstatus Estimasi belum termasuk kasbon dan reimbursement.
+              </p>
+            </div>
+          </div>
+        );
+      })()}
       <Card className="!p-0">
         <ReportTable filename={`${type}-${month}`} columns={columns} rows={rows} totals={totals} />
       </Card>
