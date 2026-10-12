@@ -1,5 +1,6 @@
 import type { createClient } from "@/lib/supabase/server";
 import type { AttendanceSummary, PayrollSettings } from "./calc";
+import { scheduledWorkdays } from "./workdays";
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -56,7 +57,7 @@ export async function loadAttendanceSummary(
   periodStart: string,
   periodEnd: string,
 ): Promise<{ summary: AttendanceSummary; overtimeHoursTotal: number; overtimeHoursPerDay: number[] }> {
-  const [{ data: rows }, { data: holidayRows }] = await Promise.all([
+  const [{ data: rows }, { data: holidayRows }, { data: business }] = await Promise.all([
     supabase
       .from("attendance")
       .select("date, status, note, late, late_minutes, overtime_hours")
@@ -70,9 +71,12 @@ export async function loadAttendanceSummary(
       .eq("business_id", businessId)
       .gte("holiday_date", periodStart)
       .lte("holiday_date", periodEnd),
+    supabase.from("businesses").select("work_days_per_week").eq("id", businessId).single(),
   ]);
 
   const holidays = new Set((holidayRows ?? []).map((h) => h.holiday_date));
+  // Hari kerja terjadwal (tanpa hari libur mingguan & tanggal merah) = pembagi gaji bulanan.
+  const workdays = scheduledWorkdays(periodStart, periodEnd, business?.work_days_per_week === 5 ? 5 : 6, holidays);
 
   const summary: AttendanceSummary = {
     hadir: 0,
@@ -82,7 +86,7 @@ export async function loadAttendanceSummary(
     sakit: 0,
     alpa: 0,
     off: 0,
-    periodTotalDays: countDaysInclusive(periodStart, periodEnd),
+    periodTotalDays: workdays.size,
     lateMinutesList: [],
   };
   let overtimeHoursTotal = 0;
@@ -112,7 +116,9 @@ export async function loadAttendanceSummary(
         summary.alpa += 1;
         break;
       case "off":
-        summary.off += 1;
+        // Hanya "off" di hari kerja terjadwal yang mengurangi pembagi; "off" di hari
+        // libur mingguan/tanggal merah sudah tidak dihitung sebagai hari kerja.
+        if (workdays.has(row.date)) summary.off += 1;
         break;
     }
   }
