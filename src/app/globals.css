@@ -80,3 +80,9 @@ body {
 .animate-float {
   animation: float 5s ease-in-out infinite;
 }
+
+/* Margin cetak lebih kecil dari bawaan browser, supaya tabel lebar (mis.
+   Laporan Gaji) punya lebih banyak ruang tanpa perlu landscape. */
+@page {
+  margin: 10mm;
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Download } from "lucide-react";
+import { Download, Printer } from "lucide-react";
 import { btnOutline } from "@/components/form-ui";
 
 export type ReportColumn = {
@@ -54,20 +54,23 @@ export default function ReportTable({
 
   return (
     <div>
-      <div className="flex justify-end border-b border-zinc-100 p-3">
+      <div className="flex justify-end gap-2 border-b border-zinc-100 p-3 print:hidden">
+        <button type="button" onClick={() => window.print()} className={btnOutline} disabled={rows.length === 0}>
+          <Printer size={14} /> Cetak / Unduh PDF
+        </button>
         <button type="button" onClick={exportCsv} className={btnOutline} disabled={rows.length === 0}>
           <Download size={14} /> Ekspor CSV
         </button>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-[14px]">
-          <thead className="bg-zinc-50 text-xs font-semibold text-zinc-600">
+      <div className="overflow-x-auto print:overflow-visible">
+        <table className="w-full text-left text-[14px] print:text-[10px]">
+          <thead className="bg-zinc-50 text-xs font-semibold text-zinc-600 print:text-[10px]">
             <tr>
-              <th className="sticky left-0 z-10 w-12 bg-zinc-50 px-5 py-3">No.</th>
+              <th className="sticky left-0 z-10 w-12 bg-zinc-50 px-5 py-3 print:hidden">No.</th>
               {columns.map((c, j) => (
                 <th
                   key={c.label}
-                  className={`px-3 py-3 ${c.align === "right" || c.money ? "text-right" : ""} ${j === 0 ? `${firstColSticky} bg-zinc-50` : ""}`}
+                  className={`px-3 py-3 print:px-1.5 print:py-1.5 ${c.align === "right" || c.money ? "text-right" : ""} ${j === 0 ? `${firstColSticky} bg-zinc-50 print:static print:min-w-0 print:border-0` : ""}`}
                 >
                   {c.label}
                 </th>
@@ -84,13 +87,13 @@ export default function ReportTable({
             )}
             {rows.map((r, i) => (
               <tr key={i} className="group">
-                <td className="sticky left-0 z-10 bg-white px-5 py-2.5 text-zinc-500 group-hover:bg-zinc-50">{i + 1}</td>
+                <td className="sticky left-0 z-10 bg-white px-5 py-2.5 text-zinc-500 group-hover:bg-zinc-50 print:hidden">{i + 1}</td>
                 {columns.map((c, j) => (
                   <td
                     key={c.label}
-                    className={`px-3 py-2.5 ${c.align === "right" || c.money ? "text-right" : ""} ${
+                    className={`px-3 py-2.5 print:px-1.5 print:py-1 ${c.align === "right" || c.money ? "text-right" : ""} ${
                       j === 0
-                        ? `${firstColSticky} bg-white font-medium text-zinc-900 group-hover:bg-zinc-50`
+                        ? `${firstColSticky} bg-white font-medium text-zinc-900 group-hover:bg-zinc-50 print:static print:min-w-0 print:border-0`
                         : toneClass(c) || "text-zinc-700"
                     }`}
                   >
@@ -101,13 +104,13 @@ export default function ReportTable({
             ))}
           </tbody>
           {totals && rows.length > 0 && (
-            <tfoot className="border-t-2 border-zinc-200 bg-zinc-50 font-semibold text-zinc-900">
+            <tfoot className="border-t-2 border-zinc-200 bg-zinc-50 font-semibold text-zinc-900 print:text-[10px]">
               <tr>
-                <td className="sticky left-0 z-10 bg-zinc-50 px-5 py-3" />
+                <td className="sticky left-0 z-10 bg-zinc-50 px-5 py-3 print:hidden" />
                 {columns.map((c, j) => (
                   <td
                     key={c.label}
-                    className={`px-3 py-3 ${c.align === "right" || c.money ? "text-right" : ""} ${j === 0 ? `${firstColSticky} bg-zinc-50` : ""}`}
+                    className={`px-3 py-3 print:px-1.5 print:py-1.5 ${c.align === "right" || c.money ? "text-right" : ""} ${j === 0 ? `${firstColSticky} bg-zinc-50 print:static print:min-w-0 print:border-0` : ""}`}
                   >
                     {j === 0 ? "Total" : cell(c, totals[j])}
                   </td>
