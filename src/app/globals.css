@@ -66,3 +66,17 @@ body {
   --text-xs: 0.8125rem;
   --text-sm: 0.9375rem;
 }
+
+/* Landing page Cashimpact (src/app/company) — elemen dekoratif hero yang melayang pelan. */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
