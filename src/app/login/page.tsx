@@ -72,7 +72,7 @@ export default function LoginPage() {
     <AuthShell>
       <div className="mb-8 text-center">
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-600 shadow-lg shadow-brand-600/20">
-          <span className="text-lg font-bold text-white">A</span>
+          <span className="text-lg font-bold text-white">H</span>
         </div>
         <h1 className="text-xl font-bold text-zinc-900">Masuk</h1>
         <p className="mt-1 text-sm text-zinc-500">Masuk ke akun HrCash kamu</p>
