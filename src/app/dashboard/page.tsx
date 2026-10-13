@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-// Halaman transit: ABSENKU (beda dengan KasirKu) tidak punya konsep "multi
+// Halaman transit: HR Cashimpact (beda dengan KasirKu) tidak punya konsep "multi
 // outlet dipilih dari satu dashboard" untuk v1 — satu owner biasanya cuma
 // urus satu bisnis. /dashboard cuma menentukan bisnis mana yang relevan buat
 // user yang login, lalu redirect ke /business/[businessId].

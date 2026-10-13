@@ -35,9 +35,9 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
 
         <div className="relative flex items-center gap-2.5">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-lg font-bold text-brand-700 shadow-sm">
-            A
+            H
           </div>
-          <span className="text-lg font-bold tracking-tight">ABSENKU</span>
+          <span className="text-lg font-bold tracking-tight">HR Cashimpact</span>
         </div>
 
         <div className="relative">

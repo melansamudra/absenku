@@ -16,7 +16,7 @@ export async function generateMetadata({
     .eq("id", businessId)
     .single();
 
-  return { title: business?.name ?? "ABSENKU" };
+  return { title: business?.name ?? "HR Cashimpact" };
 }
 
 export default async function BusinessDashboardLayout({
