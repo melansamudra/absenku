@@ -52,12 +52,20 @@ export default async function ShiftsPage({
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-xl font-bold text-zinc-900 sm:text-2xl">Jadwal Shift</h1>
-        <p className="mt-0.5 text-sm text-zinc-500">
-          Kelola shift dan tetapkan jadwal per karyawan per hari. Karyawan tanpa jadwal hari itu
-          pakai jam kerja default bisnis (atur di Pengaturan).
-        </p>
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-zinc-900 sm:text-2xl">Jadwal Shift</h1>
+          <p className="mt-0.5 text-sm text-zinc-500">
+            Kelola shift dan tetapkan jadwal per karyawan per hari. Karyawan tanpa jadwal hari itu
+            pakai jam kerja default bisnis (atur di Pengaturan).
+          </p>
+        </div>
+        <Link
+          href={`/business/${businessId}/shifts/pola-mingguan`}
+          className="shrink-0 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50"
+        >
+          Jadwal Tetap (Pola Mingguan)
+        </Link>
       </div>
 
       <div className="mb-5">
