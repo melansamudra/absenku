@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6 text-center">
       <div className="space-y-3">
-        <h1 className="text-4xl font-bold tracking-tight text-zinc-900">HR Cashimpact</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-zinc-900">HrCash</h1>
         <p className="max-w-md text-zinc-600">
           Absensi selfie, data karyawan, dan payroll — dalam satu aplikasi
           untuk bisnis Anda.

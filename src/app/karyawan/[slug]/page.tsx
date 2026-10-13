@@ -363,7 +363,7 @@ export default async function PortalPage({
   if (!business) {
     return (
       <div className="min-h-screen bg-zinc-50">
-        <Hero businessName="HR Cashimpact" title="Link tidak ditemukan" subtitle="Hubungi admin bisnis kamu untuk link portal yang benar." />
+        <Hero businessName="HrCash" title="Link tidak ditemukan" subtitle="Hubungi admin bisnis kamu untuk link portal yang benar." />
       </div>
     );
   }

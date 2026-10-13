@@ -37,7 +37,7 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-lg font-bold text-brand-700 shadow-sm">
             H
           </div>
-          <span className="text-lg font-bold tracking-tight">HR Cashimpact</span>
+          <span className="text-lg font-bold tracking-tight">HrCash</span>
         </div>
 
         <div className="relative">
