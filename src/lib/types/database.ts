@@ -489,6 +489,55 @@ export type Database = {
           },
         ]
       }
+      employee_weekly_schedules: {
+        Row: {
+          business_id: string
+          created_at: string
+          employee_id: string
+          id: string
+          shift_template_id: string | null
+          weekday: number
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          employee_id: string
+          id?: string
+          shift_template_id?: string | null
+          weekday: number
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          employee_id?: string
+          id?: string
+          shift_template_id?: string | null
+          weekday?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_weekly_schedules_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_weekly_schedules_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_weekly_schedules_shift_template_id_fkey"
+            columns: ["shift_template_id"]
+            isOneToOne: false
+            referencedRelation: "shift_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employees: {
         Row: {
           employee_code: string | null
