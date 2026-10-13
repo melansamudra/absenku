@@ -57,10 +57,18 @@ export default async function BusinessDashboardLayout({
 
   const pending = await loadPendingCounts(supabase, businessId);
 
+  // Semua bisnis yang boleh dibuka user ini (milik sendiri + staf aktif) —
+  // RLS sudah menyaringnya. Dipakai untuk pemilih bisnis di header.
+  const { data: businessList } = await supabase
+    .from("businesses")
+    .select("id, name")
+    .order("created_at", { ascending: true });
+
   return (
     <DashboardShell
       businessId={businessId}
       businessName={business.name}
+      businesses={businessList ?? [{ id: business.id, name: business.name }]}
       userEmail={userData.user.email ?? ""}
       badges={{
         "attendance/approval": pending.presensi,

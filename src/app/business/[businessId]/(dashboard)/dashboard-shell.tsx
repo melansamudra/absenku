@@ -7,6 +7,7 @@ import {
   Banknote,
   Bell,
   Building2,
+  Check,
   CalendarCheck,
   CalendarClock,
   CalendarRange,
@@ -94,12 +95,15 @@ const NOTIFICATION_LABEL: Record<string, string> = {
 export default function DashboardShell({
   businessId,
   businessName,
+  businesses = [],
   userEmail,
   badges = {},
   children,
 }: {
   businessId: string;
   businessName: string;
+  /** Semua bisnis yang bisa dibuka user ini; kalau lebih dari satu, nama bisnis jadi pemilih. */
+  businesses?: { id: string; name: string }[];
   userEmail: string;
   /** Jumlah permintaan menunggu per menu (key menu → angka). 0 = tanpa badge. */
   badges?: Record<string, number>;
@@ -109,7 +113,7 @@ export default function DashboardShell({
   const base = `/business/${businessId}`;
   const [drawer, setDrawer] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [menu, setMenu] = useState<"bell" | "user" | null>(null);
+  const [menu, setMenu] = useState<"bell" | "user" | "biz" | null>(null);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [loggingOut, setLoggingOut] = useState(false);
   const topbarRef = useRef<HTMLDivElement>(null);
@@ -282,7 +286,39 @@ export default function DashboardShell({
               <Menu className="h-6 w-6" aria-hidden="true" />
             </button>
             <Building2 className="hidden h-5 w-5 shrink-0 text-brand-500 sm:block" aria-hidden="true" />
-            <span className="truncate text-sm font-bold tracking-wide text-zinc-800">{businessName}</span>
+            {businesses.length > 1 ? (
+              <div className="relative min-w-0">
+                <button
+                  type="button"
+                  aria-label="Pindah bisnis"
+                  aria-expanded={menu === "biz"}
+                  onClick={() => setMenu(menu === "biz" ? null : "biz")}
+                  className="flex min-w-0 items-center gap-1 rounded-lg px-2 py-1.5 hover:bg-zinc-100"
+                >
+                  <span className="truncate text-sm font-bold tracking-wide text-zinc-800">{businessName}</span>
+                  <ChevronDown className="h-4 w-4 shrink-0 text-zinc-500" aria-hidden="true" />
+                </button>
+                {menu === "biz" && (
+                  <div className="absolute left-0 top-11 z-40 max-h-80 w-72 overflow-y-auto rounded-2xl bg-white text-zinc-800 shadow-xl ring-1 ring-zinc-200">
+                    <p className="border-b border-zinc-100 px-4 py-3 text-sm font-semibold">Pindah bisnis</p>
+                    {businesses.map((b) => (
+                      <Link
+                        key={b.id}
+                        href={`/business/${b.id}`}
+                        className={`flex items-center justify-between gap-3 px-4 py-3 text-sm hover:bg-zinc-50 ${
+                          b.id === businessId ? "font-semibold text-brand-700" : ""
+                        }`}
+                      >
+                        <span className="truncate">{b.name}</span>
+                        {b.id === businessId && <Check className="h-4 w-4 shrink-0" aria-hidden="true" />}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <span className="truncate text-sm font-bold tracking-wide text-zinc-800">{businessName}</span>
+            )}
           </div>
 
           <div className="flex items-center gap-1.5">
