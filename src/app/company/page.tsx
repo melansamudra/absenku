@@ -26,19 +26,21 @@ const FLOATING_PILLS = [
 
 const VALUE_PROPS = [
   {
-    icon: Layers,
-    title: "Satu Akun, Banyak Aplikasi",
-    description: "Semua produk Cashimpact dirancang untuk saling terhubung di masa depan.",
+    icon: Zap,
+    title: "Laporan Satu Klik",
+    description:
+      "Rekap absensi, slip gaji, sampai laporan PPh 21 & BPJS otomatis siap pakai — tanpa rekap manual.",
   },
   {
     icon: ShieldCheck,
-    title: "Dibangun untuk Bisnis Indonesia",
-    description: "Alur kerja dan aturan yang dipakai disesuaikan dengan cara kerja bisnis lokal.",
+    title: "Aman & Sesuai Aturan",
+    description:
+      "Perhitungan payroll, PPh 21, dan BPJS mengikuti aturan yang berlaku untuk bisnis di Indonesia.",
   },
   {
-    icon: Zap,
-    title: "Terus Berkembang",
-    description: "Produk baru dan pembaruan fitur dirilis bertahap mengikuti kebutuhan pengguna.",
+    icon: Layers,
+    title: "Satu Akun, Banyak Aplikasi",
+    description: "Semua produk Cashimpact dirancang untuk saling terhubung di masa depan.",
   },
 ];
 
@@ -48,7 +50,7 @@ const products = [
     tagline: "Absensi, SDM & Payroll",
     description:
       "Absensi selfie, data karyawan, dan payroll — dalam satu aplikasi untuk bisnis Anda.",
-    tags: ["Absen Selfie + GPS", "Payroll Otomatis", "Data Karyawan"],
+    tags: ["Absen Selfie + GPS", "Payroll Otomatis", "Laporan Satu Klik"],
     href: "https://hr.cashimpact.id",
     cta: "Buka Aplikasi",
     icon: CalendarCheck,
@@ -142,20 +144,18 @@ export default function CompanyPage() {
           </p>
           <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
             <Link
-              href="#produk"
+              href="https://hr.cashimpact.id/signup"
               className="inline-flex items-center gap-1.5 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-brand-700 shadow-lg shadow-brand-900/20 transition-transform hover:-translate-y-0.5"
             >
-              Jelajahi Aplikasi
+              Coba Gratis
               <ArrowRight size={16} />
             </Link>
-            <a
-              href="https://createimpact.id"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="#produk"
               className="inline-flex items-center gap-1.5 rounded-xl border border-white/30 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
             >
-              Tentang Createimpact.id
-            </a>
+              Lihat Semua Aplikasi
+            </Link>
           </div>
         </div>
 
