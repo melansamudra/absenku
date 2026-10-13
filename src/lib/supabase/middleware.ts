@@ -70,7 +70,12 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/api/attendance-checkin") ||
     request.nextUrl.pathname.startsWith("/auth/callback") ||
     request.nextUrl.pathname.startsWith("/reset-password") ||
-    request.nextUrl.pathname.startsWith("/set-password");
+    request.nextUrl.pathname.startsWith("/set-password") ||
+    // /demo login otomatis ke akun demo, /demo-portal redirect ke Portal
+    // Karyawan demo — keduanya ditembak dari tombol "Lihat Demo" di landing
+    // page, jadi pengunjung yang belum login harus bisa sampai ke sana.
+    request.nextUrl.pathname === "/demo" ||
+    request.nextUrl.pathname === "/demo-portal";
 
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone();
