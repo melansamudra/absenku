@@ -2,7 +2,7 @@ const FEATURES = [
   { icon: "🤳", label: "Absen selfie + GPS" },
   { icon: "👥", label: "Data karyawan (SDM)" },
   { icon: "💰", label: "Payroll otomatis" },
-  { icon: "📋", label: "Rekap kehadiran" },
+  { icon: "🔗", label: "Portal karyawan" },
 ];
 
 export default function AuthShell({ children }: { children: React.ReactNode }) {
