@@ -5,7 +5,7 @@ import {
   ArrowUpRight,
   CalendarCheck,
   Link2,
-  ShieldCheck,
+  PiggyBank,
   ShoppingCart,
   Sparkles,
   Zap,
@@ -28,14 +28,13 @@ const VALUE_PROPS = [
   {
     icon: Zap,
     title: "Laporan Satu Klik",
-    description:
-      "Rekap absensi, slip gaji, sampai laporan PPh 21 & BPJS otomatis siap pakai — tanpa rekap manual.",
+    description: "Rekap absensi sampai slip gaji otomatis siap pakai — tanpa rekap manual.",
   },
   {
-    icon: ShieldCheck,
-    title: "Aman & Sesuai Aturan",
+    icon: PiggyBank,
+    title: "Proyeksi Gaji",
     description:
-      "Perhitungan payroll, PPh 21, dan BPJS mengikuti aturan yang berlaku untuk bisnis di Indonesia.",
+      "Sudah tau perkiraan gajian dari awal bulan, biar nggak boncos pas akhir bulan.",
   },
   {
     icon: Link2,
@@ -51,7 +50,7 @@ const products = [
     tagline: "Absensi, SDM & Payroll",
     description:
       "Absensi selfie, data karyawan, dan payroll — dalam satu aplikasi untuk bisnis Anda.",
-    tags: ["Absen Selfie + GPS", "Payroll Otomatis", "Laporan Satu Klik", "Portal Karyawan"],
+    tags: ["Absen Selfie + GPS", "Proyeksi Gaji", "Laporan Satu Klik", "Portal Karyawan"],
     href: "https://hr.cashimpact.id",
     cta: "Buka Aplikasi",
     icon: CalendarCheck,
