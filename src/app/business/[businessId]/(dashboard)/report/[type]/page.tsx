@@ -222,12 +222,12 @@ export default async function ReportPage({
 
   return (
     <div>
-      <Link href={`/business/${businessId}/report`} className="mb-3 inline-flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-700">
+      <Link href={`/business/${businessId}/report`} className="mb-3 inline-flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-700 print:hidden">
         <ChevronLeft size={14} /> Laporan
       </Link>
       <PageHeader
         title={meta.title}
-        subtitle={meta.desc}
+        subtitle={`${meta.desc} — Periode ${monthLabel(month)}`}
         actions={
           <div className="flex items-center gap-1.5">
             <Link href={`${base}?month=${shiftMonth(month, -1)}`} className="rounded-lg border border-zinc-200 bg-white p-2 hover:bg-zinc-50" aria-label="Bulan sebelumnya">
