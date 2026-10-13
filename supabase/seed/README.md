@@ -1,12 +1,13 @@
 # Data demo ABSENKU
 
-`demo-1.sql` … `demo-4.sql` (dijalankan berurutan) membuat 1 bisnis demo ("Toko Demo Maju Jaya") berisi 10 karyawan, **1 bulan penuh data bulan lalu**, dan **data bulan ini yang masih berjalan** (dari tanggal 1 sampai kemarin), untuk uji coba seluruh alur tanpa mengetik data manual. Ini bukan migrasi — dijalankan manual di Supabase SQL Editor project ABSENKU.
+`demo-1.sql` … `demo-5.sql` (dijalankan berurutan) membuat 1 bisnis demo ("Toko Demo Maju Jaya") berisi 10 karyawan, **1 bulan penuh data bulan lalu**, **data bulan ini yang masih berjalan** (dari tanggal 1 sampai kemarin), cuti/lembur/reimbursement/kasbon, tugas/surat/pengumuman, dan **2 formulir KPI contoh** dengan 1 jadwal penilaian sudah berisi nilai — untuk uji coba seluruh alur tanpa mengetik data manual. Ini bukan migrasi — dijalankan manual di Supabase SQL Editor project ABSENKU.
 
 ## Cara pakai
 1. Daftar akun demo di `/signup` (pakai email terpisah dari akun utama).
 2. Buka `demo-1.sql`, ganti `GANTI_DENGAN_EMAIL_AKUN_DEMO` dengan email itu. Hanya bagian 1 yang perlu diubah.
-3. Jalankan `demo-1.sql`, lalu `demo-2.sql`, `demo-3.sql`, `demo-4.sql` berurutan, masing-masing di SQL Editor (dipecah karena editor memotong tempelan panjang). Aman diulang dari bagian 1 (bisnis demo lama dihapus, dibuat ulang) — jalankan ulang semuanya tiap beberapa minggu supaya "bulan berjalan"-nya tetap mutakhir.
+3. Jalankan `demo-1.sql`, lalu `demo-2.sql`, `demo-3.sql`, `demo-4.sql`, `demo-5.sql` berurutan, masing-masing di SQL Editor (dipecah karena editor memotong tempelan panjang). Aman diulang dari bagian 1 (bisnis demo lama dihapus, dibuat ulang) — jalankan ulang semuanya tiap beberapa minggu supaya "bulan berjalan"-nya tetap mutakhir.
 4. Login dengan akun demo → bisnis "Toko Demo Maju Jaya".
+5. **Buat slip gaji**: ini sengaja **tidak** diseed lewat SQL (supaya perhitungannya dijamin akurat, dihitung oleh aplikasi sendiri, bukan ditulis ulang manual di SQL). Buka menu **Payroll**, pilih periode bulan lalu di pemilih bulan, klik tombol **"Generate Payroll"** — slip untuk semua 10 karyawan langsung dibuat sekali klik.
 
 ## Karyawan & PIN
 | Karyawan | Jabatan | Gaji | PTKP | PIN |
@@ -38,6 +39,13 @@ Angka ini untuk seed yang dijalankan di **Oktober 2026** (data bulan lalu = Sept
 
 Andi dan Dewi punya 3 absen terakhir **bulan lalu** yang belum diverifikasi (untuk uji alur verifikasi). **Bulan ini (berjalan)**: semua 10 karyawan punya absensi dari tanggal 1 sampai kemarin (hadir, variasi telat/lembur acak); 2 hari terakhir sengaja belum diverifikasi admin untuk semua karyawan, supaya ada antrean verifikasi yang realistis. Selain itu ada: 3 pengajuan cuti (disetujui/menunggu/ditolak), 5 pengajuan lembur, 3 reimbursement (disetujui/menunggu/ditolak), 2 kasbon, 1 pinjaman pribadi (Rudi 2.000.000), 5 tugas, 4 kegiatan, 2 surat (SP1 Andi, SK Siti), 3 pengumuman.
 
+## KPI
+2 formulir contoh (bobot tiap formulir dijamin total 100%):
+- **Template Cashimpact: Evaluasi Kinerja Umum** — Kedisiplinan & Kehadiran (25%), Kualitas Kerja (25%), Produktivitas (20%), Kerja Sama Tim (15%), Inisiatif (15%). Formulir bawaan, siap pakai langsung.
+- **Custom: Evaluasi Kasir & Pelayanan** — Kecepatan Layani Pelanggan (30%), Keakuratan Transaksi Kasir (30%), Kebersihan Area Kerja (20%), Keramahan ke Pelanggan (20%). Contoh formulir yang disesuaikan sendiri untuk peran spesifik — tidak punya jadwal/penilaian, murni contoh cara bikin formulir custom.
+
+1 jadwal penilaian bulan lalu pakai formulir "Template Cashimpact", berisi 6 karyawan: Budi (86,85 — Baik), Siti (86,25 — Baik), Rudi (92,95 — Sangat Baik), Dewi (79,15 — Baik), Hendra (71,20 — Cukup) sudah dinilai; Andi masih **menunggu** (contoh antrean evaluasi). Nilai akhir sudah diverifikasi cocok dengan rumus rata-rata tertimbang di aplikasi.
+
 ## Daftar cek uji coba
 **Admin**
 - [ ] Absensi: grid bulan lalu & bulan ini terisi; telat/lembur tampil; verifikasi absen yang belum diverifikasi.
@@ -49,6 +57,7 @@ Andi dan Dewi punya 3 absen terakhir **bulan lalu** yang belum diverifikasi (unt
 - [ ] Reimbursement: setujui punya Siti; cek masuk slip.
 - [ ] Surat: buat SP2 untuk Andi, cetak.
 - [ ] Papan Informasi: tambah, sematkan, hapus.
+- [ ] KPI: cek nilai akhir & grade di jadwal "Evaluasi Bulanan"; nilai Andi yang masih pending; buat jadwal baru pakai formulir "Custom".
 
 **Portal karyawan** (`/karyawan/<slug>` — slug ada di Pengaturan)
 - [ ] Login Rudi (5555). Beranda, jadwal, kehadiran, gaji, kasbon/pinjaman tampil benar.
