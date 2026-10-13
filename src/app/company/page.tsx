@@ -295,7 +295,15 @@ export default function CompanyPage() {
       </div>
 
       <footer className="border-t border-zinc-100 bg-white py-6 text-center text-xs text-zinc-400">
-        © {new Date().getFullYear()} Cashimpact — Createimpact.id
+        <p>© {new Date().getFullYear()} Cashimpact — Createimpact.id</p>
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+          <Link href="https://hr.cashimpact.id/syarat-ketentuan" className="hover:text-zinc-600 hover:underline">
+            Syarat & Ketentuan
+          </Link>
+          <Link href="https://hr.cashimpact.id/kebijakan-privasi" className="hover:text-zinc-600 hover:underline">
+            Kebijakan Privasi
+          </Link>
+        </div>
       </footer>
     </div>
   );

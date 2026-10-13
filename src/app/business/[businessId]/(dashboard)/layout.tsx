@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { loadPendingCounts } from "@/lib/dashboard/pending";
 import DashboardShell from "./dashboard-shell";
+import PaymentLocked from "./payment-locked";
 
 export async function generateMetadata({
   params,
@@ -30,7 +31,7 @@ export default async function BusinessDashboardLayout({
   const supabase = await createClient();
 
   const [{ data: business }, { data: userData }] = await Promise.all([
-    supabase.from("businesses").select("id, name, owner_id").eq("id", businessId).single(),
+    supabase.from("businesses").select("id, name, owner_id, payment_status").eq("id", businessId).single(),
     supabase.auth.getUser(),
   ]);
 
@@ -53,6 +54,12 @@ export default async function BusinessDashboardLayout({
     if (!staff || !staff.active) {
       notFound();
     }
+  }
+
+  // Gerbang pembayaran "sekali beli" — seluruh dashboard terkunci sampai
+  // admin platform menandai lunas lewat /admin (lihat payment-locked.tsx).
+  if (business.payment_status !== "paid") {
+    return <PaymentLocked isOwner={isOwner} businessName={business.name} />;
   }
 
   const pending = await loadPendingCounts(supabase, businessId);

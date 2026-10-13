@@ -32,6 +32,14 @@ export default function Home() {
           Lihat Portal Karyawan →
         </a>
       </div>
+      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-zinc-400">
+        <Link href="/syarat-ketentuan" className="hover:text-zinc-600 hover:underline">
+          Syarat & Ketentuan
+        </Link>
+        <Link href="/kebijakan-privasi" className="hover:text-zinc-600 hover:underline">
+          Kebijakan Privasi
+        </Link>
+      </div>
     </div>
   );
 }

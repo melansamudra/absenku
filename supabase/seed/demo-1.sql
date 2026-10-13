@@ -21,9 +21,9 @@ begin
 
   insert into public.businesses (owner_id, name, address, phone, work_start_time, work_end_time,
     izin_deduction_mode, pph21_enabled, bpjs_enabled, overtime_rate_mode, work_days_per_week,
-    overtime_approval_required, attendance_pin_required)
+    overtime_approval_required, attendance_pin_required, payment_status, paid_at)
   values (v_user, 'Toko Demo Maju Jaya', 'Jl. Contoh No. 12, Jakarta Selatan', '021-5551234',
-    '08:00', '17:00', 'full_day', true, true, 'pp35', 6, true, true)
+    '08:00', '17:00', 'full_day', true, true, 'pp35', 6, true, true, 'paid', now())
   returning id into v_biz;
 
   insert into public.late_deduction_tiers (business_id, threshold_minutes, amount)
