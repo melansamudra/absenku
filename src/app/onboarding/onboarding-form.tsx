@@ -16,7 +16,7 @@ export default function OnboardingForm() {
         </div>
         <h1 className="text-xl font-bold text-zinc-900">Daftarkan Bisnis Kamu</h1>
         <p className="mt-1 text-sm text-zinc-500">
-          Satu langkah lagi sebelum mulai pakai ABSENKU
+          Satu langkah lagi sebelum mulai pakai HrCash
         </p>
       </div>
 
@@ -70,7 +70,7 @@ export default function OnboardingForm() {
           disabled={pending}
           className="w-full rounded-xl bg-brand-600 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {pending ? "Menyimpan…" : "Mulai Pakai ABSENKU"}
+          {pending ? "Menyimpan…" : "Mulai Pakai HrCash"}
         </button>
       </form>
     </div>

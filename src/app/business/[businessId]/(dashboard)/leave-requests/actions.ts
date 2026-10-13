@@ -119,7 +119,7 @@ export async function createLeaveRequestByAdmin(
   await sendLeaveApprovedEmail({
     employeeEmail: employee.email,
     employeeName: employee.name,
-    businessName: business?.name ?? "ABSENKU",
+    businessName: business?.name ?? "HrCash",
     leaveTypeName: leaveType.name,
     startDate,
     endDate,
@@ -172,7 +172,7 @@ export async function approveLeaveRequest(businessId: string, leaveRequestId: st
   await sendLeaveApprovedEmail({
     employeeEmail: employee.email,
     employeeName: employee.name,
-    businessName: business?.name ?? "ABSENKU",
+    businessName: business?.name ?? "HrCash",
     leaveTypeName: leaveType.name,
     startDate: request.start_date,
     endDate: request.end_date,
@@ -216,7 +216,7 @@ export async function rejectLeaveRequest(businessId: string, leaveRequestId: str
     await sendLeaveRejectedEmail({
       employeeEmail: employee.email,
       employeeName: employee.name,
-      businessName: business?.name ?? "ABSENKU",
+      businessName: business?.name ?? "HrCash",
       leaveTypeName: leaveType.name,
       startDate: request.start_date,
       endDate: request.end_date,

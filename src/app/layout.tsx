@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ABSENKU — Absensi & Payroll",
+  title: "HrCash — Absensi & Payroll",
   description: "Absensi selfie, SDM, dan payroll karyawan dalam satu aplikasi.",
 };
 

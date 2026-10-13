@@ -75,7 +75,7 @@ export default function LoginPage() {
           <span className="text-lg font-bold text-white">A</span>
         </div>
         <h1 className="text-xl font-bold text-zinc-900">Masuk</h1>
-        <p className="mt-1 text-sm text-zinc-500">Masuk ke akun ABSENKU kamu</p>
+        <p className="mt-1 text-sm text-zinc-500">Masuk ke akun HrCash kamu</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">

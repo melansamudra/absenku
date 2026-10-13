@@ -233,8 +233,8 @@ export default function DashboardShell({
 
   const logo = (
     <Link href={base} className="flex items-center gap-2.5">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-sm font-extrabold text-white">A</span>
-      <span className="text-lg font-extrabold tracking-tight text-brand-700">ABSENKU</span>
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-sm font-extrabold text-white">H</span>
+      <span className="text-lg font-extrabold tracking-tight text-brand-700">HrCash</span>
     </Link>
   );
 

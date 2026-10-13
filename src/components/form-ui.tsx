@@ -1,5 +1,5 @@
 // Primitif form bergaya GajiHub: label dengan * merah untuk field wajib,
-// input/select outline lembut, tombol utama biru ABSENKU.
+// input/select outline lembut, tombol utama biru HrCash.
 import type { ReactNode } from "react";
 
 export const inputClass =
