@@ -53,6 +53,7 @@ const products = [
     tags: ["Absen Selfie + GPS", "Proyeksi Gaji", "Laporan Satu Klik", "Portal Karyawan"],
     href: "https://hr.cashimpact.id",
     cta: "Buka Aplikasi",
+    demoHref: "https://hr.cashimpact.id/demo",
     icon: CalendarCheck,
     accent: "from-brand-500 to-brand-700 shadow-brand-600/25",
     available: true,
@@ -63,6 +64,7 @@ const products = [
     description: "Aplikasi kasir digital untuk toko dan bisnis Anda. Segera pindah ke sini.",
     tags: [],
     href: null,
+    demoHref: null,
     cta: "Segera Hadir",
     icon: ShoppingCart,
     accent: "from-zinc-300 to-zinc-400 shadow-zinc-400/20",
@@ -237,16 +239,26 @@ export default function CompanyPage() {
                   </div>
                 )}
                 {product.available && product.href ? (
-                  <Link
-                    href={product.href}
-                    className="mt-auto inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-700"
-                  >
-                    {product.cta}
-                    <ArrowRight
-                      size={15}
-                      className="transition-transform group-hover:translate-x-0.5"
-                    />
-                  </Link>
+                  <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <Link
+                      href={product.href}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-700"
+                    >
+                      {product.cta}
+                      <ArrowRight
+                        size={15}
+                        className="transition-transform group-hover:translate-x-0.5"
+                      />
+                    </Link>
+                    {product.demoHref && (
+                      <a
+                        href={product.demoHref}
+                        className="text-sm font-medium text-brand-600 hover:underline"
+                      >
+                        Lihat Demo
+                      </a>
+                    )}
+                  </div>
                 ) : (
                   <span className="mt-auto rounded-lg bg-zinc-100 px-4 py-2.5 text-sm font-medium text-zinc-400">
                     {product.cta}
