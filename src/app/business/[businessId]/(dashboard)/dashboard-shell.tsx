@@ -239,13 +239,13 @@ export default function DashboardShell({
   );
 
   return (
-    <div className="admin-scale flex min-h-screen bg-zinc-50">
+    <div className="admin-scale flex h-screen overflow-hidden bg-zinc-50">
       {/* Sidebar desktop */}
       <aside className={`hidden shrink-0 flex-col border-r border-zinc-200 bg-white transition-[width] md:flex print:hidden ${collapsed ? "w-[72px]" : "w-64"}`}>
         <div className={`flex h-16 items-center border-b border-zinc-100 ${collapsed ? "justify-center px-2" : "px-5"}`}>
           {collapsed ? (
             <Link href={base} className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-sm font-extrabold text-white" aria-label="Beranda">
-              A
+              H
             </Link>
           ) : (
             logo
@@ -278,7 +278,7 @@ export default function DashboardShell({
         </div>
       )}
 
-      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
+      <div className="flex h-screen min-w-0 flex-1 flex-col">
         {/* Top bar */}
         <header ref={topbarRef} className="relative z-30 flex h-16 shrink-0 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-4 text-zinc-700 sm:px-6 print:hidden">
           <div className="flex min-w-0 items-center gap-3">

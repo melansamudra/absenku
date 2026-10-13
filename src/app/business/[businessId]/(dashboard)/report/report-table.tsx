@@ -3,7 +3,12 @@
 import { Download } from "lucide-react";
 import { btnOutline } from "@/components/form-ui";
 
-export type ReportColumn = { label: string; money?: boolean; align?: "left" | "right" };
+export type ReportColumn = {
+  label: string;
+  money?: boolean;
+  align?: "left" | "right";
+  tone?: "positive" | "negative";
+};
 export type ReportCell = string | number | null;
 
 const rp = (v: number) => `Rp ${Math.round(v).toLocaleString("id-ID")}`;
@@ -39,6 +44,14 @@ export default function ReportTable({
   const cell = (c: ReportColumn, v: ReportCell) =>
     c.money && typeof v === "number" ? rp(v) : v == null || v === "" ? "—" : v;
 
+  const toneClass = (c: ReportColumn) =>
+    c.tone === "negative" ? "text-red-600" : c.tone === "positive" ? "text-emerald-600" : "";
+
+  // Kolom "No." + kolom pertama (biasanya Nama) tetap kelihatan saat tabel
+  // di-scroll ke samping — lebar "No." tetap (w-12 = 3rem) jadi offset sticky
+  // kolom berikutnya bisa di-hardcode left-12.
+  const firstColSticky = "sticky left-12 z-10 min-w-[160px] whitespace-nowrap border-r border-zinc-200";
+
   return (
     <div>
       <div className="flex justify-end border-b border-zinc-100 p-3">
@@ -50,9 +63,12 @@ export default function ReportTable({
         <table className="w-full text-left text-[14px]">
           <thead className="bg-zinc-50 text-xs font-semibold text-zinc-600">
             <tr>
-              <th className="w-12 px-5 py-3">No.</th>
-              {columns.map((c) => (
-                <th key={c.label} className={`px-3 py-3 ${c.align === "right" || c.money ? "text-right" : ""}`}>
+              <th className="sticky left-0 z-10 w-12 bg-zinc-50 px-5 py-3">No.</th>
+              {columns.map((c, j) => (
+                <th
+                  key={c.label}
+                  className={`px-3 py-3 ${c.align === "right" || c.money ? "text-right" : ""} ${j === 0 ? `${firstColSticky} bg-zinc-50` : ""}`}
+                >
                   {c.label}
                 </th>
               ))}
@@ -67,10 +83,17 @@ export default function ReportTable({
               </tr>
             )}
             {rows.map((r, i) => (
-              <tr key={i} className="hover:bg-zinc-50/60">
-                <td className="px-5 py-2.5 text-zinc-500">{i + 1}</td>
+              <tr key={i} className="group">
+                <td className="sticky left-0 z-10 bg-white px-5 py-2.5 text-zinc-500 group-hover:bg-zinc-50">{i + 1}</td>
                 {columns.map((c, j) => (
-                  <td key={c.label} className={`px-3 py-2.5 ${c.align === "right" || c.money ? "text-right" : ""} ${j === 0 ? "font-medium text-zinc-900" : "text-zinc-700"}`}>
+                  <td
+                    key={c.label}
+                    className={`px-3 py-2.5 ${c.align === "right" || c.money ? "text-right" : ""} ${
+                      j === 0
+                        ? `${firstColSticky} bg-white font-medium text-zinc-900 group-hover:bg-zinc-50`
+                        : toneClass(c) || "text-zinc-700"
+                    }`}
+                  >
                     {cell(c, r[j])}
                   </td>
                 ))}
@@ -80,9 +103,12 @@ export default function ReportTable({
           {totals && rows.length > 0 && (
             <tfoot className="border-t-2 border-zinc-200 bg-zinc-50 font-semibold text-zinc-900">
               <tr>
-                <td className="px-5 py-3" />
+                <td className="sticky left-0 z-10 bg-zinc-50 px-5 py-3" />
                 {columns.map((c, j) => (
-                  <td key={c.label} className={`px-3 py-3 ${c.align === "right" || c.money ? "text-right" : ""}`}>
+                  <td
+                    key={c.label}
+                    className={`px-3 py-3 ${c.align === "right" || c.money ? "text-right" : ""} ${j === 0 ? `${firstColSticky} bg-zinc-50` : ""}`}
+                  >
                     {j === 0 ? "Total" : cell(c, totals[j])}
                   </td>
                 ))}

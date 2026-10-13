@@ -102,14 +102,14 @@ export default async function ReportPage({
       { label: "Gaji Pokok", money: true },
       { label: "Uang Makan", money: true },
       { label: "Tunj. Hadir", money: true },
-      { label: "Lembur", money: true },
-      { label: "THR", money: true },
-      { label: "Tunjangan Lain", money: true },
-      { label: "Potongan", money: true },
-      { label: "PPh 21", money: true },
-      { label: "BPJS", money: true },
+      { label: "Lembur", money: true, tone: "positive" },
+      { label: "THR", money: true, tone: "positive" },
+      { label: "Tunjangan Lain", money: true, tone: "positive" },
+      { label: "Potongan", money: true, tone: "negative" },
+      { label: "PPh 21", money: true, tone: "negative" },
+      { label: "BPJS", money: true, tone: "negative" },
       { label: "Gaji Bersih", money: true },
-      ...(estRows.length > 0 ? [{ label: "Status" }] : []),
+      ...(estRows.length > 0 ? [{ label: "Status" } as ReportColumn] : []),
     ];
     rows = slips.map((s) => [
       s.name,
@@ -184,7 +184,7 @@ export default async function ReportPage({
       { label: "NPWP" },
       { label: "Status PTKP" },
       { label: "Penghasilan Bruto", money: true },
-      { label: "PPh 21 Dipotong", money: true },
+      { label: "PPh 21 Dipotong", money: true, tone: "negative" },
     ];
     rows = slips
       .filter((s) => s.p.pph21_amount > 0 || s.p.ptkp_status)
@@ -207,6 +207,14 @@ export default async function ReportPage({
     rows = slips
       .filter((s) => s.p.bpjs_employee_amount > 0 || (s.p.bpjs_employer_amount ?? 0) > 0)
       .map((s) => [s.name, s.code, s.p.bpjs_employee_amount, s.p.bpjs_employer_amount ?? 0, s.p.bpjs_employee_amount + (s.p.bpjs_employer_amount ?? 0)]);
+  }
+
+  // Kolom "ID Karyawan" cuma kepake kalau kode karyawan beneran diisi —
+  // kalau kosong semua (mis. data demo), sembunyikan daripada munculin "—" sebaris penuh.
+  const codeIdx = columns.findIndex((c) => c.label === "ID Karyawan");
+  if (codeIdx !== -1 && !rows.some((r) => r[codeIdx] != null && r[codeIdx] !== "")) {
+    columns = columns.filter((_, j) => j !== codeIdx);
+    rows = rows.map((r) => r.filter((_, j) => j !== codeIdx));
   }
 
   // Total hanya untuk kolom nominal / jumlah.
