@@ -1,4 +1,5 @@
--- BAGIAN 2 dari 4 — absensi 1 bulan penuh bulan lalu (tanpa perlu ganti apa pun).
+-- BAGIAN 2 dari 4 — absensi 1 bulan penuh bulan lalu + bulan ini (berjalan,
+-- dari tanggal 1 sampai kemarin), tanpa perlu ganti apa pun.
 do $$
 declare
   v_biz uuid;
@@ -53,14 +54,59 @@ begin
         row_number() over (partition by e.id order by d desc) as wd_end,
         abs(hashtext(e.name || d::date::text)) % 100 as r,
         (select id from public.shift_templates where business_id = v_biz
-           and name = case when e.name = 'Dewi Lestari' then 'Siang' else 'Reguler' end) as shift_id,
-        case when e.name = 'Dewi Lestari' then time '12:00' else time '08:00' end as s_in,
-        case when e.name = 'Dewi Lestari' then time '21:00' else time '17:00' end as s_out
+           and name = case when e.name in ('Dewi Lestari', 'Nina Kartika') then 'Siang' else 'Reguler' end) as shift_id,
+        case when e.name in ('Dewi Lestari', 'Nina Kartika') then time '12:00' else time '08:00' end as s_in,
+        case when e.name in ('Dewi Lestari', 'Nina Kartika') then time '21:00' else time '17:00' end as s_out
       from public.employees e cross join generate_series(v_start, v_end, interval '1 day') d
       where e.business_id = v_biz and extract(isodow from d) <> 7
     ) b
   ) x;
 
-  raise notice 'Bagian 2 selesai. Lanjut Bagian 3.';
+  raise notice 'Absensi bulan lalu selesai.';
+end
+$$;
+
+-- Absensi bulan ini (berjalan) — dari tanggal 1 sampai kemarin, semua
+-- "hadir" (dengan variasi telat/lembur acak) supaya terlihat data yang
+-- masih terus bertambah. 2 hari terakhir sengaja dibiarkan belum
+-- diverifikasi admin, buat contoh antrean verifikasi.
+do $$
+declare
+  v_biz uuid;
+  v_cur_start date := date_trunc('month', current_date)::date;
+  v_cur_end date := current_date - 1;
+begin
+  select id into v_biz from public.businesses where name = 'Toko Demo Maju Jaya' order by created_at desc limit 1;
+  if v_biz is null then raise exception 'Jalankan Bagian 1 dulu.'; end if;
+
+  insert into public.attendance (business_id, employee_id, date, status, late, late_minutes,
+    check_in_at, check_out_at, overtime_hours, verified_by_admin, verified_at, shift_template_id)
+  select v_biz, x.eid, x.dt, 'hadir', (x.lm > 0), x.lm,
+    (x.dt + x.s_in + make_interval(mins => x.lm)) at time zone 'Asia/Jakarta',
+    (x.dt + x.s_out + make_interval(mins => round(x.ot * 60)::int + x.r % 9)) at time zone 'Asia/Jakarta',
+    x.ot,
+    x.dt < current_date - 2,
+    case when x.dt < current_date - 2 then now() end,
+    x.shift_id
+  from (
+    select e.id as eid, d::date as dt,
+      abs(hashtext(e.name || d::date::text || 'cur')) % 100 as r,
+      (select id from public.shift_templates where business_id = v_biz
+         and name = case when e.name in ('Dewi Lestari', 'Nina Kartika') then 'Siang' else 'Reguler' end) as shift_id,
+      case when e.name in ('Dewi Lestari', 'Nina Kartika') then time '12:00' else time '08:00' end as s_in,
+      case when e.name in ('Dewi Lestari', 'Nina Kartika') then time '21:00' else time '17:00' end as s_out,
+      case when abs(hashtext(e.name || d::date::text || 'cur')) % 100 < 15
+        then 5 + ((abs(hashtext(e.name || d::date::text || 'cur')) % 100) * 3) % 40 else 0 end as lm,
+      case
+        when abs(hashtext(e.name || d::date::text || 'cur')) % 100 < 15 then 0
+        when abs(hashtext(e.name || d::date::text || 'cur')) % 100 % 7 = 0
+          then 1 + ((abs(hashtext(e.name || d::date::text || 'cur')) % 100 / 7) % 4) * 0.5
+        else 0
+      end::numeric as ot
+    from public.employees e cross join generate_series(v_cur_start, v_cur_end, interval '1 day') d
+    where e.business_id = v_biz and extract(isodow from d) <> 7
+  ) x;
+
+  raise notice 'Bagian 2 selesai (bulan lalu + bulan berjalan). Lanjut Bagian 3.';
 end
 $$;
