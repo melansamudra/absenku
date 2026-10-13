@@ -4,7 +4,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   CalendarCheck,
-  Layers,
+  Link2,
   ShieldCheck,
   ShoppingCart,
   Sparkles,
@@ -38,9 +38,10 @@ const VALUE_PROPS = [
       "Perhitungan payroll, PPh 21, dan BPJS mengikuti aturan yang berlaku untuk bisnis di Indonesia.",
   },
   {
-    icon: Layers,
-    title: "Satu Akun, Banyak Aplikasi",
-    description: "Semua produk Cashimpact dirancang untuk saling terhubung di masa depan.",
+    icon: Link2,
+    title: "Tanpa Install Aplikasi",
+    description:
+      "Karyawan absen dan cek slip gaji lewat portal khusus miliknya sendiri di browser — tidak perlu download apa-apa.",
   },
 ];
 
@@ -50,7 +51,7 @@ const products = [
     tagline: "Absensi, SDM & Payroll",
     description:
       "Absensi selfie, data karyawan, dan payroll — dalam satu aplikasi untuk bisnis Anda.",
-    tags: ["Absen Selfie + GPS", "Payroll Otomatis", "Laporan Satu Klik"],
+    tags: ["Absen Selfie + GPS", "Payroll Otomatis", "Laporan Satu Klik", "Portal Karyawan"],
     href: "https://hr.cashimpact.id",
     cta: "Buka Aplikasi",
     icon: CalendarCheck,
