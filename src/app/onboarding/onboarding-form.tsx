@@ -50,15 +50,17 @@ export default function OnboardingForm() {
 
         <div>
           <label htmlFor="phone" className="mb-1 block text-xs font-medium text-zinc-600">
-            No. Telepon (opsional)
+            No. Telepon (WhatsApp)
           </label>
           <input
             id="phone"
             name="phone"
             type="tel"
+            required
             className="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
             placeholder="08xxxxxxxxxx"
           />
+          <p className="mt-1 text-[11px] text-zinc-400">Dipakai untuk konfirmasi aktivasi akun.</p>
         </div>
 
         {state.error && (

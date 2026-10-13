@@ -228,6 +228,8 @@ export type Database = {
           office_lat: number | null
           office_lng: number | null
           owner_id: string
+          paid_at: string | null
+          payment_status: string
           phone: string | null
           pph21_enabled: boolean
           work_end_time: string
@@ -260,6 +262,8 @@ export type Database = {
           office_lat?: number | null
           office_lng?: number | null
           owner_id: string
+          paid_at?: string | null
+          payment_status?: string
           phone?: string | null
           pph21_enabled?: boolean
           work_end_time?: string
@@ -292,6 +296,8 @@ export type Database = {
           office_lat?: number | null
           office_lng?: number | null
           owner_id?: string
+          paid_at?: string | null
+          payment_status?: string
           phone?: string | null
           pph21_enabled?: boolean
           work_end_time?: string
@@ -1825,6 +1831,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      find_user_id_by_email: {
+        Args: { p_email: string }
+        Returns: string
+      }
       get_attendance_checkin_info: {
         Args: { p_slug: string }
         Returns: {

@@ -75,7 +75,9 @@ export async function updateSession(request: NextRequest) {
     // Karyawan demo — keduanya ditembak dari tombol "Lihat Demo" di landing
     // page, jadi pengunjung yang belum login harus bisa sampai ke sana.
     request.nextUrl.pathname === "/demo" ||
-    request.nextUrl.pathname === "/demo-portal";
+    request.nextUrl.pathname === "/demo-portal" ||
+    request.nextUrl.pathname === "/syarat-ketentuan" ||
+    request.nextUrl.pathname === "/kebijakan-privasi";
 
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone();

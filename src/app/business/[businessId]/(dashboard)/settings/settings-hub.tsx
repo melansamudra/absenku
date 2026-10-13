@@ -21,6 +21,7 @@ import {
   Settings2,
   Timer,
   Umbrella,
+  Users,
   Wallet,
   type LucideIcon,
 } from "lucide-react";
@@ -41,6 +42,7 @@ const CATEGORIES: Category[] = [
         items: [
           { title: "Data Bisnis & Link", desc: "Nama, alamat, link absen, cuti, dan portal karyawan", href: "settings/general", icon: Building2 },
           { title: "Organisasi, Jabatan & Pangkat", desc: "Kelola data master untuk profil karyawan", href: "settings/master", icon: Layers },
+          { title: "Akses Tim", desc: "Undang staff dan atur peran (Admin/HR/Staff)", href: "settings/staff", icon: Users },
         ],
       },
       {

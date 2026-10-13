@@ -20,10 +20,13 @@ export async function createBusiness(
 
   const name = (formData.get("name") as string)?.trim();
   const address = ((formData.get("address") as string) || "").trim() || null;
-  const phone = ((formData.get("phone") as string) || "").trim() || null;
+  const phone = ((formData.get("phone") as string) || "").trim();
 
   if (!name) {
     return { error: "Nama bisnis wajib diisi." };
+  }
+  if (!phone) {
+    return { error: "No. telepon wajib diisi — dipakai untuk konfirmasi aktivasi akun." };
   }
 
   const { data: business, error } = await supabase
