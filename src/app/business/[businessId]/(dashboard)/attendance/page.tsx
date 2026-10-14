@@ -64,6 +64,13 @@ export default async function AttendancePage({
     supabase.from("businesses").select("work_start_time, work_end_time").eq("id", businessId).single(),
   ]);
 
+  // alasan terlambat (kolom baru, belum ada di tipe database -> query longgar; kolom belum dimigrasi = kosong)
+  const { data: reasonRows } = await (supabase as unknown as { from: (t: string) => { select: (c: string) => { eq: (c: string, v: string) => { eq: (c: string, v: string) => PromiseLike<{ data: { employee_id: string; late_reason: string | null }[] | null }> } } } })
+    .from("attendance")
+    .select("employee_id, late_reason")
+    .eq("business_id", businessId)
+    .eq("date", date);
+  const reasonByEmployee = new Map((reasonRows ?? []).map((r) => [r.employee_id, r.late_reason]));
   const attendanceByEmployee = new Map((attendanceRows ?? []).map((a) => [a.employee_id, a]));
   const shiftByEmployee = new Map(
     (assignments ?? []).map((a) => [
@@ -95,6 +102,7 @@ export default async function AttendancePage({
       note: a?.note ?? null,
       late: a?.late ?? false,
       lateMinutes: a?.late_minutes ?? 0,
+      lateReason: reasonByEmployee.get(e.id) ?? null,
       overtimeHours: Number(a?.overtime_hours ?? 0),
       checkInAt: a?.check_in_at ?? null,
       checkOutAt: a?.check_out_at ?? null,

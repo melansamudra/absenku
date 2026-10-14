@@ -34,3 +34,17 @@ export function checkGeofence(
   }
   return { ok: false, nearest };
 }
+
+export const fmtDistance = (m: number) => (m >= 1000 ? `${(m / 1000).toFixed(2)} Km` : `${m.toFixed(2)} Meter`);
+
+// Titik terdekat dari sebuah posisi (untuk "Jarak Kantor" + status jangkauan di halaman Check In).
+// inRange = berada dalam radius SALAH SATU titik, sama dengan aturan checkGeofence di server.
+export function nearestSpot(point: { lat: number; lng: number }, spots: GeofenceSpot[]) {
+  if (spots.length === 0) return null;
+  let best = { distance: Infinity, spot: spots[0] };
+  for (const s of spots) {
+    const distance = distanceMeters(point, s);
+    if (distance - s.radiusM < best.distance - best.spot.radiusM) best = { distance, spot: s };
+  }
+  return { distance: best.distance, spot: best.spot, inRange: spots.some((s) => distanceMeters(point, s) <= s.radiusM) };
+}
