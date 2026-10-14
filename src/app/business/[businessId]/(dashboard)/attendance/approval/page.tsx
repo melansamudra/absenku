@@ -165,6 +165,8 @@ export default async function AttendanceApprovalPage({
                         <a href={photo} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-brand-700 hover:underline">
                           <ImageIcon size={13} /> Selfie
                         </a>
+                      ) : st === "approved" ? (
+                        <span className="text-xs text-zinc-400">Foto dihapus</span>
                       ) : (
                         <span className="text-zinc-300">—</span>
                       )}

@@ -77,6 +77,7 @@ export default function PrivacyPage() {
           <li>Setiap bisnis hanya bisa mengakses datanya sendiri (isolasi data antar-bisnis di tingkat database).</li>
           <li>PIN absen karyawan disimpan dalam bentuk hash satu arah, bukan teks biasa.</li>
           <li>Foto selfie absensi disimpan di penyimpanan privat, tidak bisa diakses publik tanpa otorisasi.</li>
+          <li>Foto selfie dihapus permanen segera setelah presensi disetujui admin. Foto yang belum disetujui dihapus otomatis paling lambat 30 hari setelah tanggal absen. Data jam, lokasi, dan status absensi tetap tersimpan.</li>
           <li>Koneksi ke Layanan terenkripsi (HTTPS).</li>
         </ul>
       </Section>
