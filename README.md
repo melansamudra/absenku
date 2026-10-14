@@ -113,6 +113,8 @@ Foto selfie absen dihapus permanen (file di bucket + kolom `check_in_photo_url`/
 - **Disetujui admin** (halaman Persetujuan Presensi atau tombol verifikasi di grid Absensi) → foto langsung dihapus (`purgeSelfies` di `src/lib/attendance/selfie.ts`). Jam, lokasi GPS, dan status tetap tersimpan.
 - **Belum disetujui** → foto tetap ada (termasuk saat slip gaji dibuat) sampai **30 hari setelah tanggal absen**, lalu dibersihkan Vercel Cron `/api/cron/cleanup-selfies` (harian, 02.00 WIB). Presensi yang **ditolak** juga mengikuti batas 30 hari ini supaya fotonya tersedia kalau ada sengketa.
 
+Foto lama sebelum fitur ini aktif dibersihkan sekali jalan dengan `scripts/purge-old-selfies.mjs` (default dry-run, tambahkan `--apply` untuk menghapus): `node --env-file=.env.local scripts/purge-old-selfies.mjs`.
+
 Butuh env `CRON_SECRET` di Vercel (string acak panjang); tanpa itu endpoint cron menolak semua request. Ubah masa simpan lewat `SELFIE_RETENTION_DAYS`.
 
 ## BPJS — opsional, ⚠️ verifikasi sebelum dipakai sungguhan
