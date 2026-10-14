@@ -198,3 +198,16 @@ Sekarang mereka bisa cek sendiri di Portal Karyawan: slip, sisa cuti, kasbon. An
 - **Berapa maksimal karyawan?** Isi sendiri: di kode tidak ada batas jumlah karyawan, tentukan kebijakannya dulu sebelum diiklankan.
 - **Datanya aman?** Foto selfie disimpan privat dan otomatis dihapus setelah absen disetujui admin (paling lambat 30 hari). PIN disimpan terenkripsi (hash), akses data diamankan per bisnis.
 - **PPh 21 dan BPJS otomatis?** Opsional, membantu hitung; tetap konsultasikan ke akuntan untuk pelaporan resmi.
+
+## 9. Gambar iklan siap pakai
+
+Folder `marketing/ads/out/`: 5 iklan tunggal (4:5 dan 1:1) + carousel 5 slide (1:1). Dibuat dari `marketing/ads/build.mjs` (butuh `playwright` dan `@fontsource/inter`). Semua angka di mockup adalah contoh. Tombol di gambar "Lihat demo" mengarah ke halaman demo; tujuan klik diatur di pengaturan iklan Meta.
+
+| Berkas | Pasangan copy iklan (bagian 7) |
+|---|---|
+| `01-anti-titip-absen` | Iklan 1 |
+| `02-gajian-sekali-klik` | Iklan 2 |
+| `03-bayar-sekali` | Iklan 3 |
+| `04-telat-lembur-otomatis` | Iklan 4 |
+| `05-karyawan-cek-slip` | Caption D (Portal Karyawan) |
+| `carousel-3-tanda_1..5` | Caption C (3 tanda butuh absen digital) |
