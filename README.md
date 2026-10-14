@@ -106,6 +106,15 @@ Diatur di Pengaturan → "Keamanan Absen Selfie" dan di form Karyawan:
 - **PIN absen** — PIN 4–6 digit per karyawan, disimpan sebagai hash scrypt (`src/lib/attendance/pin.ts`), tidak pernah dikirim ke browser. Karyawan yang punya PIN wajib mengisinya saat absen; kalau "Wajibkan PIN" dicentang, karyawan tanpa PIN tidak bisa absen selfie sama sekali. Setelah 5 kali salah PIN dalam 15 menit, absen karyawan itu dikunci sementara (dicatat di `public_submission_log` dengan kind `absen_pin_gagal`).
 - **Foto selfie privat** — bucket `attendance-selfies` tidak lagi publik. Kolom `attendance.check_in_photo_url`/`check_out_photo_url` menyimpan path objek, dan dashboard membuat signed URL berumur 1 jam saat halaman dibuka (`src/lib/attendance/selfie.ts`).
 
+## Retensi foto selfie
+
+Foto selfie absen dihapus permanen (file di bucket + kolom `check_in_photo_url`/`check_out_photo_url`) dengan dua aturan:
+
+- **Disetujui admin** (halaman Persetujuan Presensi atau tombol verifikasi di grid Absensi) → foto langsung dihapus (`purgeSelfies` di `src/lib/attendance/selfie.ts`). Jam, lokasi GPS, dan status tetap tersimpan.
+- **Belum disetujui** → foto tetap ada (termasuk saat slip gaji dibuat) sampai **30 hari setelah tanggal absen**, lalu dibersihkan Vercel Cron `/api/cron/cleanup-selfies` (harian, 02.00 WIB). Presensi yang **ditolak** juga mengikuti batas 30 hari ini supaya fotonya tersedia kalau ada sengketa.
+
+Butuh env `CRON_SECRET` di Vercel (string acak panjang); tanpa itu endpoint cron menolak semua request. Ubah masa simpan lewat `SELFIE_RETENTION_DAYS`.
+
 ## BPJS — opsional, ⚠️ verifikasi sebelum dipakai sungguhan
 
 Mati secara default per bisnis (Pengaturan → BPJS). Kalau dinyalakan, setiap slip baru menghitung iuran (`src/lib/payroll/bpjs.ts`):

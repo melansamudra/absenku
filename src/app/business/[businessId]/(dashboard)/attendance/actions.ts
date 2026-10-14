@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { purgeSelfies } from "@/lib/attendance/selfie";
 
 export type AttendanceStatus = "hadir" | "izin" | "sakit" | "alpa" | "off";
 
@@ -50,6 +51,20 @@ export async function setAttendanceVerified(
     })
     .eq("id", attendanceId)
     .eq("business_id", businessId);
+
+  // Foto selfie dihapus begitu presensi disetujui (data lokasi, jam, dan
+  // status tetap tersimpan). Yang belum disetujui dibersihkan cron setelah
+  // SELFIE_RETENTION_DAYS hari.
+  if (verified) {
+    const { data: row } = await supabase
+      .from("attendance")
+      .select("id, check_in_photo_url, check_out_photo_url")
+      .eq("id", attendanceId)
+      .eq("business_id", businessId)
+      .maybeSingle();
+    if (row) await purgeSelfies(supabase, [row]);
+  }
+
   revalidatePath(`/business/${businessId}/attendance`);
   revalidatePath(`/business/${businessId}/attendance/approval`);
 }

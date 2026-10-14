@@ -19,6 +19,7 @@ Target: pemilik UMKM, toko, kafe, klinik, bengkel, kontraktor — usaha dengan 3
 | Kasbon lupa dicatat | Kasbon dan pinjaman pribadi dipotong otomatis dari slip |
 | BPJS dan PPh 21 | Hitungan opsional (BPJS, PPh 21 TER) |
 | Karyawan banyak | Import CSV |
+| Takut wajah/selfie disimpan | Foto selfie otomatis terhapus setelah absen disetujui admin (maks. 30 hari kalau belum) |
 
 > Hati-hati soal pajak: tulis "membantu hitung PPh 21", jangan "pasti akurat/sesuai pajak". README sendiri menyarankan verifikasi ke akuntan.
 
@@ -195,5 +196,5 @@ Sekarang mereka bisa cek sendiri di Portal Karyawan: slip, sisa cuti, kasbon. An
 - **Beneran sekali bayar?** Ya, satu akun bisnis, tanpa langganan. (Sesuai Syarat & Ketentuan.)
 - **Karyawan harus install aplikasi?** Tidak, cukup buka link di browser HP.
 - **Berapa maksimal karyawan?** Isi sendiri: di kode tidak ada batas jumlah karyawan, tentukan kebijakannya dulu sebelum diiklankan.
-- **Datanya aman?** Foto selfie disimpan privat, PIN disimpan terenkripsi (hash), akses data diamankan per bisnis.
+- **Datanya aman?** Foto selfie disimpan privat dan otomatis dihapus setelah absen disetujui admin (paling lambat 30 hari). PIN disimpan terenkripsi (hash), akses data diamankan per bisnis.
 - **PPh 21 dan BPJS otomatis?** Opsional, membantu hitung; tetap konsultasikan ke akuntan untuk pelaporan resmi.

@@ -1,3 +1,4 @@
 {
-  "ignoreCommand": "bash scripts/vercel-ignore-build.sh"
+  "ignoreCommand": "bash scripts/vercel-ignore-build.sh",
+  "crons": [{ "path": "/api/cron/cleanup-selfies", "schedule": "0 19 * * *" }]
 }
