@@ -19,33 +19,54 @@ export default async function LeaveBalancePage({
   const base = `/business/${businessId}/leave-requests/balance`;
 
   const supabase = await createClient();
-  const [{ data: employees }, { data: leaveTypes }, { data: approved }] = await Promise.all([
-    supabase
-      .from("employees")
-      .select("id, name, employee_code")
-      .eq("business_id", businessId)
-      .eq("active", true)
-      .is("deleted_at", null)
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("leave_types")
-      .select("id, name, default_days_per_year")
-      .eq("business_id", businessId)
-      .eq("active", true)
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("leave_requests")
-      .select("employee_id, leave_type_id, days_count")
-      .eq("business_id", businessId)
-      .eq("status", "approved")
-      .gte("start_date", `${year}-01-01`)
-      .lte("start_date", `${year}-12-31`),
-  ]);
+  const [{ data: employees }, { data: leaveTypes }, { data: approved }, { data: carryovers }, { data: collective }] =
+    await Promise.all([
+      supabase
+        .from("employees")
+        .select("id, name, employee_code")
+        .eq("business_id", businessId)
+        .eq("active", true)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("leave_types")
+        .select("id, name, default_days_per_year")
+        .eq("business_id", businessId)
+        .eq("active", true)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("leave_requests")
+        .select("employee_id, leave_type_id, days_count")
+        .eq("business_id", businessId)
+        .eq("status", "approved")
+        .gte("start_date", `${year}-01-01`)
+        .lte("start_date", `${year}-12-31`),
+      supabase
+        .from("leave_carryovers")
+        .select("employee_id, leave_type_id, days")
+        .eq("business_id", businessId)
+        .eq("year", year),
+      supabase
+        .from("collective_leave_days")
+        .select("leave_type_id")
+        .eq("business_id", businessId)
+        .not("leave_type_id", "is", null)
+        .gte("date", `${year}-01-01`)
+        .lte("date", `${year}-12-31`),
+    ]);
 
   const used = new Map<string, number>();
   for (const r of approved ?? []) {
     const k = `${r.employee_id}:${r.leave_type_id}`;
     used.set(k, (used.get(k) ?? 0) + r.days_count);
+  }
+
+  const carryoverMap = new Map((carryovers ?? []).map((c) => [`${c.employee_id}:${c.leave_type_id}`, c.days]));
+
+  const collectiveCountByType = new Map<string, number>();
+  for (const c of collective ?? []) {
+    if (!c.leave_type_id) continue;
+    collectiveCountByType.set(c.leave_type_id, (collectiveCountByType.get(c.leave_type_id) ?? 0) + 1);
   }
 
   const types = leaveTypes ?? [];
@@ -59,7 +80,7 @@ export default async function LeaveBalancePage({
       </Link>
       <PageHeader
         title="Sisa Cuti"
-        subtitle="Kuota dikurangi pengajuan yang sudah disetujui pada tahun berjalan."
+        subtitle="Kuota dasar + carry-over, dikurangi pengajuan disetujui & cuti bersama pada tahun berjalan."
         actions={
           <div className="flex items-center gap-1.5">
             <Link href={`${base}?year=${year - 1}${selected ? `&type=${selected.id}` : ""}`} className="rounded-lg border border-zinc-200 bg-white p-2 hover:bg-zinc-50" aria-label="Tahun sebelumnya">
@@ -68,6 +89,12 @@ export default async function LeaveBalancePage({
             <span className="min-w-20 rounded-lg bg-white px-3 py-2 text-center text-[14px] font-semibold shadow-sm">{year}</span>
             <Link href={`${base}?year=${year + 1}${selected ? `&type=${selected.id}` : ""}`} className="rounded-lg border border-zinc-200 bg-white p-2 hover:bg-zinc-50" aria-label="Tahun berikutnya">
               <ChevronRight size={15} />
+            </Link>
+            <Link href={`/business/${businessId}/leave-requests/carryover`} className={btnOutline}>
+              Carry-over
+            </Link>
+            <Link href={`/business/${businessId}/leave-requests/cuti-bersama`} className={btnOutline}>
+              Cuti Bersama
             </Link>
             <Link href={`/business/${businessId}/leave-types`} className={btnOutline}>
               Kelola Jenis Cuti
@@ -107,7 +134,7 @@ export default async function LeaveBalancePage({
                   {shownTypes.map((t) => (
                     <th key={t.id} className="px-3 py-3 text-right">
                       {t.name}
-                      <span className="block text-[11px] font-normal text-zinc-400">sisa / kuota {fmtNum(t.default_days_per_year)}</span>
+                      <span className="block text-[11px] font-normal text-zinc-400">sisa / kuota dasar {fmtNum(t.default_days_per_year)}</span>
                     </th>
                   ))}
                 </tr>
@@ -128,13 +155,19 @@ export default async function LeaveBalancePage({
                       <p className="text-xs text-zinc-400">{e.employee_code ?? ""}</p>
                     </td>
                     {shownTypes.map((t) => {
-                      const u = used.get(`${e.id}:${t.id}`) ?? 0;
-                      const left = Math.max(0, t.default_days_per_year - u);
-                      const low = t.default_days_per_year > 0 && left === 0;
+                      const carryover = carryoverMap.get(`${e.id}:${t.id}`) ?? 0;
+                      const quota = t.default_days_per_year + carryover;
+                      const collectiveUsed = collectiveCountByType.get(t.id) ?? 0;
+                      const u = (used.get(`${e.id}:${t.id}`) ?? 0) + collectiveUsed;
+                      const left = Math.max(0, quota - u);
+                      const low = quota > 0 && left === 0;
                       return (
                         <td key={t.id} className="px-3 py-3 text-right">
                           <span className={`font-semibold ${low ? "text-red-600" : "text-zinc-900"}`}>{fmtNum(left)}</span>
                           <span className="text-xs text-zinc-400"> · terpakai {fmtNum(u)}</span>
+                          {carryover > 0 && (
+                            <span className="block text-[11px] text-emerald-600">+{fmtNum(carryover)} carry-over</span>
+                          )}
                         </td>
                       );
                     })}

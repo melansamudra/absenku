@@ -12,16 +12,19 @@ export async function createLeaveType(
 ): Promise<ActionState> {
   const name = ((formData.get("name") as string) || "").trim();
   const defaultDaysPerYear = Number(formData.get("default_days_per_year") ?? 0);
+  const maxCarryoverDays = Number(formData.get("max_carryover_days") ?? 0);
   const paid = formData.get("paid") === "on";
 
   if (!name) return { error: "Nama jenis cuti wajib diisi." };
   if (!(defaultDaysPerYear >= 0)) return { error: "Kuota hari tidak valid." };
+  if (!(maxCarryoverDays >= 0)) return { error: "Maks. carry-over tidak valid." };
 
   const supabase = await createClient();
   const { error } = await supabase.from("leave_types").insert({
     business_id: businessId,
     name,
     default_days_per_year: defaultDaysPerYear,
+    max_carryover_days: maxCarryoverDays,
     paid,
   });
 
@@ -36,6 +39,17 @@ export async function toggleLeaveTypeActive(businessId: string, leaveTypeId: str
   await supabase
     .from("leave_types")
     .update({ active })
+    .eq("id", leaveTypeId)
+    .eq("business_id", businessId);
+  revalidatePath(`/business/${businessId}/leave-types`);
+}
+
+export async function updateLeaveTypeCarryover(businessId: string, leaveTypeId: string, maxCarryoverDays: number) {
+  if (!(maxCarryoverDays >= 0)) return;
+  const supabase = await createClient();
+  await supabase
+    .from("leave_types")
+    .update({ max_carryover_days: maxCarryoverDays })
     .eq("id", leaveTypeId)
     .eq("business_id", businessId);
   revalidatePath(`/business/${businessId}/leave-types`);
