@@ -40,6 +40,7 @@ import { logoutPortal } from "./actions";
 import AnnouncementCard from "./announcement-card";
 import MonthSelect from "./month-select";
 import PhotoUploader from "./photo-uploader";
+import ChangePinForm from "./change-pin-form";
 import {
   MenuCard,
   MenuTile,
@@ -674,6 +675,7 @@ export default async function PortalPage({
               ))}
             </dl>
           </PortalCard>
+          <ChangePinForm slug={slug} />
           <p className="px-2 text-center text-xs text-zinc-500">
             NIK dan nomor rekening disamarkan demi keamanan. Data salah atau berubah? Hubungi admin.
           </p>
