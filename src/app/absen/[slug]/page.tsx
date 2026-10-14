@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
+import { loadCheckinConfig } from "@/lib/attendance/checkin-config";
 import CheckinClient from "./checkin-client";
 
 export default async function AbsenPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -29,13 +31,17 @@ export default async function AbsenPage({ params }: { params: Promise<{ slug: st
     hasPin: r.employee_has_pin,
   }));
 
+  // Lokasi kerja (peta/jarak) + apakah kolom alasan terlambat sudah ada
+  const config = await loadCheckinConfig(createServiceClient(), rows[0].business_id);
+
   return (
     <CheckinClient
       slug={slug}
       businessName={businessName}
       employees={employees}
-      geofenceEnabled={rows[0].geofence_enabled}
+      spots={config.spots}
       pinRequired={rows[0].pin_required}
+      lateReasonEnabled={config.lateReasonEnabled}
     />
   );
 }

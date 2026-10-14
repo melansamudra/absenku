@@ -132,7 +132,7 @@ export async function GET(request: Request) {
 
   const { data: business } = await supabase
     .from("businesses")
-    .select("id")
+    .select("id, work_start_time, work_end_time")
     .eq("attendance_qr_slug", slug)
     .maybeSingle();
   if (!business) {
@@ -150,10 +150,16 @@ export async function GET(request: Request) {
     return Response.json({ ok: false, error: "Karyawan tidak ditemukan/tidak aktif." }, { status: 404 });
   }
 
-  const { openRow } = await loadAttendanceContext(supabase, business.id, employeeId);
+  const { openRow, date } = await loadAttendanceContext(supabase, business.id, employeeId);
+
+  // Jam mulai shift hari ini -> beri tahu karyawan lebih awal kalau terlambat (form alasan terlambat)
+  const shift = await resolveShift(supabase, business.id, employeeId, date, { start_time: business.work_start_time, end_time: business.work_end_time });
+  const lateMinutesNow = openRow?.check_in_at ? 0 : Math.max(0, nowWibMinutesOfDay() - timeStrToMinutes(shift.start));
 
   return Response.json({
     ok: true,
+    shiftStart: shift.start.slice(0, 5),
+    lateMinutesNow,
     checkedIn: !!openRow?.check_in_at,
     checkInAt: openRow?.check_in_at ?? null,
     checkedOut: !!openRow?.check_out_at,
@@ -170,6 +176,7 @@ export async function POST(request: Request) {
   const latRaw = formData.get("lat") as string | null;
   const lngRaw = formData.get("lng") as string | null;
   const pin = ((formData.get("pin") as string | null) ?? "").trim();
+  const lateReason = ((formData.get("lateReason") as string | null) ?? "").trim().slice(0, 500);
   const latNum = latRaw ? Number(latRaw) : NaN;
   const lngNum = lngRaw ? Number(lngRaw) : NaN;
   const hasLocation = Number.isFinite(latNum) && Number.isFinite(lngNum);
@@ -235,9 +242,11 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, error: "Terlalu cepat, tunggu sebentar." }, { status: 429 });
   }
 
-  await supabase
+  const { data: submissionLog } = await supabase
     .from("public_submission_log")
-    .insert({ business_id: business.id, kind: "absen", employee_id: employeeId });
+    .insert({ business_id: business.id, kind: "absen", employee_id: employeeId })
+    .select("id")
+    .maybeSingle();
 
   // PIN absen — dicek SETELAH cooldown di atas, supaya tiap tebakan PIN juga
   // kena jeda 5 detik, dan ditambah kunci sementara setelah beberapa kali salah
@@ -354,6 +363,18 @@ export async function POST(request: Request) {
     }
   }
 
+  // Terlambat -> alasan wajib (dicek SEBELUM upload foto). Hanya aktif kalau kolom late_reason sudah ada (migration
+  // 20261018100000). Log cooldown dibatalkan supaya kirim ulang setelah mengisi alasan tidak kena "Terlalu cepat".
+  let lateReasonReady = false;
+  if (action === "in") {
+    lateReasonReady = !(await supabase.from("attendance").select("late_reason").limit(1)).error;
+    const lateNow = Math.max(0, nowWibMinutesOfDay() - timeStrToMinutes(shiftStart));
+    if (lateReasonReady && lateNow > 0 && lateReason.length < 3) {
+      if (submissionLog?.id) await supabase.from("public_submission_log").delete().eq("id", submissionLog.id);
+      return Response.json({ ok: false, needLateReason: true, lateMinutes: lateNow, error: "Kamu terlambat — isi alasan terlambat dulu." }, { status: 400 });
+    }
+  }
+
   const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
   const path = `${business.id}/${employeeId}/${date}-${action}-${crypto.randomUUID()}.${ext}`;
 
@@ -369,6 +390,8 @@ export async function POST(request: Request) {
     const nowMinutes = nowWibMinutesOfDay();
     const lateMinutes = Math.max(0, nowMinutes - timeStrToMinutes(shiftStart));
 
+    // late_reason belum ada di tipe database -> objek longgar
+    const extraIn = (lateReasonReady && lateMinutes > 0 ? { late_reason: lateReason } : {}) as Record<string, never>;
     const { error } = await supabase.from("attendance").upsert(
       {
         business_id: business.id,
@@ -382,6 +405,7 @@ export async function POST(request: Request) {
         check_in_lat: lat,
         check_in_lng: lng,
         shift_template_id: shiftTemplateId,
+        ...extraIn,
       },
       { onConflict: "employee_id,date" },
     );

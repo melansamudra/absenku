@@ -17,6 +17,7 @@ export type AttendanceRowData = {
   note: string | null;
   late: boolean;
   lateMinutes: number;
+  lateReason?: string | null;
   overtimeHours: number;
   checkInAt: string | null;
   checkOutAt: string | null;
@@ -43,7 +44,7 @@ function csvCell(v: string | number) {
 }
 
 function exportCsv(date: string, rows: AttendanceRowData[]) {
-  const header = ["Nama", "ID Karyawan", "Organisasi", "Jabatan", "Shift", "Status", "Masuk", "Keluar", "Terlambat (menit)", "Lembur (jam)", "Catatan"];
+  const header = ["Nama", "ID Karyawan", "Organisasi", "Jabatan", "Shift", "Status", "Masuk", "Keluar", "Terlambat (menit)", "Alasan Terlambat", "Lembur (jam)", "Catatan"];
   const lines = rows.map((r) =>
     [
       r.employeeName,
@@ -55,6 +56,7 @@ function exportCsv(date: string, rows: AttendanceRowData[]) {
       fmtTime(r.checkInAt).replace("—", ""),
       fmtTime(r.checkOutAt).replace("—", ""),
       r.late ? r.lateMinutes : 0,
+      r.lateReason ?? "",
       r.overtimeHours,
       r.note ?? "",
     ]
@@ -114,7 +116,10 @@ function Row({ businessId, date, index, row }: { businessId: string; date: strin
       <td className="px-3 py-3 text-zinc-700">{fmtTime(row.checkOutAt)}</td>
       <td className="px-3 py-3">
         {row.late && row.lateMinutes > 0 ? (
-          <span className="text-xs font-semibold text-orange-600">{row.lateMinutes} mnt</span>
+          <>
+            <span className="text-xs font-semibold text-orange-600">{row.lateMinutes} mnt</span>
+            {row.lateReason && <p className="mt-0.5 max-w-[160px] text-[11px] leading-snug text-zinc-500">{row.lateReason}</p>}
+          </>
         ) : row.status === "hadir" ? (
           <button
             type="button"

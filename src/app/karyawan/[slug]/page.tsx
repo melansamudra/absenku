@@ -507,8 +507,8 @@ export default async function PortalPage({
           </PortalCard>
 
           <div className="grid grid-cols-2 gap-3">
-            <MenuCard href={`/absen/${slug}`} icon={ClipboardList} accent={Clock} label="Check In" />
-            <MenuCard href={`/absen/${slug}`} icon={ClipboardList} accent={Clock} label="Check Out" />
+            <MenuCard href={`/karyawan/${slug}/absen`} icon={ClipboardList} accent={Clock} label="Check In" />
+            <MenuCard href={`/karyawan/${slug}/absen`} icon={ClipboardList} accent={Clock} label="Check Out" />
             <MenuCard href={to("cuti")} icon={UserRound} accent={Check} label="Cuti" />
             <MenuCard href={to("lembur")} icon={AlarmClock} accent={Moon} label="Lembur" />
             <MenuCard href={to("tugas")} icon={FileText} accent={BadgeCheck} label="Tugas" />
