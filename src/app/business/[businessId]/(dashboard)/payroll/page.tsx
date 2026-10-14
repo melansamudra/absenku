@@ -45,7 +45,7 @@ export default async function PayrollPage({
   const { data: payslips } = await supabase
     .from("payslips")
     .select(
-      "id, period_start, period_end, base_pay, meal_allowance, attendance_allowance, lembur_amount, thr_amount, izin_deduction, late_deduction, kasbon_deduction, personal_loan_deduction, pph21_amount, bpjs_employee_amount, paid_at, employee_id, employees(name, employee_code), payslip_adjustments(type, amount)",
+      "id, period_start, period_end, base_pay, meal_allowance, attendance_allowance, lembur_amount, thr_amount, izin_deduction, late_deduction, kasbon_deduction, personal_loan_deduction, pph21_amount, bpjs_employee_amount, paid_at, employee_id, slip_type, employees(name, employee_code), payslip_adjustments(type, amount)",
     )
     .eq("business_id", businessId)
     .gte("period_start", `${month}-01`)
@@ -83,6 +83,9 @@ export default async function PayrollPage({
               Pinjaman Pribadi
             </Link>
             <GenerateButton businessId={businessId} month={month} label={monthLabel(month)} />
+            <Link href={`${base}/adhoc`} className={btnOutline}>
+              + Slip Tidak Tetap
+            </Link>
             <Link href={`${base}/rekap`} className={btnPrimary}>
               + Buat Slip Gaji
             </Link>
@@ -166,9 +169,16 @@ export default async function PayrollPage({
                   <tr key={p.id} className="hover:bg-zinc-50/60">
                     <td className="px-5 py-3 text-zinc-500">{i + 1}</td>
                     <td className="px-3 py-3">
-                      <Link href={`${base}/${p.id}`} className="font-medium text-brand-700 hover:underline">
-                        {emp?.name ?? "—"}
-                      </Link>
+                      <div className="flex items-center gap-1.5">
+                        <Link href={`${base}/${p.id}`} className="font-medium text-brand-700 hover:underline">
+                          {emp?.name ?? "—"}
+                        </Link>
+                        {p.slip_type === "tidak_tetap" && (
+                          <span className="rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-semibold text-violet-700">
+                            Tidak Tetap
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-zinc-400">{emp?.employee_code ?? ""}</p>
                     </td>
                     <td className="px-3 py-3 text-zinc-600">

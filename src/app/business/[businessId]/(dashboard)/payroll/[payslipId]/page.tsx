@@ -53,7 +53,11 @@ export default async function PayslipDetailPage({
   const employeeName = (payslip.employees as unknown as { name: string } | null)?.name ?? "—";
   const isPaid = !!payslip.paid_at;
 
-  const rows = payslipRows(payslip);
+  const isAdhoc = payslip.slip_type === "tidak_tetap";
+  // Slip Tidak Tetap tidak dihitung dari absensi — komponen dasarnya (gaji
+  // pokok, uang makan, dst.) selalu 0, jadi sembunyikan baris kosong itu
+  // supaya rinciannya tidak dipenuhi baris "Rp 0" dan fokus ke adjustments.
+  const rows = payslipRows(payslip).filter((r) => !isAdhoc || r.value !== 0);
   const employerBpjsRows = bpjsEmployerRows(payslip.bpjs_detail);
 
   return (
@@ -61,13 +65,21 @@ export default async function PayslipDetailPage({
       <div className="print:hidden">
       <div className="mb-6 flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-zinc-900 sm:text-2xl">{employeeName}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold text-zinc-900 sm:text-2xl">{employeeName}</h1>
+            {isAdhoc && (
+              <span className="rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-semibold text-violet-700">
+                Slip Tidak Tetap
+              </span>
+            )}
+          </div>
           <p className="mt-0.5 text-sm text-zinc-500">
             Periode {payslip.period_start} — {payslip.period_end} ·{" "}
             <span className={isPaid ? "text-emerald-600" : "text-amber-600"}>
               {isPaid ? "Lunas" : "Belum dibayar"}
             </span>
           </p>
+          {isAdhoc && payslip.note && <p className="mt-0.5 text-sm italic text-zinc-400">&ldquo;{payslip.note}&rdquo;</p>}
         </div>
         <PrintButton />
       </div>
@@ -75,6 +87,11 @@ export default async function PayslipDetailPage({
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="rounded-xl border border-zinc-100 bg-white p-5 shadow-sm">
           <h2 className="mb-3 text-sm font-semibold text-zinc-800">Rincian</h2>
+          {rows.length === 0 && (
+            <p className="py-2.5 text-sm text-zinc-400">
+              Belum ada komponen. Tambahkan tunjangan/potongan di sebelah kanan.
+            </p>
+          )}
           <div className="divide-y divide-zinc-100">
             {rows.map((r) => (
               <div key={r.label} className="flex items-center justify-between py-2.5 text-sm">
