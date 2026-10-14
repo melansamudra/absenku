@@ -1,5 +1,6 @@
 "use server";
 
+import { randomInt } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { logActivity } from "@/lib/activity-log";
@@ -207,4 +208,49 @@ export async function removeEmployeePhoto(businessId: string, employeeId: string
   await supabase.storage.from("employee-photos").remove([employee.photo_path]);
   await logActivity(supabase, businessId, "Foto karyawan dihapus", employee.name);
   revalidatePath(`/business/${businessId}/employees`);
+}
+
+export type BulkPinResult = {
+  error: string | null;
+  created: { employeeId: string; name: string; pin: string }[];
+};
+
+// PIN 4 digit acak dibuat di sini lalu langsung di-hash sebelum disimpan —
+// nilai polosnya cuma dikembalikan ke pemanggil (ditampilkan sekali di UI
+// admin untuk dicatat/dibagikan), tidak pernah disimpan/di-log di mana pun.
+// Karyawan bisa langsung pakai PIN ini untuk login portal/absen, dan boleh
+// menggantinya sendiri belakangan lewat Portal Karyawan.
+export async function generateBulkPins(businessId: string): Promise<BulkPinResult> {
+  const supabase = await createClient();
+
+  const { data: employees } = await supabase
+    .from("employees")
+    .select("id, name")
+    .eq("business_id", businessId)
+    .eq("active", true)
+    .is("deleted_at", null)
+    .is("attendance_pin_hash", null)
+    .order("created_at", { ascending: true });
+
+  if (!employees || employees.length === 0) {
+    return { error: null, created: [] };
+  }
+
+  const created: { employeeId: string; name: string; pin: string }[] = [];
+  // Berurutan (bukan paralel) supaya tidak membebani database — pola sama
+  // seperti generatePayrollForMonth di payroll/rekap/actions.ts.
+  for (const e of employees) {
+    const pin = String(randomInt(0, 10000)).padStart(4, "0");
+    const hash = await hashPin(pin);
+    const { error } = await supabase
+      .from("employees")
+      .update({ attendance_pin_hash: hash })
+      .eq("id", e.id)
+      .eq("business_id", businessId);
+    if (!error) created.push({ employeeId: e.id, name: e.name, pin });
+  }
+
+  await logActivity(supabase, businessId, "PIN massal dibuat", `${created.length} karyawan`);
+  revalidatePath(`/business/${businessId}/employees`);
+  return { error: null, created };
 }

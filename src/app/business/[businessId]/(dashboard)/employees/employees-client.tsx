@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  KeyRound,
   MoreVertical,
   Printer,
   SlidersHorizontal,
@@ -26,6 +27,7 @@ import {
 } from "./actions";
 import EmployeeForm from "./employee-form";
 import ImportEmployeesModal from "./import-employees-modal";
+import BulkPinModal from "./bulk-pin-modal";
 
 export type EmployeeRow = {
   id: string;
@@ -161,6 +163,7 @@ export default function EmployeesClient({
   const [rowMenu, setRowMenu] = useState<string | null>(null);
   const [quick, setQuick] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showBulkPin, setShowBulkPin] = useState(false);
   const [moreMenu, setMoreMenu] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [adv, setAdv] = useState({ org: "", position: "", rank: "", status: "", gender: "" });
@@ -269,6 +272,16 @@ export default function EmployeesClient({
                     <>
                       <div className="fixed inset-0 z-10" onClick={() => setMoreMenu(false)} />
                       <div className="absolute right-0 z-20 mt-1.5 w-52 overflow-hidden rounded-xl border border-zinc-200 bg-white py-1 shadow-lg">
+                        <button
+                          type="button"
+                          className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-[14px] hover:bg-zinc-50"
+                          onClick={() => {
+                            setMoreMenu(false);
+                            setShowBulkPin(true);
+                          }}
+                        >
+                          <KeyRound size={15} className="text-zinc-500" /> Buat PIN untuk Semua
+                        </button>
                         <button
                           type="button"
                           className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-[14px] hover:bg-zinc-50"
@@ -567,6 +580,7 @@ export default function EmployeesClient({
       {showImport && (
         <ImportEmployeesModal businessId={businessId} onClose={() => setShowImport(false)} />
       )}
+      {showBulkPin && <BulkPinModal businessId={businessId} onClose={() => setShowBulkPin(false)} />}
     </div>
   );
 }
