@@ -11,7 +11,7 @@ export default async function LeaveTypesPage({
 
   const { data: leaveTypes } = await supabase
     .from("leave_types")
-    .select("id, name, default_days_per_year, paid, active")
+    .select("id, name, default_days_per_year, max_carryover_days, paid, active")
     .eq("business_id", businessId)
     .order("created_at", { ascending: true });
 

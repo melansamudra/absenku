@@ -883,6 +883,7 @@ export type Database = {
           created_at: string
           default_days_per_year: number
           id: string
+          max_carryover_days: number
           name: string
           paid: boolean
         }
@@ -892,6 +893,7 @@ export type Database = {
           created_at?: string
           default_days_per_year?: number
           id?: string
+          max_carryover_days?: number
           name: string
           paid?: boolean
         }
@@ -901,6 +903,7 @@ export type Database = {
           created_at?: string
           default_days_per_year?: number
           id?: string
+          max_carryover_days?: number
           name?: string
           paid?: boolean
         }
@@ -910,6 +913,100 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_carryovers: {
+        Row: {
+          business_id: string
+          created_at: string
+          days: number
+          employee_id: string
+          id: string
+          leave_type_id: string
+          year: number
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          days?: number
+          employee_id: string
+          id?: string
+          leave_type_id: string
+          year: number
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          days?: number
+          employee_id?: string
+          id?: string
+          leave_type_id?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_carryovers_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_carryovers_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_carryovers_leave_type_id_fkey"
+            columns: ["leave_type_id"]
+            isOneToOne: false
+            referencedRelation: "leave_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collective_leave_days: {
+        Row: {
+          business_id: string
+          created_at: string
+          date: string
+          id: string
+          label: string
+          leave_type_id: string | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          date: string
+          id?: string
+          label: string
+          leave_type_id?: string | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          label?: string
+          leave_type_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collective_leave_days_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collective_leave_days_leave_type_id_fkey"
+            columns: ["leave_type_id"]
+            isOneToOne: false
+            referencedRelation: "leave_types"
             referencedColumns: ["id"]
           },
         ]
