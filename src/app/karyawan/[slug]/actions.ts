@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/service";
 import { checkEmployeePin } from "@/lib/attendance/pin-check";
+import { hashPin, PIN_PATTERN } from "@/lib/attendance/pin";
 import {
   clearPortalSession,
   getPortalEmployee,
@@ -327,4 +328,52 @@ export async function removeProfilePhoto(slug: string): Promise<PortalActionStat
 
   revalidatePath(`/karyawan/${slug}`);
   return { error: null, success: "Foto profil dihapus." };
+}
+
+// PIN ini sama persis dengan PIN absen (attendance_pin_hash) yang dipasang
+// admin dari backoffice — dipakai juga buat login portal & check-in absen,
+// jadi mengganti PIN di sini otomatis berlaku di mana-mana. checkEmployeePin
+// memakai kuota gagal yang sama dengan login/absen supaya tidak jadi celah
+// buat menebak PIN lama lewat form ganti PIN ini.
+export async function changePortalPin(slug: string, formData: FormData): Promise<PortalActionState> {
+  const business = await loadPortalBusiness(slug);
+  if (!business) return { error: "Link portal tidak valid." };
+  const employee = await getPortalEmployee(business);
+  if (!employee) return { error: "Sesi habis — masuk lagi dengan PIN." };
+
+  const currentPin = ((formData.get("current_pin") as string | null) ?? "").trim();
+  const newPin = ((formData.get("new_pin") as string | null) ?? "").trim();
+  const confirmPin = ((formData.get("confirm_pin") as string | null) ?? "").trim();
+
+  if (!PIN_PATTERN.test(newPin)) return { error: "PIN baru harus 4–6 digit angka." };
+  if (newPin !== confirmPin) return { error: "Konfirmasi PIN baru tidak cocok." };
+
+  const supabase = createServiceClient();
+  const { data: row } = await supabase
+    .from("employees")
+    .select("attendance_pin_hash")
+    .eq("id", employee.id)
+    .eq("business_id", business.id)
+    .maybeSingle();
+  if (!row?.attendance_pin_hash) return { error: "PIN belum diatur. Hubungi admin." };
+
+  const pinCheck = await checkEmployeePin(supabase, business.id, employee.id, row.attendance_pin_hash, currentPin);
+  if (!pinCheck.ok) return { error: pinCheck.error };
+
+  if (newPin === currentPin) return { error: "PIN baru harus beda dari PIN lama." };
+
+  const newHash = await hashPin(newPin);
+  const { error } = await supabase
+    .from("employees")
+    .update({ attendance_pin_hash: newHash })
+    .eq("id", employee.id)
+    .eq("business_id", business.id);
+  if (error) return { error: "Gagal menyimpan PIN baru. Coba lagi." };
+
+  // Perbarui sesi dengan hash baru supaya tidak langsung ter-logout — tanda
+  // tangan sesi mengikat hash PIN, lihat komentar di lib/portal/session.ts.
+  await setPortalSession(business.id, employee.id, newHash);
+
+  revalidatePath(`/karyawan/${slug}`);
+  return { error: null, success: "PIN berhasil diganti." };
 }
