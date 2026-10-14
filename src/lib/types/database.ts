@@ -1795,6 +1795,7 @@ export type Database = {
           lembur_rate: number
           meal_allowance: number
           monthly_rate: number
+          note: string | null
           off_count: number
           paid_at: string | null
           period_end: string
@@ -1804,6 +1805,7 @@ export type Database = {
           ptkp_status: string | null
           sakit_count: number
           salary_type: string
+          slip_type: string
           ter_category: string | null
           thr_amount: number
         }
@@ -1832,6 +1834,7 @@ export type Database = {
           lembur_rate?: number
           meal_allowance?: number
           monthly_rate?: number
+          note?: string | null
           off_count?: number
           paid_at?: string | null
           period_end: string
@@ -1841,6 +1844,7 @@ export type Database = {
           ptkp_status?: string | null
           sakit_count?: number
           salary_type: string
+          slip_type?: string
           ter_category?: string | null
           thr_amount?: number
         }
@@ -1869,6 +1873,7 @@ export type Database = {
           lembur_rate?: number
           meal_allowance?: number
           monthly_rate?: number
+          note?: string | null
           off_count?: number
           paid_at?: string | null
           period_end?: string
@@ -1878,6 +1883,7 @@ export type Database = {
           ptkp_status?: string | null
           sakit_count?: number
           salary_type?: string
+          slip_type?: string
           ter_category?: string | null
           thr_amount?: number
         }
