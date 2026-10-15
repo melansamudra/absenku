@@ -1,0 +1,18 @@
+{
+  "name": "hrcash-video-iklan",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render:v1": "remotion render src/index.ts V1-chat-tanggal-25 out/V1.mp4 --codec=h264 --crf=20",
+    "render:v2": "remotion render src/index.ts V2-nol-aplikasi out/V2.mp4 --codec=h264 --crf=20",
+    "render:v3": "remotion render src/index.ts V3-kalender-gajian out/V3.mp4 --codec=h264 --crf=20"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.250",
+    "@remotion/cli": "4.0.250",
+    "@remotion/renderer": "4.0.250",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.250"
+  }
+}
