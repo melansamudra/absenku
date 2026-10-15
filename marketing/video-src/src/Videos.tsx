@@ -9,6 +9,10 @@ const Top: React.FC<{ headline: string; size?: number; delay?: number }> = ({ he
   </AbsoluteFill>
 );
 
+export type End = "wa" | "bersih";
+export const Closing: React.FC<{ line: string; end: End; solid?: boolean }> = ({ line, end, solid }) =>
+  end === "wa" ? <EndCard noPrice solid={solid} line={line} sub="" /> : <EndCard noPrice plain solid={solid} line={line} sub="" />;
+
 // ---------------- V1: chat tanggal 25 -> Portal Karyawan ----------------
 const Bubble: React.FC<{ who?: string; text: string; time: string; start: number; out?: boolean; dim?: number }> = ({ who, text, time, start, out, dim = 1 }) => {
   const f = useLocal();
@@ -23,7 +27,7 @@ const Bubble: React.FC<{ who?: string; text: string; time: string; start: number
   );
 };
 
-const V1: React.FC = () => (
+const V1: React.FC<{ end?: End }> = ({ end = "wa" }) => (
   <FontGate>
     <Background theme="dark" />
     <Scene from={0} dur={165}>
@@ -56,7 +60,7 @@ const V1: React.FC = () => (
       </AbsoluteFill>
     </Scene>
     <Scene from={408} dur={132}>
-      <EndCard line="Portal Karyawan + laporan gaji otomatis" />
+      <Closing end={end} line="Portal Karyawan + laporan gaji otomatis" />
     </Scene>
   </FontGate>
 );
@@ -69,13 +73,13 @@ const Pill: React.FC<{ text: string; start: number }> = ({ text, start }) => {
 };
 
 // ---------------- V2: 0 aplikasi ----------------
-const AppTile: React.FC<{ icon: "clock" | "wallet" | "cal"; label: string; start: number; cross: number }> = ({ icon, label, start, cross }) => {
+const AppTile: React.FC<{ icon: "clock" | "wallet" | "cal"; label: string; start: number; cross: number; ink?: boolean }> = ({ icon, label, start, cross, ink }) => {
   const f = useLocal();
   const { fps } = useVideoConfig();
   const s = pop(f, start, fps, 14);
   const x = pop(f, cross, fps, 16);
   return (
-    <div style={{ width: 270, textAlign: "center", fontFamily: FONT, color: "#fff", opacity: Math.min(1, s * 1.5) * (1 - x * 0.55), transform: `scale(${(0.5 + s * 0.5) * (1 - x * 0.12)})` }}>
+    <div style={{ width: 270, textAlign: "center", fontFamily: FONT, color: ink ? C.ink : "#fff", opacity: Math.min(1, s * 1.5) * (1 - x * 0.55), transform: `scale(${(0.5 + s * 0.5) * (1 - x * 0.12)})` }}>
       <div style={{ position: "relative", width: 190, height: 190, margin: "0 auto", borderRadius: 46, background: "#fff", color: C.b700, display: "grid", placeItems: "center", boxShadow: "0 20px 44px rgba(0,0,0,.35)" }}>
         <Icon name={icon} size={100} />
         <div style={{ position: "absolute", inset: 0, borderRadius: 46, background: "rgba(194,65,12,.88)", display: "grid", placeItems: "center", color: "#fff", opacity: x, transform: `scale(${0.6 + x * 0.4})` }}><Icon name="x" size={120} /></div>
@@ -98,7 +102,7 @@ const Step: React.FC<{ n: number; icon: "user" | "cam" | "check"; label: string;
   );
 };
 
-const V2: React.FC = () => {
+const V2: React.FC<{ end?: End }> = ({ end = "wa" }) => {
   return (
     <FontGate>
       <Background theme="amber" />
@@ -108,9 +112,9 @@ const V2: React.FC = () => {
           <div style={{ marginTop: 50 }}><Headline text="Perlu install berapa aplikasi buat absen dan gajian?" size={84} color={C.ink} em={C.b900} delay={2} /></div>
         </AbsoluteFill>
         <AbsoluteFill style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 24, paddingTop: 460 }}>
-          <AppTile icon="clock" label="Aplikasi absen" start={30} cross={74} />
-          <AppTile icon="wallet" label="Aplikasi gaji" start={42} cross={88} />
-          <AppTile icon="cal" label="Aplikasi cuti" start={54} cross={102} />
+          <AppTile ink icon="clock" label="Aplikasi absen" start={30} cross={74} />
+          <AppTile ink icon="wallet" label="Aplikasi gaji" start={42} cross={88} />
+          <AppTile ink icon="cal" label="Aplikasi cuti" start={54} cross={102} />
         </AbsoluteFill>
         <ZeroBig />
       </Scene>
@@ -136,7 +140,7 @@ const V2: React.FC = () => {
         </AbsoluteFill>
       </Scene>
       <Scene from={442} dur={98}>
-        <EndCard solid line="Absen selfie + payroll. Tanpa install." />
+        <Closing end={end} solid line="Absen selfie + payroll. Tanpa install." />
       </Scene>
     </FontGate>
   );
@@ -251,7 +255,7 @@ const Slip: React.FC = () => {
   );
 };
 
-const V3: React.FC = () => (
+const V3: React.FC<{ end?: End }> = ({ end = "wa" }) => (
   <FontGate>
     <Background theme="dark" />
     <Scene from={0} dur={160}>
@@ -271,9 +275,9 @@ const V3: React.FC = () => (
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", paddingTop: 640 }}><Slip /></AbsoluteFill>
     </Scene>
     <Scene from={452} dur={88}>
-      <EndCard line="Gajian tanpa pusing. Sekali bayar." />
+      <Closing end={end} line="Gajian tanpa pusing." />
     </Scene>
   </FontGate>
 );
 
-export { V1, V2, V3 };
+export { V1, V2, V3, Top, Bubble, Pill, AppTile, Step, Address, Tick, Calendar, Flow, Slip };

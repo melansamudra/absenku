@@ -147,7 +147,7 @@ export const Chip: React.FC<{ text: string; start: number; x: number; y: number 
   );
 };
 
-export const EndCard: React.FC<{ line: string; sub?: string; solid?: boolean; noPrice?: boolean; cta?: string }> = ({ line, solid = false, noPrice = false, cta = "Hubungi kami di", sub = "Tanpa langganan bulanan. Tanpa biaya per karyawan." }) => {
+export const EndCard: React.FC<{ line: string; sub?: string; solid?: boolean; noPrice?: boolean; plain?: boolean; cta?: string }> = ({ line, solid = false, noPrice = false, plain = false, cta = "Hubungi kami di", sub = "Tanpa langganan bulanan. Tanpa biaya per karyawan." }) => {
   const frame = useLocal();
   const { fps } = useVideoConfig();
   const a = pop(frame, 4, fps), b = pop(frame, 16, fps), c = pop(frame, 30, fps);
@@ -161,11 +161,11 @@ export const EndCard: React.FC<{ line: string; sub?: string; solid?: boolean; no
         <div style={{ fontWeight: 800, fontSize: 112, letterSpacing: -4, lineHeight: 1 }}>Rp289.000</div>
         <div style={{ fontWeight: 600, fontSize: 40, marginTop: 8 }}>sekali bayar</div>
       </div>)}
-      <div style={{ marginTop: noPrice ? 40 : 34, position: "relative", zIndex: 1, color: C.b200, fontSize: 36, textAlign: "center", padding: "0 100px", opacity: fade(frame, 30, 44), fontWeight: 600 }}>{sub}</div>
-      <div style={{ marginTop: 44, position: "relative", zIndex: 1, background: "#fff", color: C.b800, borderRadius: 34, padding: "26px 56px", textAlign: "center", opacity: fade(frame, 44, 58), transform: `scale(${pulse})` }}>
+      {sub !== "" && <div style={{ marginTop: noPrice ? 40 : 34, position: "relative", zIndex: 1, color: C.b200, fontSize: 36, textAlign: "center", padding: "0 100px", opacity: fade(frame, 30, 44), fontWeight: 600 }}>{sub}</div>}
+      {!plain && <div style={{ marginTop: 44, position: "relative", zIndex: 1, background: "#fff", color: C.b800, borderRadius: 34, padding: "26px 56px", textAlign: "center", opacity: fade(frame, 44, 58), transform: `scale(${pulse})` }}>
         <div style={{ fontWeight: 600, fontSize: 38 }}>{cta}</div>
         <div style={{ fontWeight: 800, fontSize: 76, letterSpacing: -1, lineHeight: 1.1, marginTop: 4 }}>081234556757</div>
-      </div>
+      </div>}
     </AbsoluteFill>
   );
 };
