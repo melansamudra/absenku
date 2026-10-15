@@ -9,3 +9,9 @@ Semua nama dan angka di video adalah CONTOH. Video tidak berisi audio (tambahkan
 
 Jalankan: `npm install`, lalu `npm run studio` (pratinjau) atau `npm run render:v1`.
 Area aman Reels/Story: 190 px teratas dan 330 px terbawah dikosongkan dari teks penting.
+
+## V4-rekaman-absen (dari rekaman layar asli)
+Video 24 detik dari rekaman layar HP dan screenshot Portal Karyawan (data demo). Kode: `src/Rekaman.tsx`.
+Rekaman mentah **tidak** disimpan di repo (bagian akhirnya memuat layar WhatsApp). Untuk render ulang, taruh rekamannya di `public/rec.mp4`
+(384x832; jendela potong di `Rekaman.tsx`: buang status bar 46 px atas dan area bawah dari 708 px) lalu `npx remotion render src/index.ts V4-rekaman-absen out/V4.mp4`.
+Rekaman yang lebih tajam (dikirim bukan lewat WhatsApp) akan menghasilkan video yang lebih jernih.
