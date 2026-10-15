@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Materi pemasaran (generator gambar/video) punya dependensi sendiri.
+    "marketing/**",
   ]),
 ]);
 

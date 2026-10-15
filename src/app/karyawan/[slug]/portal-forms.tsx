@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { PinPad } from "@/components/pin-pad";
 import { REIMBURSEMENT_CATEGORIES } from "@/lib/reimbursement/categories";
 import {
   loginPortal,
@@ -26,11 +27,16 @@ export function PortalLoginForm({
   slug: string;
   employees: { id: string; name: string; note: string | null }[];
 }) {
+  const [pin, setPin] = useState("");
   const [state, formAction, pending] = useActionState(
-    (prev: PortalActionState, formData: FormData) => loginPortal(slug, prev, formData),
+    async (prev: PortalActionState, formData: FormData) => {
+      const res = await loginPortal(slug, prev, formData);
+      // PIN salah -> kosongkan, seperti login portal Kasirku.
+      if (res.error) setPin("");
+      return res;
+    },
     initialState,
   );
-  const [pin, setPin] = useState("");
 
   return (
     <form action={formAction} className="space-y-4">
@@ -49,26 +55,16 @@ export function PortalLoginForm({
         </select>
       </div>
       <div>
-        <label className="mb-1.5 block text-xs font-medium text-zinc-600">PIN Absen</label>
-        <input
-          name="pin"
-          type="password"
-          inputMode="numeric"
-          autoComplete="off"
-          maxLength={6}
-          required
-          value={pin}
-          onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
-          placeholder="4–6 digit"
-          className={`${inputClass} tracking-widest`}
-        />
+        <label className="mb-3 block text-center text-xs font-medium text-zinc-600">PIN Absen (4–6 digit)</label>
+        <input type="hidden" name="pin" value={pin} />
+        <PinPad value={pin} onChange={setPin} disabled={pending} activeClass="border-portal-600 bg-portal-600" />
       </div>
       {state.error && (
         <p className="rounded-lg bg-red-50 px-3 py-2 text-center text-xs text-red-600">{state.error}</p>
       )}
       <button
         type="submit"
-        disabled={pending}
+        disabled={pending || pin.length < 4}
         className="w-full rounded-xl bg-portal-600 py-3 text-sm font-semibold text-white disabled:opacity-60"
       >
         {pending ? "Memeriksa…" : "Masuk"}

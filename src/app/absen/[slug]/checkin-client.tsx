@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Camera, ChevronLeft, Info, LogIn, LogOut, MapPinned, Route } from "lucide-react";
 import { fmtDistance, nearestSpot, type GeofenceSpot } from "@/lib/attendance/geofence";
+import { PinPad } from "@/components/pin-pad";
 
 const OfficeMap = dynamic(() => import("./office-map"), { ssr: false });
 
@@ -174,6 +175,8 @@ export default function CheckinClient({
         setSheetOpen(true);
       } else {
         showToast(data.ok, (data.ok ? data.message : data.error) ?? "");
+        // PIN salah -> kosongkan supaya diketik ulang.
+        if (!data.ok && /pin/i.test(data.error ?? "")) setPin("");
       }
       if (data.ok) {
         setPhoto(null);
@@ -290,18 +293,9 @@ export default function CheckinClient({
         )}
 
         {needsPin && (
-          <div className="mb-3">
-            <label className="mb-1 block text-xs font-medium text-zinc-600">PIN Absen</label>
-            <input
-              type="password"
-              inputMode="numeric"
-              autoComplete="off"
-              maxLength={6}
-              value={pin}
-              onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
-              placeholder="4–6 digit"
-              className={`${selectCls} tracking-widest`}
-            />
+          <div className="mb-3 rounded-2xl border border-zinc-200 bg-white p-4">
+            <label className="mb-3 block text-center text-xs font-medium text-zinc-600">Masukkan PIN Absen (4–6 digit)</label>
+            <PinPad value={pin} onChange={setPin} disabled={busy} compact />
           </div>
         )}
 
