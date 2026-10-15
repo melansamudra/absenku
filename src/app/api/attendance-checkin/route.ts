@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { checkEmployeePin } from "@/lib/attendance/pin-check";
+import { hasPortalSessionFor } from "@/lib/portal/session";
 import { checkGeofence, type GeofenceSpot } from "@/lib/attendance/geofence";
 import { computeOvertimeHours } from "@/lib/payroll/overtime";
 
@@ -251,7 +252,13 @@ export async function POST(request: Request) {
   // PIN absen — dicek SETELAH cooldown di atas, supaya tiap tebakan PIN juga
   // kena jeda 5 detik, dan ditambah kunci sementara setelah beberapa kali salah
   // (lib/attendance/pin-check.ts).
-  if (employee.attendance_pin_hash) {
+  // Karyawan yang sudah login Portal Karyawan (PIN dicek saat login) tidak ditanya PIN lagi.
+  const viaPortal = employee.attendance_pin_hash
+    ? await hasPortalSessionFor(business.id, employeeId, employee.attendance_pin_hash)
+    : false;
+  if (viaPortal) {
+    // PIN sudah terverifikasi lewat sesi portal.
+  } else if (employee.attendance_pin_hash) {
     const pinCheck = await checkEmployeePin(
       supabase,
       business.id,

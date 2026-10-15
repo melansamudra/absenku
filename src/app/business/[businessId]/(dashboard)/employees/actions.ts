@@ -13,14 +13,14 @@ export type ActionState = { error: string | null };
 const PTKP_STATUSES = ["TK/0", "TK/1", "TK/2", "TK/3", "K/0", "K/1", "K/2", "K/3"];
 
 // PIN absen dari form: kosong = tidak diubah (undefined), centang "hapus PIN"
-// = null, selain itu harus 4–6 digit dan disimpan sebagai hash.
+// = null, selain itu harus 4 digit dan disimpan sebagai hash.
 async function readPinUpdate(
   formData: FormData,
 ): Promise<{ error: string } | { value: string | null | undefined }> {
   if (formData.get("remove_attendance_pin") === "on") return { value: null };
   const pin = ((formData.get("attendance_pin") as string) || "").trim();
   if (!pin) return { value: undefined };
-  if (!PIN_PATTERN.test(pin)) return { error: "PIN absen harus 4–6 digit angka." };
+  if (!PIN_PATTERN.test(pin)) return { error: "PIN absen harus 4 digit angka." };
   return { value: await hashPin(pin) };
 }
 

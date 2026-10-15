@@ -236,7 +236,7 @@ export async function saveStep3(
 
   // PIN absen: kosong = tidak diubah.
   const pin = str(fd, "attendance_pin");
-  if (pin && !PIN_PATTERN.test(pin)) return { error: "PIN absen harus 4–6 digit angka." };
+  if (pin && !PIN_PATTERN.test(pin)) return { error: "PIN absen harus 4 digit angka." };
   const wageRaw = str(fd, "bpjs_wage_base");
   const wage = wageRaw ? Number(wageRaw) : null;
 

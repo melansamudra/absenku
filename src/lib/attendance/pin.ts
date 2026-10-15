@@ -1,7 +1,7 @@
 import { randomBytes, scrypt as scryptCb, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 
-// PIN absen per karyawan (4–6 digit) — disimpan sebagai hash scrypt di
+// PIN absen per karyawan (4 digit, sama dengan Kasirku) — disimpan sebagai hash scrypt di
 // employees.attendance_pin_hash, format `scrypt$<salt hex>$<hash hex>`.
 // Ruang PIN-nya kecil, jadi hash ini bukan satu-satunya pertahanan: API absen
 // juga mengunci karyawan sementara setelah beberapa kali salah PIN.
@@ -9,7 +9,7 @@ import { promisify } from "node:util";
 const scrypt = promisify(scryptCb) as (password: string, salt: Buffer, keylen: number) => Promise<Buffer>;
 const KEY_LENGTH = 32;
 
-export const PIN_PATTERN = /^\d{4,6}$/;
+export const PIN_PATTERN = /^\d{4}$/;
 
 export async function hashPin(pin: string): Promise<string> {
   const salt = randomBytes(16);

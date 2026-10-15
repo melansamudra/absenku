@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { startTransition, useActionState, useState, useSyncExternalStore } from "react";
 import { KeyRound, UserRound } from "lucide-react";
 import { PinPad } from "@/components/pin-pad";
 import { loginPortal, type PortalActionState } from "./actions";
@@ -10,10 +10,28 @@ type Employee = { id: string; name: string; note: string | null };
 
 const initialState: PortalActionState = { error: null };
 
+// Nama terakhir yang login di HP ini disimpan, supaya login berikutnya langsung
+// ke layar PIN (tanpa memilih nama lagi). Dibaca lewat useSyncExternalStore agar
+// aman untuk render di server (server selalu menampilkan daftar nama dulu).
+const lastKey = (slug: string) => `hrcash_portal_last_${slug}`;
+const noopSubscribe = () => () => {};
+function useLastEmployeeId(slug: string): string | null {
+  return useSyncExternalStore(
+    noopSubscribe,
+    () => {
+      try {
+        return localStorage.getItem(lastKey(slug));
+      } catch {
+        return null;
+      }
+    },
+    () => null,
+  );
+}
+
 // Login Portal Karyawan dua langkah, sama alurnya dengan Kasirku:
 // 1) pilih nama dari daftar, 2) halaman "Halo, <nama>" + keypad PIN.
-// Beda dengan Kasirku (PIN tetap 4 digit, kirim otomatis): PIN absen HrCash
-// 4–6 digit, jadi PIN dikirim lewat tombol "Masuk".
+// PIN tepat 4 digit dan langsung dikirim begitu digit ke-4 diketik (tanpa tombol).
 export default function LoginScreen({
   slug,
   businessName,
@@ -23,13 +41,16 @@ export default function LoginScreen({
   businessName: string;
   employees: Employee[];
 }) {
-  const [selected, setSelected] = useState<Employee | null>(null);
+  const lastId = useLastEmployeeId(slug);
+  // undefined = belum memilih: pakai nama terakhir (jika ada); null = sengaja "Ganti nama"
+  const [picked, setPicked] = useState<Employee | null | undefined>(undefined);
+  const selected = picked !== undefined ? picked : (employees.find((e) => e.id === lastId) ?? null);
 
   if (selected) {
     // key = id karyawan: ganti nama membuang PIN dan pesan error sebelumnya.
-    return <PinStep key={selected.id} slug={slug} businessName={businessName} employee={selected} onBack={() => setSelected(null)} />;
+    return <PinStep key={selected.id} slug={slug} businessName={businessName} employee={selected} onBack={() => setPicked(null)} />;
   }
-  return <NameStep businessName={businessName} employees={employees} onSelect={setSelected} />;
+  return <NameStep businessName={businessName} employees={employees} onSelect={setPicked} />;
 }
 
 const note = (
@@ -117,6 +138,11 @@ function PinStep({
   const [pin, setPin] = useState("");
   const [state, formAction, pending] = useActionState(
     async (prev: PortalActionState, formData: FormData) => {
+      try {
+        localStorage.setItem(lastKey(slug), employee.id);
+      } catch {
+        // penyimpanan browser bisa diblokir — login tetap jalan
+      }
       const res = await loginPortal(slug, prev, formData);
       // PIN salah -> kosongkan supaya bisa diketik ulang.
       if (res.error) setPin("");
@@ -125,31 +151,29 @@ function PinStep({
     initialState,
   );
 
+  // Digit ke-4 diketik -> langsung login.
+  function submit(value: string) {
+    const fd = new FormData();
+    fd.set("employee_id", employee.id);
+    fd.set("pin", value);
+    startTransition(() => formAction(fd));
+  }
+
   return (
     <div className="min-h-screen bg-zinc-50 pb-10">
       <Hero
         businessName={businessName}
         initial={employee.name}
         title={`Halo, ${employee.name.split(" ")[0]}`}
-        subtitle="Masukkan PIN 4–6 digit untuk melanjutkan."
+        subtitle="Masukkan PIN 4 digit untuk melanjutkan."
       />
       <main className="relative z-10 mx-auto -mt-4 max-w-md px-4 pb-10">
         <Card title="Masukkan PIN" icon={KeyRound}>
-          <form action={formAction}>
-            <input type="hidden" name="employee_id" value={employee.id} />
-            <input type="hidden" name="pin" value={pin} />
-            <PinPad value={pin} onChange={setPin} disabled={pending} activeClass="border-portal-600 bg-portal-600" />
-            {state.error && (
-              <p className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-center text-xs text-red-600">{state.error}</p>
-            )}
-            <button
-              type="submit"
-              disabled={pending || pin.length < 4}
-              className="mt-5 w-full rounded-2xl bg-portal-600 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-portal-700 disabled:opacity-50"
-            >
-              {pending ? "Memeriksa…" : "Masuk"}
-            </button>
-          </form>
+          <PinPad value={pin} onChange={setPin} onComplete={submit} disabled={pending} activeClass="border-portal-600 bg-portal-600" />
+          {state.error && !pending && (
+            <p className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-center text-xs text-red-600">{state.error}</p>
+          )}
+          {pending && <p className="mt-4 text-center text-xs font-medium text-zinc-400">Memeriksa…</p>}
           <button
             type="button"
             onClick={onBack}

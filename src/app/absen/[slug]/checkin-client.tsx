@@ -84,8 +84,10 @@ export default function CheckinClient({
   const [locationStatus, setLocationStatus] = useState<LocationStatus>("pending");
 
   const selectedEmployee = employees.find((e) => e.id === employeeId) ?? null;
-  const needsPin = !!selectedEmployee?.hasPin;
-  const blockedNoPin = !!selectedEmployee && pinRequired && !selectedEmployee.hasPin;
+  // Dibuka dari Portal Karyawan (sudah login dengan PIN): tidak diminta PIN lagi,
+  // server menerima sesi portal sebagai gantinya.
+  const needsPin = !lockedEmployeeId && !!selectedEmployee?.hasPin;
+  const blockedNoPin = !lockedEmployeeId && !!selectedEmployee && pinRequired && !selectedEmployee.hasPin;
 
   function showToast(ok: boolean, text: string) {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -177,7 +179,10 @@ export default function CheckinClient({
       } else {
         showToast(data.ok, (data.ok ? data.message : data.error) ?? "");
         // PIN salah -> kosongkan supaya diketik ulang.
-        if (!data.ok && /pin/i.test(data.error ?? "")) setPin("");
+        if (!data.ok && /pin/i.test(data.error ?? "")) {
+          setPin("");
+          if (lockedEmployeeId) showToast(false, "Sesi portal habis. Tekan Bukan saya lalu masuk lagi dengan PIN.");
+        }
       }
       if (data.ok) {
         setPhoto(null);
@@ -196,7 +201,7 @@ export default function CheckinClient({
   function handleMain() {
     if (!employeeId) return showToast(false, "Pilih nama dulu.");
     if (blockedNoPin) return showToast(false, "Kamu belum punya PIN absen. Minta admin memasangkan PIN dulu.");
-    if (needsPin && !/^\d{4,6}$/.test(pin)) return showToast(false, "Masukkan PIN absen kamu (4–6 digit).");
+    if (needsPin && !/^\d{4}$/.test(pin)) return showToast(false, "Masukkan PIN absen kamu (4 digit).");
     if (!photo) return showToast(false, "Anda harus foto terlebih dahulu");
     if (geofenceEnabled && !location) return showToast(false, "Lokasi tidak terbaca. Izinkan akses lokasi (GPS) di browser lalu coba lagi.");
     if (canOut) return void submit("out");
@@ -259,13 +264,12 @@ export default function CheckinClient({
         )}
       </header>
 
-      {geofenceEnabled && (
-        <div className="relative h-[40vh] min-h-[250px] w-full bg-zinc-200">
-          <OfficeMap spots={spots} user={location} />
-        </div>
-      )}
+      {/* Peta selalu tampil (seperti Kasirku). Tanpa lokasi kerja diatur: peta menunjukkan posisi karyawan saja. */}
+      <div className="relative h-[40vh] min-h-[250px] w-full bg-zinc-200">
+        <OfficeMap spots={spots} user={location} />
+      </div>
 
-      <main className={`relative z-[550] flex-1 bg-white px-4 pb-10 pt-4 ${geofenceEnabled ? "-mt-5 rounded-t-3xl shadow-[0_-8px_20px_rgba(0,0,0,0.12)]" : ""}`}>
+      <main className="relative z-[550] -mt-5 flex-1 rounded-t-3xl bg-white px-4 pb-10 pt-4 shadow-[0_-8px_20px_rgba(0,0,0,0.12)]">
         {lockedEmployeeId ? (
           <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-sky-200 bg-sky-50 px-3.5 py-2.5 text-sm font-medium text-sky-900">
             <span className="min-w-0 truncate">
@@ -303,7 +307,7 @@ export default function CheckinClient({
 
         {needsPin && (
           <div className="mb-3 rounded-2xl border border-zinc-200 bg-white p-4">
-            <label className="mb-3 block text-center text-xs font-medium text-zinc-600">Masukkan PIN Absen (4–6 digit)</label>
+            <label className="mb-3 block text-center text-xs font-medium text-zinc-600">Masukkan PIN Absen (4 digit)</label>
             <PinPad value={pin} onChange={setPin} disabled={busy} compact />
           </div>
         )}

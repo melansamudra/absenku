@@ -4,7 +4,7 @@ import { verifyPin } from "./pin";
 // Cek PIN absen karyawan + kunci sementara setelah beberapa kali salah —
 // dipakai bersama oleh API absen selfie dan login Portal Karyawan, jadi
 // tebakan PIN di kedua tempat dihitung ke kuota gagal yang sama.
-// PIN cuma 4–6 digit, jadi tanpa kunci ini bisa ditebak lewat brute force.
+// PIN cuma 4 digit, jadi tanpa kunci ini bisa ditebak lewat brute force.
 const PIN_MAX_FAILURES = 5;
 const PIN_LOCK_WINDOW_MS = 15 * 60 * 1000;
 
@@ -19,13 +19,17 @@ export async function checkEmployeePin(
   pinHash: string,
   pin: string,
 ): Promise<PinCheckResult> {
-  const { count: recentFailures } = await supabase
-    .from("public_submission_log")
-    .select("id", { count: "exact", head: true })
-    .eq("business_id", businessId)
-    .eq("kind", "absen_pin_gagal")
-    .eq("employee_id", employeeId)
-    .gte("created_at", new Date(Date.now() - PIN_LOCK_WINDOW_MS).toISOString());
+  // Hitung kegagalan terbaru (query) dan verifikasi scrypt (CPU) berjalan bersamaan.
+  const [{ count: recentFailures }, pinOk] = await Promise.all([
+    supabase
+      .from("public_submission_log")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", businessId)
+      .eq("kind", "absen_pin_gagal")
+      .eq("employee_id", employeeId)
+      .gte("created_at", new Date(Date.now() - PIN_LOCK_WINDOW_MS).toISOString()),
+    pin ? verifyPin(pin, pinHash) : Promise.resolve(false),
+  ]);
 
   if ((recentFailures ?? 0) >= PIN_MAX_FAILURES) {
     return {
@@ -36,7 +40,7 @@ export async function checkEmployeePin(
   }
   if (!pin) return { ok: false, error: "Masukkan PIN absen kamu.", status: 400 };
 
-  if (!(await verifyPin(pin, pinHash))) {
+  if (!pinOk) {
     await supabase
       .from("public_submission_log")
       .insert({ business_id: businessId, kind: "absen_pin_gagal", employee_id: employeeId });

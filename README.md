@@ -103,7 +103,7 @@ Opsional (butuh setup terpisah) — saat cuti disetujui/ditolak (baik lewat appr
 Diatur di Pengaturan → "Keamanan Absen Selfie" dan di form Karyawan:
 
 - **Batas lokasi (geofence)** — isi latitude, longitude (ada tombol "Pakai lokasi saya sekarang"), dan radius dalam meter. Kalau ketiganya terisi, API absen menolak absen tanpa lokasi atau di luar radius (jarak dihitung di server pakai haversine). Kosongkan ketiganya untuk mematikan. Lokasi dari browser tetap bisa dipalsukan oleh pengguna yang niat (aplikasi fake GPS), jadi ini menutup kasus umum, bukan jaminan mutlak.
-- **PIN absen** — PIN 4–6 digit per karyawan, disimpan sebagai hash scrypt (`src/lib/attendance/pin.ts`), tidak pernah dikirim ke browser. Karyawan yang punya PIN wajib mengisinya saat absen; kalau "Wajibkan PIN" dicentang, karyawan tanpa PIN tidak bisa absen selfie sama sekali. Setelah 5 kali salah PIN dalam 15 menit, absen karyawan itu dikunci sementara (dicatat di `public_submission_log` dengan kind `absen_pin_gagal`).
+- **PIN absen** — PIN 4 digit per karyawan, disimpan sebagai hash scrypt (`src/lib/attendance/pin.ts`), tidak pernah dikirim ke browser. Karyawan yang punya PIN wajib mengisinya saat absen; kalau "Wajibkan PIN" dicentang, karyawan tanpa PIN tidak bisa absen selfie sama sekali. Setelah 5 kali salah PIN dalam 15 menit, absen karyawan itu dikunci sementara (dicatat di `public_submission_log` dengan kind `absen_pin_gagal`).
 - **Foto selfie privat** — bucket `attendance-selfies` tidak lagi publik. Kolom `attendance.check_in_photo_url`/`check_out_photo_url` menyimpan path objek, dan dashboard membuat signed URL berumur 1 jam saat halaman dibuka (`src/lib/attendance/selfie.ts`).
 
 ## Retensi foto selfie

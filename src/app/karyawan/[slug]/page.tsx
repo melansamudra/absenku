@@ -30,7 +30,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { createServiceClient } from "@/lib/supabase/service";
-import { getPortalEmployee, loadPortalBusiness } from "@/lib/portal/session";
+import { loadPortalContext } from "@/lib/portal/session";
 import { addDays, monthRange, todayWib } from "@/lib/portal/dates";
 import { loadAttendanceSummary } from "@/lib/payroll/aggregate";
 import { payslipTotal } from "@/lib/payroll/payslip-total";
@@ -359,7 +359,8 @@ export default async function PortalPage({
 }) {
   const { slug } = await params;
   const sp = await searchParams;
-  const business = await loadPortalBusiness(slug);
+  // bisnis + karyawan sesi dimuat paralel (satu kali tunggu, bukan dua)
+  const { business, employee } = await loadPortalContext(slug);
 
   if (!business) {
     return (
@@ -370,7 +371,6 @@ export default async function PortalPage({
   }
 
   const supabase = createServiceClient();
-  const employee = await getPortalEmployee(business);
 
   if (!employee) {
     const { data: employees } = await supabase

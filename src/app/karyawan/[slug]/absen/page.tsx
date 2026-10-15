@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getPortalEmployee, loadPortalBusiness } from "@/lib/portal/session";
+import { loadPortalContext } from "@/lib/portal/session";
 import { createServiceClient } from "@/lib/supabase/service";
 import { loadCheckinConfig } from "@/lib/attendance/checkin-config";
 import CheckinClient from "@/app/absen/[slug]/checkin-client";
@@ -8,9 +8,8 @@ import CheckinClient from "@/app/absen/[slug]/checkin-client";
 // PIN absen tetap diminta di halaman ini, sama seperti di link absen publik.
 export default async function PortalCheckinPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const business = await loadPortalBusiness(slug);
+  const { business, employee } = await loadPortalContext(slug);
   if (!business) notFound();
-  const employee = await getPortalEmployee(business);
   if (!employee) redirect(`/karyawan/${slug}`);
 
   const supabase = createServiceClient();

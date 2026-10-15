@@ -1,14 +1,13 @@
 import { createServiceClient } from "@/lib/supabase/service";
-import { getPortalEmployee, loadPortalBusiness } from "@/lib/portal/session";
+import { loadPortalContext } from "@/lib/portal/session";
 
 // Menyajikan foto profil karyawan yang sedang login (bucket privat). URL-nya
 // membawa ?v=<nama file> sehingga browser boleh menyimpan lama; ganti foto =
 // nama file baru = URL baru.
 export async function GET(_request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const business = await loadPortalBusiness(slug);
+  const { business, employee } = await loadPortalContext(slug);
   if (!business) return new Response("Not found", { status: 404 });
-  const employee = await getPortalEmployee(business);
   if (!employee?.photoPath) return new Response("Not found", { status: 404 });
 
   const supabase = createServiceClient();

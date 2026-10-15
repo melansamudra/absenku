@@ -7,7 +7,8 @@ import { changePortalPin } from "./actions";
 const inputClass =
   "w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm tracking-widest focus:border-portal-600 focus:outline-none focus:ring-2 focus:ring-portal-100";
 
-function PinField({ name, label }: { name: string; label: string }) {
+// PIN lama boleh sampai 6 digit (PIN lama sebelum aturan 4 digit); PIN baru 4 digit.
+function PinField({ name, label, max = 4 }: { name: string; label: string; max?: number }) {
   const [value, setValue] = useState("");
   return (
     <div>
@@ -17,11 +18,11 @@ function PinField({ name, label }: { name: string; label: string }) {
         type="password"
         inputMode="numeric"
         autoComplete="off"
-        maxLength={6}
+        maxLength={max}
         required
         value={value}
         onChange={(e) => setValue(e.target.value.replace(/\D/g, ""))}
-        placeholder="4–6 digit"
+        placeholder={max === 4 ? "4 digit" : "PIN lama"}
         className={inputClass}
       />
     </div>
@@ -65,7 +66,7 @@ export default function ChangePinForm({ slug }: { slug: string }) {
         PIN ini dipakai untuk masuk ke portal ini dan check-in/out absen. Jaga agar tidak diketahui
         orang lain.
       </p>
-      <PinField name="current_pin" label="PIN Lama" />
+      <PinField name="current_pin" label="PIN Lama" max={6} />
       <PinField name="new_pin" label="PIN Baru" />
       <PinField name="confirm_pin" label="Ulangi PIN Baru" />
       {message && (
