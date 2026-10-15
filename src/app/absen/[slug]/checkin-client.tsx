@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { Camera, ChevronLeft, Info, LogIn, LogOut, MapPinned, Route } from "lucide-react";
 import { fmtDistance, nearestSpot, type GeofenceSpot } from "@/lib/attendance/geofence";
 import { PinPad } from "@/components/pin-pad";
+import { logoutPortal } from "@/app/karyawan/[slug]/actions";
 
 const OfficeMap = dynamic(() => import("./office-map"), { ssr: false });
 
@@ -266,9 +267,17 @@ export default function CheckinClient({
 
       <main className={`relative z-[550] flex-1 bg-white px-4 pb-10 pt-4 ${geofenceEnabled ? "-mt-5 rounded-t-3xl shadow-[0_-8px_20px_rgba(0,0,0,0.12)]" : ""}`}>
         {lockedEmployeeId ? (
-          <div className="mb-3 rounded-xl border border-sky-200 bg-sky-50 px-3.5 py-2.5 text-sm font-medium text-sky-900">
-            👤 {selectedEmployee?.name ?? "Karyawan"}
-            {selectedEmployee?.note ? <span className="font-normal text-sky-700"> · {selectedEmployee.note}</span> : null}
+          <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-sky-200 bg-sky-50 px-3.5 py-2.5 text-sm font-medium text-sky-900">
+            <span className="min-w-0 truncate">
+              👤 {selectedEmployee?.name ?? "Karyawan"}
+              {selectedEmployee?.note ? <span className="font-normal text-sky-700"> · {selectedEmployee.note}</span> : null}
+            </span>
+            {/* Keluar dari sesi portal lalu kembali ke pilih nama, seperti "Bukan saya" di Kasirku */}
+            <form action={logoutPortal.bind(null, slug)}>
+              <button type="submit" className="shrink-0 text-xs font-medium text-sky-700 hover:underline">
+                Bukan saya
+              </button>
+            </form>
           </div>
         ) : (
           <div className="mb-3">

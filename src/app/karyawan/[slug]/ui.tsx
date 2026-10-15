@@ -89,26 +89,28 @@ export function EmptyState({ icon: Icon, text }: { icon: LucideIcon; text: strin
 
 export function Hero({
   businessName,
+  initial,
   title,
   subtitle,
   right,
   children,
 }: {
   businessName: string;
+  initial?: string;
   title: string;
   subtitle?: string;
   right?: React.ReactNode;
   children?: React.ReactNode;
 }) {
   return (
-    <header className="relative overflow-hidden rounded-b-[2rem] bg-gradient-to-br from-portal-600 via-portal-700 to-portal-900 px-5 pb-8 pt-6 text-white">
+    <header className="relative overflow-hidden rounded-b-[2rem] bg-gradient-to-br from-portal-600 via-portal-700 to-portal-900 px-5 pb-8 pt-[max(env(safe-area-inset-top),24px)] text-white">
       <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
       <div className="pointer-events-none absolute -bottom-24 -left-10 h-48 w-48 rounded-full bg-portal-300/20 blur-2xl" />
       <div className="relative mx-auto max-w-md">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/15 text-sm font-bold ring-1 ring-white/20">
-              A
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/15 text-sm font-bold ring-1 ring-white/20">
+              {(initial ?? businessName).charAt(0).toUpperCase()}
             </span>
             <span className="truncate text-sm font-medium text-white/80">{businessName}</span>
           </div>
