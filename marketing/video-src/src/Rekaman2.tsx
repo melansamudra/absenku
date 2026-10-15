@@ -1,6 +1,6 @@
 import React from "react";
 import { Background, EndCard, FontGate, Scene } from "./kit";
-import { Caption, Clip, Note, PhoneFrame, Shot, Top } from "./Rekaman";
+import { Caption, Clip, SelfieClips, Note, PhoneFrame, Shot, Top } from "./Rekaman";
 
 // V5: "3 langkah" (15 dtk)
 export const V5: React.FC = () => (
@@ -21,8 +21,7 @@ export const V5: React.FC = () => (
     <Scene from={214} dur={112}>
       <Top headline="Absen cuma *3 langkah.*" />
       <PhoneFrame>
-        <Clip absFrom={214} dur={52} startSec={13.0} shift={16} />
-        <Clip absFrom={266} dur={60} startSec={18.8} rate={0.75} />
+        <SelfieClips absFrom={214} />
       </PhoneFrame>
       <Caption text="3. Selfie, selesai" a={8} b={104} />
       <Note />
@@ -46,8 +45,7 @@ export const V6: React.FC = () => (
     <Scene from={114} dur={112}>
       <Top headline="Wajib *selfie* di tempat." />
       <PhoneFrame>
-        <Clip absFrom={114} dur={52} startSec={13.0} shift={16} />
-        <Clip absFrom={166} dur={60} startSec={18.8} rate={0.75} />
+        <SelfieClips absFrom={114} />
       </PhoneFrame>
       <Caption text="Foto wajah tiap absen" a={10} b={104} />
       <Note />

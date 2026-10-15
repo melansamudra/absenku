@@ -60,7 +60,7 @@ export const Caption: React.FC<{ text: string; a: number; b: number }> = ({ text
 
 export const Note: React.FC = () => (
   <div style={{ position: "absolute", left: 0, right: 0, top: 1598, textAlign: "center", fontFamily: FONT, fontSize: 24, color: "rgba(255,255,255,.55)" }}>
-    Tampilan asli aplikasi (data demo)
+    Tampilan aplikasi (data demo, wajah ilustrasi)
   </div>
 );
 
@@ -89,8 +89,7 @@ export const V4: React.FC = () => (
     <Scene from={296} dur={112}>
       <Top headline="Ambil selfie. *Langsung Check In.*" size={86} />
       <PhoneFrame>
-        <Clip absFrom={296} dur={52} startSec={13.0} shift={16} />
-        <Clip absFrom={348} dur={60} startSec={18.8} rate={0.75} />
+        <SelfieClips absFrom={296} />
       </PhoneFrame>
       <Caption text="Selfie dari browser HP" a={10} b={104} />
       <Note />
@@ -118,3 +117,55 @@ export const V4: React.FC = () => (
     </Scene>
   </FontGate>
 );
+
+// Karakter ilustrasi (pengganti wajah asli) untuk adegan selfie.
+const Person: React.FC<{ width: number }> = ({ width }) => (
+  <svg width={width} viewBox="0 0 300 340" style={{ display: "block" }}>
+    <path d="M20 340 C20 250 80 218 150 218 C220 218 280 250 280 340 Z" fill="#1f4a73" />
+    <path d="M120 216 L150 262 L180 216 Z" fill="#fff" />
+    <rect x="128" y="176" width="44" height="50" rx="16" fill="#e8b48f" />
+    <ellipse cx="150" cy="130" rx="74" ry="82" fill="#f2c4a0" />
+    <ellipse cx="76" cy="136" rx="11" ry="18" fill="#f2c4a0" />
+    <ellipse cx="224" cy="136" rx="11" ry="18" fill="#f2c4a0" />
+    <path d="M72 120 C66 52 120 28 156 30 C214 30 236 74 228 122 C214 92 188 78 150 80 C116 80 90 94 72 120 Z" fill="#2a1d17" />
+    <ellipse cx="120" cy="136" rx="9" ry="11" fill="#2a1d17" />
+    <ellipse cx="180" cy="136" rx="9" ry="11" fill="#2a1d17" />
+    <circle cx="123" cy="132" r="3" fill="#fff" /><circle cx="183" cy="132" r="3" fill="#fff" />
+    <path d="M118 170 C134 188 166 188 182 170" stroke="#9c4b3a" strokeWidth="7" strokeLinecap="round" fill="none" />
+    <ellipse cx="102" cy="162" rx="12" ry="7" fill="#f0a08a" opacity=".55" />
+    <ellipse cx="198" cy="162" rx="12" ry="7" fill="#f0a08a" opacity=".55" />
+  </svg>
+);
+
+const Corners: React.FC<{ x: number; y: number; w: number; h: number }> = ({ x, y, w, h }) => {
+  const s = { position: "absolute" as const, width: 54, height: 54, borderColor: "#5cf2a0", borderStyle: "solid", borderWidth: 0 };
+  return (
+    <div style={{ position: "absolute", left: x, top: y, width: w, height: h }}>
+      <div style={{ ...s, left: 0, top: 0, borderLeftWidth: 7, borderTopWidth: 7, borderTopLeftRadius: 18 }} />
+      <div style={{ ...s, right: 0, top: 0, borderRightWidth: 7, borderTopWidth: 7, borderTopRightRadius: 18 }} />
+      <div style={{ ...s, left: 0, bottom: 0, borderLeftWidth: 7, borderBottomWidth: 7, borderBottomLeftRadius: 18 }} />
+      <div style={{ ...s, right: 0, bottom: 0, borderRightWidth: 7, borderBottomWidth: 7, borderBottomRightRadius: 18 }} />
+    </div>
+  );
+};
+
+// Dua potongan selfie (kamera + hasil di halaman Check In) dengan karakter di dalamnya.
+export const SelfieClips: React.FC<{ absFrom: number }> = ({ absFrom }) => {
+  const f = useLocal();
+  const bob = Math.sin(f / 9) * 6;
+  return (
+    <>
+      <Clip absFrom={absFrom} dur={52} startSec={13.0} shift={16} />
+      <Sequence from={absFrom} durationInFrames={52}>
+        <div style={{ position: "absolute", left: 110, top: 190 + bob, width: 340 }}><Person width={340} /></div>
+        <Corners x={90} y={150} w={380} h={440} />
+      </Sequence>
+      <Clip absFrom={absFrom + 52} dur={60} startSec={18.8} rate={0.75} />
+      <Sequence from={absFrom + 52} durationInFrames={60}>
+        <div style={{ position: "absolute", left: 21, top: 626, width: 234, height: 332, overflow: "hidden", borderRadius: 18, background: "linear-gradient(#cfe0f2,#e9f2fb)" }}>
+          <div style={{ position: "absolute", left: 22, top: 70, width: 190 }}><Person width={190} /></div>
+        </div>
+      </Sequence>
+    </>
+  );
+};
