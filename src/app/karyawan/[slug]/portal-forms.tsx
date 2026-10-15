@@ -1,10 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { PinPad } from "@/components/pin-pad";
+import { useActionState } from "react";
 import { REIMBURSEMENT_CATEGORIES } from "@/lib/reimbursement/categories";
 import {
-  loginPortal,
   submitActivity,
   submitOvertimeRequest,
   submitReimbursement,
@@ -16,62 +14,6 @@ const initialState: PortalActionState = { error: null };
 
 const fieldClass =
   "w-full rounded-2xl bg-white px-4 py-3.5 text-sm text-zinc-700 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-portal-300";
-
-const inputClass =
-  "w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm focus:border-portal-600 focus:outline-none focus:ring-2 focus:ring-portal-100";
-
-export function PortalLoginForm({
-  slug,
-  employees,
-}: {
-  slug: string;
-  employees: { id: string; name: string; note: string | null }[];
-}) {
-  const [pin, setPin] = useState("");
-  const [state, formAction, pending] = useActionState(
-    async (prev: PortalActionState, formData: FormData) => {
-      const res = await loginPortal(slug, prev, formData);
-      // PIN salah -> kosongkan, seperti login portal Kasirku.
-      if (res.error) setPin("");
-      return res;
-    },
-    initialState,
-  );
-
-  return (
-    <form action={formAction} className="space-y-4">
-      <div>
-        <label className="mb-1.5 block text-xs font-medium text-zinc-600">Nama</label>
-        <select name="employee_id" required defaultValue="" className={inputClass}>
-          <option value="" disabled>
-            — Pilih nama —
-          </option>
-          {employees.map((e) => (
-            <option key={e.id} value={e.id}>
-              {e.name}
-              {e.note ? ` (${e.note})` : ""}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label className="mb-3 block text-center text-xs font-medium text-zinc-600">PIN Absen (4–6 digit)</label>
-        <input type="hidden" name="pin" value={pin} />
-        <PinPad value={pin} onChange={setPin} disabled={pending} activeClass="border-portal-600 bg-portal-600" />
-      </div>
-      {state.error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-center text-xs text-red-600">{state.error}</p>
-      )}
-      <button
-        type="submit"
-        disabled={pending || pin.length < 4}
-        className="w-full rounded-xl bg-portal-600 py-3 text-sm font-semibold text-white disabled:opacity-60"
-      >
-        {pending ? "Memeriksa…" : "Masuk"}
-      </button>
-    </form>
-  );
-}
 
 export function OvertimeRequestForm({ slug, today }: { slug: string; today: string }) {
   const [state, formAction, pending] = useActionState(

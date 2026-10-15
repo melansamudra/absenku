@@ -41,6 +41,7 @@ import AnnouncementCard from "./announcement-card";
 import MonthSelect from "./month-select";
 import PhotoUploader from "./photo-uploader";
 import ChangePinForm from "./change-pin-form";
+import LoginScreen from "./login-screen";
 import {
   MenuCard,
   MenuTile,
@@ -53,7 +54,6 @@ import {
 import {
   ActivityForm,
   OvertimeRequestForm,
-  PortalLoginForm,
   ReimbursementForm,
   TaskStatusSelect,
 } from "./portal-forms";
@@ -382,27 +382,7 @@ export default async function PortalPage({
       .not("attendance_pin_hash", "is", null)
       .order("created_at", { ascending: true });
 
-    return (
-      <div className="min-h-screen bg-zinc-50">
-        <Hero
-          businessName={business.name}
-          title="Portal Karyawan"
-          subtitle="Lihat slip gaji, sisa cuti, kasbon, dan ajukan lembur dari HP kamu."
-        />
-        <main className="relative z-10 mx-auto -mt-4 max-w-md px-4 pb-10">
-          <Card title="Masuk" icon={UserRound}>
-            {(employees ?? []).length === 0 ? (
-              <EmptyState icon={CircleAlert} text="Belum ada karyawan yang punya PIN absen. Minta admin memasangkan PIN dulu." />
-            ) : (
-              <PortalLoginForm slug={slug} employees={employees ?? []} />
-            )}
-            <p className="mt-4 text-center text-[11px] text-zinc-400">
-              Pakai PIN yang sama dengan PIN absen selfie. Lupa PIN? Minta admin menggantinya.
-            </p>
-          </Card>
-        </main>
-      </div>
-    );
+    return <LoginScreen slug={slug} businessName={business.name} employees={employees ?? []} />;
   }
 
   const page: Page = (PAGES as string[]).includes(sp.p ?? "") ? (sp.p as Page) : "home";
