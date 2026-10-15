@@ -160,7 +160,7 @@ export default async function BusinessOverviewPage({
         <Shortcut href={`/business/${businessId}/payroll`} icon={Banknote} title="Payroll" desc="Buat & kelola slip gaji" />
         <Shortcut href={`/business/${businessId}/payroll/laporan`} icon={FileText} title="Laporan Gaji" desc="Total transfer & rekening per bulan" />
         <Shortcut href={`/business/${businessId}/announcements`} icon={Megaphone} title="Papan Informasi" desc="Pengumuman untuk karyawan" />
-        <Shortcut href={`/business/${businessId}/settings/general`} icon={QrCode} title="Link Absen Selfie" desc="Bagikan link/poster QR ke karyawan" />
+        <Shortcut href={`/business/${businessId}/settings/general`} icon={QrCode} title="Link Portal Karyawan" desc="Satu link untuk absen, slip, dan cuti" />
       </div>
 
       <h2 className="mb-3 mt-8 text-sm font-semibold text-zinc-800">Gaji Bulan Ini</h2>
