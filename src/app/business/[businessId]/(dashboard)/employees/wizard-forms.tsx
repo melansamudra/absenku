@@ -634,10 +634,10 @@ export function Step3Form({
         <SectionTitle>PIN Absen</SectionTitle>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field
-            label="PIN Absen (4–6 digit)"
+            label="PIN Absen (4 digit)"
             hint={e.attendance_pin_hash ? "PIN sudah diatur. Kosongkan jika tidak ingin mengubah." : "Dipakai karyawan untuk absen & masuk Portal Karyawan."}
           >
-            <input name="attendance_pin" inputMode="numeric" maxLength={6} className={inputClass} placeholder="••••" />
+            <input name="attendance_pin" inputMode="numeric" maxLength={4} className={inputClass} placeholder="••••" />
           </Field>
         </div>
       </div>

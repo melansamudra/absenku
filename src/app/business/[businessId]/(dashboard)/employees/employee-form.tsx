@@ -395,9 +395,9 @@ export default function EmployeeForm({
           type="password"
           inputMode="numeric"
           autoComplete="new-password"
-          pattern="\d{4,6}"
-          maxLength={6}
-          placeholder="4–6 digit"
+          pattern="\d{4}"
+          maxLength={4}
+          placeholder="4 digit"
           className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100"
         />
         <p className="mt-1 text-[12px] text-zinc-400">

@@ -2,42 +2,41 @@
 
 import { Delete } from "lucide-react";
 
-// Keypad PIN bergaya Kasirku (titik + tombol angka besar). Beda dengan Kasirku
-// yang PIN-nya tetap 4 digit: PIN absen HrCash 4–6 digit, jadi tidak ada kirim
-// otomatis di digit ke-4 — pemilik komponen yang menentukan kapan PIN dikirim
-// (tombol "Masuk" / "Absen") dan titik bertambah mulai digit ke-5.
+// Keypad PIN bergaya Kasirku: 4 titik + tombol angka besar. PIN absen HrCash
+// tepat 4 digit, jadi `onComplete` dipanggil begitu digit ke-4 diketik (login
+// langsung jalan tanpa tombol), persis seperti Kasirku.
 export function PinPad({
   value,
   onChange,
+  onComplete,
   disabled,
-  min = 4,
-  max = 6,
+  length = 4,
   compact,
   activeClass = "border-brand-600 bg-brand-600",
 }: {
   value: string;
   onChange: (next: string) => void;
+  onComplete?: (pin: string) => void;
   disabled?: boolean;
-  min?: number;
-  max?: number;
+  length?: number;
   compact?: boolean;
   activeClass?: string;
 }) {
-  const dots = Math.min(max, Math.max(min, value.length));
-
   function press(k: string) {
     if (disabled) return;
     if (k === "back") return onChange(value.slice(0, -1));
-    if (value.length >= max) return;
-    onChange(value + k);
+    if (value.length >= length) return;
+    const next = value + k;
+    onChange(next);
+    if (next.length === length) onComplete?.(next);
   }
 
   const key = `${compact ? "h-12 text-lg" : "h-14 text-xl"} touch-manipulation select-none rounded-2xl bg-zinc-100 font-bold text-zinc-800 transition-colors hover:bg-zinc-200 active:bg-zinc-300 disabled:opacity-50`;
 
   return (
     <div>
-      <div className="mb-4 flex justify-center gap-3" role="img" aria-label={`PIN terisi ${value.length} digit`}>
-        {Array.from({ length: dots }).map((_, i) => (
+      <div className="mb-5 flex justify-center gap-3" role="img" aria-label={`PIN terisi ${value.length} dari ${length} digit`}>
+        {Array.from({ length }).map((_, i) => (
           <div key={i} className={`h-3.5 w-3.5 rounded-full border-2 ${i < value.length ? activeClass : "border-zinc-300"}`} />
         ))}
       </div>

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ChevronLeft, Landmark, Receipt } from "lucide-react";
 import { createServiceClient } from "@/lib/supabase/service";
-import { getPortalEmployee, loadPortalBusiness } from "@/lib/portal/session";
+import { loadPortalContext } from "@/lib/portal/session";
 import { payslipTotal } from "@/lib/payroll/payslip-total";
 import { bpjsEmployerRows, payslipRows } from "@/lib/payroll/payslip-rows";
 import { Badge, Card, Hero, fmtPeriod, fmtRupiah } from "../../ui";
@@ -25,9 +25,8 @@ export default async function PortalPayslipPage({
   params: Promise<{ slug: string; payslipId: string }>;
 }) {
   const { slug, payslipId } = await params;
-  const business = await loadPortalBusiness(slug);
+  const { business, employee } = await loadPortalContext(slug);
   if (!business) notFound();
-  const employee = await getPortalEmployee(business);
   if (!employee) redirect(`/karyawan/${slug}`);
 
   const supabase = createServiceClient();

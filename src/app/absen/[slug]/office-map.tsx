@@ -17,14 +17,18 @@ export default function OfficeMap({ spots, user }: { spots: Spot[]; user: Point 
   const userDot = useRef<CircleMarker | null>(null);
   const leaflet = useRef<typeof import("leaflet") | null>(null);
   const area = useRef<FeatureGroup | null>(null);
+  const centered = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const L = await import("leaflet");
-      if (cancelled || !el.current || map.current || spots.length === 0) return;
+      if (cancelled || !el.current || map.current) return;
       leaflet.current = L;
-      const m = L.map(el.current, { zoomControl: false, attributionControl: true }).setView([spots[0].lat, spots[0].lng], 17);
+      // Tanpa lokasi kerja: mulai di posisi karyawan (jika sudah terbaca) atau tengah Indonesia.
+      const start: [number, number] = spots[0] ? [spots[0].lat, spots[0].lng] : user ? [user.lat, user.lng] : [-2.5, 118];
+      const m = L.map(el.current, { zoomControl: false, attributionControl: true }).setView(start, spots[0] || user ? 17 : 4);
+      if (!spots[0] && user) centered.current = true;
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(m);
       const group = L.featureGroup().addTo(m);
       for (const s of spots) {
@@ -33,7 +37,7 @@ export default function OfficeMap({ spots, user }: { spots: Spot[]; user: Point 
       }
       area.current = group;
       map.current = m;
-      m.fitBounds(group.getBounds(), { padding: [30, 30], maxZoom: 18 });
+      if (spots.length > 0) m.fitBounds(group.getBounds(), { padding: [30, 30], maxZoom: 18 });
       if (user) {
         userDot.current = L.circleMarker([user.lat, user.lng], { radius: 9, color: "#fff", weight: 3, fillColor: "#2563eb", fillOpacity: 1 }).addTo(m);
       }
@@ -52,6 +56,11 @@ export default function OfficeMap({ spots, user }: { spots: Spot[]; user: Point 
     const L = leaflet.current;
     const m = map.current;
     if (!L || !m || !user) return;
+    // Tanpa lokasi kerja: pusatkan sekali begitu posisi karyawan terbaca.
+    if (spots.length === 0 && !centered.current) {
+      centered.current = true;
+      m.setView([user.lat, user.lng], 17);
+    }
     if (userDot.current) userDot.current.setLatLng([user.lat, user.lng]);
     else userDot.current = L.circleMarker([user.lat, user.lng], { radius: 9, color: "#fff", weight: 3, fillColor: "#2563eb", fillOpacity: 1 }).addTo(m);
   }, [user]);
@@ -60,12 +69,17 @@ export default function OfficeMap({ spots, user }: { spots: Spot[]; user: Point 
     const m = map.current;
     if (!m) return;
     if (user) m.flyTo([user.lat, user.lng], Math.max(m.getZoom(), 17), { duration: 0.6 });
-    else if (area.current) m.fitBounds(area.current.getBounds(), { padding: [30, 30], maxZoom: 18 });
+    else if (area.current && spots.length > 0) m.fitBounds(area.current.getBounds(), { padding: [30, 30], maxZoom: 18 });
   }
 
   return (
     <div className="relative h-full w-full">
       <div ref={el} className="h-full w-full" />
+      {spots.length === 0 && !user && (
+        <div className="pointer-events-none absolute inset-0 z-[400] flex items-center justify-center">
+          <span className="rounded-full bg-white/90 px-4 py-2 text-xs font-medium text-zinc-600 shadow">Mendeteksi lokasi…</span>
+        </div>
+      )}
       <button
         type="button"
         onClick={recenter}

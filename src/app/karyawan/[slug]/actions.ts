@@ -25,19 +25,21 @@ export async function loginPortal(
   const pin = ((formData.get("pin") as string | null) ?? "").trim();
   if (!employeeId) return { error: "Pilih nama kamu dulu." };
 
-  const business = await loadPortalBusiness(slug);
-  if (!business) return { error: "Link portal tidak valid." };
-
+  // Bisnis dan karyawan dimuat paralel (hemat satu kali bolak-balik ke database);
+  // kecocokan karyawan dengan bisnis diperiksa setelahnya.
   const supabase = createServiceClient();
-  const { data: employee } = await supabase
-    .from("employees")
-    .select("id, attendance_pin_hash")
-    .eq("id", employeeId)
-    .eq("business_id", business.id)
-    .eq("active", true)
-    .is("deleted_at", null)
-    .maybeSingle();
-  if (!employee) return { error: "Karyawan tidak ditemukan/tidak aktif." };
+  const [business, { data: employee }] = await Promise.all([
+    loadPortalBusiness(slug),
+    supabase
+      .from("employees")
+      .select("id, business_id, attendance_pin_hash")
+      .eq("id", employeeId)
+      .eq("active", true)
+      .is("deleted_at", null)
+      .maybeSingle(),
+  ]);
+  if (!business) return { error: "Link portal tidak valid." };
+  if (!employee || employee.business_id !== business.id) return { error: "Karyawan tidak ditemukan/tidak aktif." };
   if (!employee.attendance_pin_hash) {
     return { error: "Kamu belum punya PIN. Minta admin memasangkan PIN absen dulu." };
   }
@@ -345,7 +347,7 @@ export async function changePortalPin(slug: string, formData: FormData): Promise
   const newPin = ((formData.get("new_pin") as string | null) ?? "").trim();
   const confirmPin = ((formData.get("confirm_pin") as string | null) ?? "").trim();
 
-  if (!PIN_PATTERN.test(newPin)) return { error: "PIN baru harus 4–6 digit angka." };
+  if (!PIN_PATTERN.test(newPin)) return { error: "PIN baru harus 4 digit angka." };
   if (newPin !== confirmPin) return { error: "Konfirmasi PIN baru tidak cocok." };
 
   const supabase = createServiceClient();
