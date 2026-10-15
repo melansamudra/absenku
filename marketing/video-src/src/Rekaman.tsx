@@ -9,7 +9,7 @@ const SCREEN_W = 560;
 const k = SCREEN_W / VW;
 const WIN_H = (CROP_BOTTOM - CROP_TOP) * k;
 
-const Top: React.FC<{ headline: string; size?: number }> = ({ headline, size = 92 }) => (
+export const Top: React.FC<{ headline: string; size?: number }> = ({ headline, size = 92 }) => (
   <AbsoluteFill style={{ padding: `${SAFE_TOP}px 72px 0` }}>
     <Logo />
     <div style={{ marginTop: 50 }}><Headline text={headline} size={size} delay={2} /></div>
@@ -17,7 +17,7 @@ const Top: React.FC<{ headline: string; size?: number }> = ({ headline, size = 9
 );
 
 // Bingkai HP: isi (rekaman atau screenshot) di dalam jendela layar.
-const PhoneFrame: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const PhoneFrame: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const f = useLocal();
   const { fps } = useVideoConfig();
   const s = pop(f, 2, fps, 16);
@@ -29,7 +29,7 @@ const PhoneFrame: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 // Potongan rekaman: absFrom = frame awal di komposisi (bukan frame lokal adegan).
-const Clip: React.FC<{ absFrom: number; dur: number; startSec: number; rate?: number; shift?: number }> = ({ absFrom, dur, startSec, rate = 1, shift = 0 }) => (
+export const Clip: React.FC<{ absFrom: number; dur: number; startSec: number; rate?: number; shift?: number }> = ({ absFrom, dur, startSec, rate = 1, shift = 0 }) => (
   <Sequence from={absFrom} durationInFrames={dur}>
     <div style={{ position: "absolute", left: 0, top: -(CROP_TOP + shift) * k, width: SCREEN_W, height: VH * k }}>
       <OffthreadVideo src={staticFile("rec.mp4")} startFrom={Math.round(startSec * 30)} playbackRate={rate} muted style={{ width: "100%", height: "100%" }} />
@@ -38,14 +38,14 @@ const Clip: React.FC<{ absFrom: number; dur: number; startSec: number; rate?: nu
 );
 
 // Screenshot 739x1600 (status bar atas 88 px, bar Safari dari 1435 px ke bawah dibuang).
-const Shot: React.FC<{ file: string }> = ({ file }) => {
+export const Shot: React.FC<{ file: string }> = ({ file }) => {
   const f = useLocal();
   const s = SCREEN_W / 739;
   const zoom = 1 + Math.min(f, 120) * 0.0006;
   return <img src={staticFile(file)} style={{ position: "absolute", left: 0, top: -88 * s, width: SCREEN_W, transform: `scale(${zoom})`, transformOrigin: "50% 20%" }} />;
 };
 
-const Caption: React.FC<{ text: string; a: number; b: number }> = ({ text, a, b }) => {
+export const Caption: React.FC<{ text: string; a: number; b: number }> = ({ text, a, b }) => {
   const f = useLocal();
   const { fps } = useVideoConfig();
   if (f < a || f > b) return null;
@@ -58,7 +58,7 @@ const Caption: React.FC<{ text: string; a: number; b: number }> = ({ text, a, b 
   );
 };
 
-const Note: React.FC = () => (
+export const Note: React.FC = () => (
   <div style={{ position: "absolute", left: 0, right: 0, top: 1598, textAlign: "center", fontFamily: FONT, fontSize: 24, color: "rgba(255,255,255,.55)" }}>
     Tampilan asli aplikasi (data demo)
   </div>

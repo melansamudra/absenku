@@ -147,13 +147,14 @@ export const Chip: React.FC<{ text: string; start: number; x: number; y: number 
   );
 };
 
-export const EndCard: React.FC<{ line: string; sub?: string }> = ({ line, sub = "Tanpa langganan bulanan. Tanpa biaya per karyawan." }) => {
+export const EndCard: React.FC<{ line: string; sub?: string; solid?: boolean }> = ({ line, solid = false, sub = "Tanpa langganan bulanan. Tanpa biaya per karyawan." }) => {
   const frame = useLocal();
   const { fps } = useVideoConfig();
   const a = pop(frame, 4, fps), b = pop(frame, 16, fps), c = pop(frame, 30, fps);
   const pulse = 1 + Math.sin(frame / 6) * 0.025;
   return (
     <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", paddingTop: SAFE_TOP, paddingBottom: SAFE_BOTTOM, fontFamily: FONT }}>
+      {solid && <AbsoluteFill style={{ background: `linear-gradient(160deg, ${C.b900}, ${C.b700})` }} />}
       <div style={{ transform: `scale(${0.7 + a * 0.3})`, opacity: a }}><Logo size={1.5} /></div>
       <div style={{ marginTop: 50, textAlign: "center", color: "#fff", fontWeight: 800, fontSize: 70, lineHeight: 1.08, letterSpacing: -2, padding: "0 90px", opacity: b, transform: `translateY(${(1 - b) * 30}px)` }}>{line}</div>
       <div style={{ marginTop: 56, background: C.amber, color: "#2b1a00", borderRadius: 36, padding: "30px 60px", textAlign: "center", opacity: c, transform: `scale(${(0.8 + c * 0.2) * pulse})` }}>
