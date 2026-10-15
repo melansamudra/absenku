@@ -136,7 +136,7 @@ const V2: React.FC = () => {
         </AbsoluteFill>
       </Scene>
       <Scene from={442} dur={98}>
-        <EndCard line="Absen selfie + payroll. Tanpa install." />
+        <EndCard solid line="Absen selfie + payroll. Tanpa install." />
       </Scene>
     </FontGate>
   );
