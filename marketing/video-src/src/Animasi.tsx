@@ -164,7 +164,7 @@ export const K09: React.FC<{ end?: End }> = ({ end = "wa" }) => (
 );
 
 // K10: hitung gaji dulu vs sekarang
-const Versus: React.FC<{ old: string; olds: string; now: string; nows: string }> = ({ old, olds, now, nows }) => {
+export const Versus: React.FC<{ old: string; olds: string; now: string; nows: string; tagOld?: string; tagNow?: string; strike?: boolean }> = ({ old, olds, now, nows, tagOld = "DULU", tagNow = "SEKARANG", strike = true }) => {
   const f = useLocal();
   const { fps } = useVideoConfig();
   const a = pop(f, 30, fps, 15), b = pop(f, 80, fps, 15);
@@ -177,8 +177,8 @@ const Versus: React.FC<{ old: string; olds: string; now: string; nows: string }>
   );
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 34 }}>
-      {card("#fff", C.ink, "DULU", old, olds, a, f > 96)}
-      {card(C.amber, "#2b1a00", "SEKARANG", now, nows, b)}
+      {card("#fff", C.ink, tagOld, old, olds, a, strike && f > 96)}
+      {card(C.amber, "#2b1a00", tagNow, now, nows, b)}
     </div>
   );
 };

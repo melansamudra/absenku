@@ -147,7 +147,7 @@ export const Chip: React.FC<{ text: string; start: number; x: number; y: number 
   );
 };
 
-export const EndCard: React.FC<{ line: string; sub?: string; solid?: boolean; noPrice?: boolean; plain?: boolean; cta?: string }> = ({ line, solid = false, noPrice = false, plain = false, cta = "Hubungi kami di", sub = "Tanpa langganan bulanan. Tanpa biaya per karyawan." }) => {
+export const EndCard: React.FC<{ line: string; sub?: string; solid?: boolean; noPrice?: boolean; plain?: boolean; cta?: string; price?: string }> = ({ line, solid = false, price = "Rp289.000", noPrice = false, plain = false, cta = "Hubungi kami di", sub = "Tanpa langganan bulanan. Tanpa biaya per karyawan." }) => {
   const frame = useLocal();
   const { fps } = useVideoConfig();
   const a = pop(frame, 4, fps), b = pop(frame, 16, fps), c = pop(frame, 30, fps);
@@ -158,7 +158,7 @@ export const EndCard: React.FC<{ line: string; sub?: string; solid?: boolean; no
       <div style={{ transform: `scale(${0.7 + a * 0.3})`, opacity: a }}><Logo size={1.5} /></div>
       <div style={{ marginTop: 50, textAlign: "center", color: "#fff", fontWeight: 800, fontSize: 70, lineHeight: 1.08, letterSpacing: -2, padding: "0 90px", opacity: b, transform: `translateY(${(1 - b) * 30}px)` }}>{line}</div>
       {!noPrice && (      <div style={{ marginTop: 56, background: C.amber, color: "#2b1a00", borderRadius: 36, padding: "30px 60px", textAlign: "center", opacity: c, transform: `scale(${(0.8 + c * 0.2) * pulse})` }}>
-        <div style={{ fontWeight: 800, fontSize: 112, letterSpacing: -4, lineHeight: 1 }}>Rp289.000</div>
+        <div style={{ fontWeight: 800, fontSize: 112, letterSpacing: -4, lineHeight: 1 }}>{price}</div>
         <div style={{ fontWeight: 600, fontSize: 40, marginTop: 8 }}>sekali bayar</div>
       </div>)}
       {sub !== "" && <div style={{ marginTop: noPrice ? 40 : 34, position: "relative", zIndex: 1, color: C.b200, fontSize: 36, textAlign: "center", padding: "0 100px", opacity: fade(frame, 30, 44), fontWeight: 600 }}>{sub}</div>}

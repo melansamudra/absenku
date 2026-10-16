@@ -160,7 +160,7 @@ export const SelfieClips: React.FC<{ absFrom: number }> = ({ absFrom }) => {
         <div style={{ position: "absolute", left: 110, top: 190 + bob, width: 340 }}><Person width={340} /></div>
         <Corners x={90} y={150} w={380} h={440} />
       </Sequence>
-      <Clip absFrom={absFrom + 52} dur={60} startSec={18.8} rate={0.75} />
+      <Clip absFrom={absFrom + 52} dur={60} startSec={18.8} rate={0.5} />
       <Sequence from={absFrom + 52} durationInFrames={60}>
         <div style={{ position: "absolute", left: 21, top: 626, width: 234, height: 332, overflow: "hidden", borderRadius: 18, background: "linear-gradient(#cfe0f2,#e9f2fb)" }}>
           <div style={{ position: "absolute", left: 22, top: 70, width: 190 }}><Person width={190} /></div>
