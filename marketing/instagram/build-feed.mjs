@@ -4,7 +4,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 import path from "node:path";
-import { POSTS } from "./posts.mjs";
+const { POSTS } = await import(pathToFileURL(path.resolve(process.argv[3] ?? "./posts.mjs")).href);
 
 const require = createRequire(import.meta.url);
 const fontDir = path.dirname(require.resolve("@fontsource/inter/package.json")) + "/files";
@@ -94,5 +94,5 @@ for (const post of POSTS) {
   capLines.push(`### ${post.id} (${post.slides.length} slide)\n${post.cap}\n`);
 }
 await browser.close();
-writeFileSync(path.join(OUT, "caption.md"), "# Caption 30 post feed IG\n\nTema umum yang sedang ramai dibahas. Silakan sesuaikan hashtag dan waktu unggah.\n\n" + capLines.join("\n"));
+writeFileSync(path.join(OUT, "caption.md"), "# Caption post feed IG\n\nTema umum yang sedang ramai dibahas. Silakan sesuaikan hashtag dan waktu unggah.\n\n" + capLines.join("\n"));
 console.log("selesai:", POSTS.length, "post,", count, "slide");

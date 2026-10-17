@@ -67,7 +67,7 @@ const Big: React.FC<{ value?: number; text?: string; suffix?: string; label: str
   const fg = dark(theme) ? "#fff" : C.ink;
   return (
     <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", paddingTop: 560, opacity: Math.min(1, s * 1.5), transform: `scale(${0.7 + s * 0.3})`, fontFamily: FONT, color: fg, textAlign: "center" }}>
-      <div style={{ fontWeight: 800, fontSize: 340, letterSpacing: -14, lineHeight: 0.95, color: dark(theme) ? C.amber : C.b900 }}>{text ?? count(f, 12, 70, value ?? 0)}{suffix && <span style={{ fontSize: 120, letterSpacing: -3 }}>{suffix}</span>}</div>
+      <div style={{ fontWeight: 800, fontSize: (text ?? "").length > 5 ? 250 : 340, letterSpacing: -10, lineHeight: 0.95, whiteSpace: "nowrap", color: dark(theme) ? C.amber : C.b900 }}>{text ?? count(f, 12, 70, value ?? 0)}{suffix && <span style={{ fontSize: 120, letterSpacing: -3 }}>{suffix}</span>}</div>
       <div style={{ fontWeight: 800, fontSize: 64, marginTop: 20, padding: "0 90px", lineHeight: 1.1 }}>{label}</div>
       {sub && <div style={{ fontWeight: 600, fontSize: 40, marginTop: 24, padding: "0 110px", opacity: 0.8, lineHeight: 1.25 }}>{sub}</div>}
     </AbsoluteFill>
