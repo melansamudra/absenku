@@ -20,6 +20,7 @@ type S =
   | { k: "chips"; head: string; items: string[]; note?: string }
   | { k: "cards"; head: string; items: [string, string][] }
   | { k: "link"; head: string; pill: string }
+  | { k: "formula"; head: string; big: string; rows: [string, string][]; note?: string }
   | { k: "rec"; head: string; part: "pin" | "map" | "selfie"; cap: string };
 export type Cfg = { id: string; theme: Theme; end: End; line: string; scenes: S[] };
 
@@ -113,6 +114,21 @@ const Body: React.FC<{ s: S; theme: Theme; from: number }> = ({ s, theme, from }
       return <ChipRow items={s.items} note={s.note} />;
     case "big":
       return <Big value={s.value} text={s.text} suffix={s.suffix} label={s.label} sub={s.sub} theme={theme} />;
+    case "formula":
+      return (
+        <AbsoluteFill style={{ padding: `620px 72px ${SAFE_BOTTOM - 40}px`, justifyContent: "flex-start" }}>
+          <div style={{ background: "#fff", color: C.ink, borderRadius: 44, padding: "40px 46px", boxShadow: "0 24px 54px rgba(0,0,0,.3)", fontFamily: FONT }}>
+            <div style={{ fontWeight: 800, fontSize: s.big.length > 6 ? 118 : 150, letterSpacing: -5, lineHeight: 1, color: C.b900 }}>{s.big}</div>
+            {s.rows.map(([a, b], i) => (
+              <div key={i} style={{ borderTop: "3px solid #e6eef6", marginTop: 24, paddingTop: 24 }}>
+                <div style={{ fontWeight: 800, fontSize: 44 }}>{a}</div>
+                <div style={{ fontWeight: 600, fontSize: 40, color: "#4a6580", marginTop: 4 }}>{b}</div>
+              </div>
+            ))}
+          </div>
+          {s.note && <div style={{ marginTop: 34, fontFamily: FONT, fontWeight: 600, fontSize: 34, lineHeight: 1.3, color: dark(theme) ? C.b200 : "#4a6580" }}>{s.note}</div>}
+        </AbsoluteFill>
+      );
     case "link":
       return (<><Mid pt={640}><Address /></Mid><AbsoluteFill style={{ justifyContent: "flex-end", alignItems: "center", paddingBottom: SAFE_BOTTOM + 150 }}><Pill text={s.pill} start={40} /></AbsoluteFill></>);
     default:
@@ -133,13 +149,13 @@ const RecScene: React.FC<{ s: Extract<S, { k: "rec" }>; from: number; d: number 
   </>
 );
 
-export const makeVideo = (cfg: Cfg): { C: React.FC; frames: number } => {
+export const makeVideo = (cfg: Cfg, minFrames = 0): { C: React.FC; frames: number } => {
   const OV = 6;
-  const endD = cfg.end === "harga" ? 150 : 110;
   const starts: number[] = [];
   let t = 0;
   cfg.scenes.forEach((s) => { starts.push(t); t += dur(s) - OV; });
   const endFrom = t;
+  const endD = Math.max(cfg.end === "harga" ? 150 : 110, minFrames - endFrom);
   const frames = endFrom + endD;
   const Comp: React.FC = () => (
     <FontGate>
