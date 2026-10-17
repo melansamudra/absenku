@@ -5,7 +5,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.utils import get_column_letter
 
 S="/tmp/claude-0/-home-user/4d1cc429-040b-50d9-9b74-ae951c2cbd75/scratchpad/"
-vids=json.load(open(S+"vids.json")); posts=json.load(open(S+"posts.json"))
+vids=json.load(open(S+"vids.json")); posts=json.load(open(S+"posts.json"))+json.load(open(S+"posts3.json")); fv=json.load(open(S+"fvids.json"))
 ecap={}
 for line in open("/home/user/hrcash/marketing/video/daftar-30-video-reels.md"):
     m=re.match(r"\| (E\d+) \| ([^|]+) \| ([^|]+) \| (.+) \|$",line.strip())
@@ -27,6 +27,9 @@ for code,v in vids.items():
     if code.startswith("E"):
         j,cap=ecap[code]
         inv.append((code,"Reels/TikTok 21-22 dtk (%s)"%j,"marketing/video/set-90/hrcash-%s-%s.mp4"%(code,v["slug"]),v["hook"],"Bersih","~21-22 dtk",cap,"Tanpa harga/kontak"))
+fcap={}
+for code,v in fv.items():
+    inv.append((code,"Reels/TikTok 20-25 dtk (batch 3)","marketing/video/set-120/hrcash-%s-%s.mp4"%(code,v["slug"]),v["hook"],"Bersih","~20-23 dtk","%s Setuju? Tulis di komentar."%v["hook"],"Tanpa harga/kontak. Konten hukum: informasi umum, cek aturan terbaru."))
 hc=[("IG1","Carousel 3 gambar (IG 4:5)","marketing/instagram/ig-carousel-konten-1/slide-1..3.png","Katanya masuk jam 8. Buktinya mana?","","","Katanya sudah masuk jam 8, tapi buktinya tidak ada. Absen yang benar punya bukti: selfie, lokasi, jam otomatis. Pernah mengalami ini? Tulis di komentar. Mau tanya-tanya, WA 081234556757.","Konten pertama akun baru"),
 ("TT1","Foto 3 gambar (TikTok 9:16)","marketing/instagram/tiktok-konten-1/slide-1..3.png","Katanya masuk jam 8. Buktinya mana?","","","Katanya masuk jam 8, buktinya mana? Absen pakai bukti: selfie + lokasi + jam otomatis. Pernah kejadian? Komen ya.","Mode foto TikTok"),
 ("IG2","Gambar 1 (IG 4:5)","marketing/instagram/ig-post/konten-2-rekap-sampai-malam.png","Akhir bulan, rekap absen sampai malam","","","Jam berapa biasanya kamu selesai merekap absen akhir bulan? Jujur saja di komentar.",""),
@@ -35,21 +38,26 @@ hc=[("IG1","Carousel 3 gambar (IG 4:5)","marketing/instagram/ig-carousel-konten-
 ("IG5","Gambar 1 (IG 4:5)","marketing/instagram/ig-post/konten-5-siapa-sudah-masuk.png","Jam 9 pagi. Siapa yang sudah masuk?","","","Sekarang jam berapa? Kamu tahu siapa saja yang sudah masuk hari ini?","")]
 inv+=hc
 for p in posts:
-    folder="feed-30" if int(p["id"][1:3])<=30 else "feed-60"
+    n_=int(p["id"][1:4]) if p["id"][3].isdigit() else int(p["id"][1:3]); folder="feed-30" if n_<=30 else ("feed-60" if n_<=60 else "feed-120")
     inv.append((p["id"][:3],"Post IG %d gambar"%p["n"],"marketing/instagram/%s/%s/slide-1..%d.png"%(folder,p["id"],p["n"]),p["hook"],"","",p["cap"],"Tema umum, tag: "+p["tag"].title()))
 
 # ---------- jadwal ----------
-E=[c for c in vids if c.startswith("E")]; E.sort()
-edu=[c for c in E if int(c[1:])<=15]; pro=[c for c in E if 16<=int(c[1:])<=27]; pop=[c for c in E if int(c[1:])>=28]
-seq=[]; 
-pools=[edu[:],pro[:],pop[:]]
-order=[0,0,1,0,1,0,1,2,0,1,0,1,0,2,1,0,1,0,1,2]  # 20 weekday videos
-for o in order: seq.append(pools[o].pop(0))
-# weekend tiktok-only: 8 video N bersih
+WEEKS=8; DAYS=WEEKS*7
+Eg={"edu":[c for c in sorted(vids) if c.startswith("E") and int(c[1:])<=15],"pro":[c for c in sorted(vids) if c.startswith("E") and 16<=int(c[1:])<=27],"pop":[c for c in sorted(vids) if c.startswith("E") and int(c[1:])>=28]}
+Fg={"hr":["F%02d"%i for i in range(1,21)],"pov":["F%02d"%i for i in range(21,36)],"promo":["F%02d"%i for i in range(36,51)],"edu":["F%02d"%i for i in range(51,61)]}
+groups=[Eg["edu"][:],Fg["hr"][:],Eg["pro"][:],Fg["pov"][:],Fg["promo"][:],Fg["edu"][:],Eg["pop"][:]]
+seq=[]
+while len(seq)<WEEKS*5:
+    for g in groups:
+        if g and len(seq)<WEEKS*5: seq.append(g.pop(0))
 Nb=[c for c in sorted(vids) if c.startswith("N") and vids[c]["end"]=="bersih"]
-wk=[Nb[i] for i in (0,2,4,7,10,13,16,19)]
-feed=["IG1","P01","IG2","P11","IG3","P04","IG4","P21","IG5","P31","P12","P41","P22","P51","P32","P42"]
-feed=[f for f in feed]
+wk=[Nb[i] for i in range(0,len(Nb),max(1,len(Nb)//(WEEKS*2)))][:WEEKS*2]
+general=["P01","P61","P11","P81","P21","P101","P31","P62","P41","P82","P51","P102","P03","P63","P12","P83","P22","P103","P32","P64","P42","P84","P52","P104","P04","P65","P13"]
+hcs=["IG1","IG2","IG3","IG4","IG5"]
+feed=[]; gi=0; hi=0
+for k in range(WEEKS*4):
+    if k%6==0 and hi<len(hcs): feed.append(hcs[hi]); hi+=1
+    else: feed.append(general[gi%len(general)]); gi+=1
 
 wb=Workbook()
 F="Arial"
@@ -60,7 +68,7 @@ wrap=Alignment(wrap_text=True,vertical="top")
 
 # --- Panduan ---
 ws=wb.active; ws.title="Panduan"
-ws["A1"]="Konten Planner: HrCash dan Cash Impact (4 minggu)"; ws["A1"].font=font(bold=True,size=14)
+ws["A1"]="Konten Planner: HrCash dan Cash Impact (8 minggu)"; ws["A1"].font=font(bold=True,size=14)
 rows=[("Tanggal mulai (isi sendiri)",datetime.date(2026,10,19),"Ubah tanggal ini, seluruh jadwal ikut bergeser. Disarankan hari Senin."),
 ("Jam unggah Reels / video IG","12:00","Kisaran jam ramai 11.00-13.00 dan 19.00-21.00. Ubah di kolom Jam pada sheet Jadwal."),
 ("Jam unggah IG feed (gambar)","19:00",""),
@@ -70,7 +78,7 @@ for i,(a,b,c) in enumerate(rows,start=4):
     ws.cell(i,1,a).font=font(); x=ws.cell(i,2,b); x.font=font(color="0000FF"); x.fill=PatternFill("solid",fgColor="FFF2B3"); ws.cell(i,3,c).font=font(color="555555")
 ws["B4"].number_format="dd mmm yyyy"
 ws["A9"]="Cara pakai"; ws["A9"].font=font(bold=True,size=11)
-steps=["1. Buka sheet 'Jadwal 4 Minggu'. Tiap baris = satu unggahan (tanggal, jam, platform, kode konten).",
+steps=["1. Buka sheet 'Jadwal 8 Minggu'. Tiap baris = satu unggahan (tanggal, jam, platform, kode konten).",
 "2. Cari file lewat kolom 'Kode konten' di sheet 'Daftar Konten' (ada nama file/folder, hook, dan caption).",
 "3. Setelah mengunggah, ubah kolom Status menjadi 'Terposting' (ada pilihan dropdown).",
 "4. Ringkasan di bawah dan kolom 'Terpakai' di Daftar Konten menghitung otomatis.",
@@ -84,7 +92,7 @@ warn=["Video lama V1-V7 (folder marketing/video) masih memuat harga Rp289.000. J
 "Contoh angka di video dan gambar adalah ilustrasi. Nama karyawan di video adalah contoh."]
 for i,t in enumerate(warn,start=18): ws.cell(i,1,t).font=font(); ws.cell(i,1).alignment=Alignment(wrap_text=True,vertical="top")
 ws["A23"]="Ringkasan jadwal (otomatis)"; ws["A23"].font=font(bold=True,size=11)
-summ=[("Total unggahan","=COUNTA('Jadwal 4 Minggu'!A5:A200)"),("IG Reels","=COUNTIF('Jadwal 4 Minggu'!E5:E200,\"IG Reels\")"),("IG Feed","=COUNTIF('Jadwal 4 Minggu'!E5:E200,\"IG Feed\")"),("TikTok video","=COUNTIF('Jadwal 4 Minggu'!E5:E200,\"TikTok\")"),("TikTok foto","=COUNTIF('Jadwal 4 Minggu'!E5:E200,\"TikTok Foto\")"),("Sudah terposting","=COUNTIF('Jadwal 4 Minggu'!L5:L200,\"Terposting\")"),("Belum terposting","=B24-B29")]
+summ=[("Total unggahan","=COUNTA('Jadwal 8 Minggu'!A5:A400)"),("IG Reels","=COUNTIF('Jadwal 8 Minggu'!E5:E400,\"IG Reels\")"),("IG Feed","=COUNTIF('Jadwal 8 Minggu'!E5:E400,\"IG Feed\")"),("TikTok video","=COUNTIF('Jadwal 8 Minggu'!E5:E400,\"TikTok\")"),("TikTok foto","=COUNTIF('Jadwal 8 Minggu'!E5:E400,\"TikTok Foto\")"),("Sudah terposting","=COUNTIF('Jadwal 8 Minggu'!L5:L400,\"Terposting\")"),("Belum terposting","=B24-B29")]
 for i,(a,f) in enumerate(summ,start=24): ws.cell(i,1,a).font=font(); c=ws.cell(i,2,f); c.font=font(); c.alignment=Alignment(horizontal="left")
 ws["A32"]="Hashtag dasar"; ws["A32"].font=font(bold=True,size=11)
 ws["A33"]="HrCash: #absensikaryawan #hrumkm #payroll #umkmindonesia #pemilikusaha #tipsbisnis #hrd"; ws["A34"]="Umum: #tipskeuangan #produktivitas #dunia kerja #karier #selfimprovement #umkm"
@@ -100,20 +108,20 @@ for j,h in enumerate(heads,1):
 for i,r in enumerate(inv,start=2):
     for j,v in enumerate(r,1):
         c=wd.cell(i,j,v); c.font=font(); c.alignment=wrap; c.border=border
-    c=wd.cell(i,9,f"=IF(COUNTIF('Jadwal 4 Minggu'!$G$5:$G$200,A{i})>0,\"Ya\",\"Belum\")"); c.font=font(); c.border=border
+    c=wd.cell(i,9,f"=IF(COUNTIF('Jadwal 8 Minggu'!$G$5:$G$400,A{i})>0,\"Ya\",\"Belum\")"); c.font=font(); c.border=border
 for col,w in zip("ABCDEFGHI",[12,26,52,44,12,12,60,34,12]): wd.column_dimensions[col].width=w
 wd.freeze_panes="B2"; wd.auto_filter.ref=f"A1:I{len(inv)+1}"
 
 # --- Jadwal ---
-wj=wb.create_sheet("Jadwal 4 Minggu",1)
-wj["A1"]="Jadwal unggah 4 minggu"; wj["A1"].font=font(bold=True,size=14)
+wj=wb.create_sheet("Jadwal 8 Minggu",1)
+wj["A1"]="Jadwal unggah 8 minggu"; wj["A1"].font=font(bold=True,size=14)
 wj["A2"]="Tanggal mengikuti 'Tanggal mulai' di sheet Panduan. Hook dan caption terisi otomatis dari sheet Daftar Konten."; wj["A2"].font=font(italic=True,color="555555")
 hj=["No","Tanggal","Hari","Jam","Platform","Format","Kode konten","Hook / judul","Tujuan","Caption (saran)","Catatan","Status"]
 for j,h in enumerate(hj,1):
     c=wj.cell(4,j,h); c.font=hdr_font; c.fill=hdr_fill; c.alignment=Alignment(wrap_text=True,vertical="center"); c.border=border
 rows=[]  # (offset,jam_ref,platform,format,kode,tujuan,catatan)
 vi=0; wi=0; fi=0
-for day in range(28):
+for day in range(DAYS):
     wd_idx=day%7
     if wd_idx<5:
         code=seq[vi]; vi+=1
@@ -176,5 +184,5 @@ for i,r in enumerate(ads,start=8):
 for col,w in zip("ABCDEFGHI",[12,12,18,30,40,22,40,34,30]): wm.column_dimensions[col].width=w
 wm["A15"]="Catatan: kreatif harga (set N 'harga') memuat Rp349.000 dan 081234556757. Selalu cek kebijakan iklan Meta sebelum menayangkan, terutama untuk klaim hukum (lembur, THR)."; wm["A15"].font=font(italic=True,color="555555")
 
-out="/home/user/hrcash/marketing/Konten-Planner-4-Minggu.xlsx"
+out="/home/user/hrcash/marketing/Konten-Planner-8-Minggu.xlsx"
 wb.save(out); print(out,len(rows),len(inv))
